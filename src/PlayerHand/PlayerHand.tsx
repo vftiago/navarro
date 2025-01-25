@@ -1,5 +1,5 @@
 import { CardFront } from "../CardFront";
-import { CardT } from "../cards/cards";
+import { PlayingCardT } from "../cards/cards";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { stagger } from "framer-motion/dom";
 import { useEffect, useState } from "react";
@@ -13,8 +13,8 @@ export const PlayerHand = ({
   onClick,
 }: {
   isNewTurn: boolean;
-  playerCards: CardT[];
-  onClick: (card: CardT, index: number) => void;
+  playerCards: PlayingCardT[];
+  onClick: (card: PlayingCardT, index: number) => void;
 }) => {
   const [scope, animate] = useAnimate();
   const [removingIndex, setRemovingIndex] = useState<number | null>(null);
@@ -56,7 +56,7 @@ export const PlayerHand = ({
     );
   }, [animate, isNewTurn]);
 
-  const handleCardClick = (card: CardT, index: number) => {
+  const handleCardClick = (card: PlayingCardT, index: number) => {
     /**
      * we're essentially triggering a rerender by setting a new state which results
      * in rendering all cards except the one that was clicked,

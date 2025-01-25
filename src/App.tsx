@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Container,
   Flex,
@@ -10,13 +9,12 @@ import {
 } from "@mantine/core";
 import { useCallback, useEffect, useReducer } from "react";
 import { ServerRow } from "./ServerRow";
-import { CardT } from "./cards/cards";
+import { PlayingCardT } from "./cards/cards";
 import { PlayerHand } from "./PlayerHand";
-import { starterDeck as serverStarterDeck } from "./decks/serverDecks/starterDeck";
 import { useDisclosure } from "@mantine/hooks";
 import { gameReducer, initialGameState } from "./gameReducer";
 import { CardFront } from "./CardFront";
-import { TbClock2 } from "react-icons/tb";
+import { TbClock2, TbCloudLock } from "react-icons/tb";
 import { useGameState } from "./useGameState";
 
 export const App = () => {
@@ -65,7 +63,7 @@ export const App = () => {
     setCurrentPlayerCards(gameState.player.hand);
   }, [gameState.player.hand, setCurrentPlayerCards]);
 
-  const onClickPlayerCard = (card: CardT, index: number) => {
+  const onClickPlayerCard = (card: PlayingCardT, index: number) => {
     dispatch({ type: "playCard", card, index });
     setIsNewTurn(false);
   };
@@ -125,18 +123,20 @@ export const App = () => {
           <Stack>
             <Title order={2}>Server</Title>
             <Flex justify="space-between" w="100%">
-              <ServerRow serverCards={serverStarterDeck} />
+              <ServerRow serverCards={gameState.server.currentDeck} />
             </Flex>
-            <Flex gap="sm">
+            <Flex align="center" gap="sm">
+              Server security level:
               {Array.from({ length: gameState.securityLevel }).map(
                 (_, index) => (
-                  <Box key={index} bg="gray.6" h="10px" w="10px" />
+                  <TbCloudLock key={index} size="24px" />
                 ),
               )}
             </Flex>
-            <Flex gap="sm">
+            <Flex align="center" gap="sm">
+              Remaining ticks:
               {Array.from({ length: gameState.tick }).map((_, index) => (
-                <TbClock2 key={index} size="2rem" />
+                <TbClock2 key={index} size="24px" />
               ))}
             </Flex>
           </Stack>

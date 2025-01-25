@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { CardT } from "./cards/cards";
+import { PlayingCardT } from "./cards/cards";
 
 export const useGameState = (initialState: {
   turn: number;
   tick: number;
-  hand: CardT[];
+  hand: PlayingCardT[];
 }) => {
   const { turn, tick, hand } = initialState;
 

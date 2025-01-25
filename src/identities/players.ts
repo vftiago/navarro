@@ -1,9 +1,9 @@
-import { CardT } from "../cards/cards";
+import { PlayingCardT } from "../cards/cards";
 
 export type PlayerT = {
-  deck: CardT[];
-  currentDeck: CardT[];
-  hand: CardT[];
-  discard: CardT[];
+  deck: PlayingCardT[];
+  currentDeck: PlayingCardT[];
+  hand: PlayingCardT[];
+  discard: PlayingCardT[];
   handSize: number;
 };

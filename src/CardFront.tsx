@@ -2,13 +2,13 @@ import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
 import { SizeT, sizes } from "./cardSizes";
 import { CardRarityT, CardTypeT } from "./cards/cards";
-import { CardT } from "./cards/cards";
+import { PlayingCardT } from "./cards/cards";
 
 export const CardFront = ({
   card,
   size = "md",
 }: {
-  card: CardT;
+  card: PlayingCardT;
   size?: SizeT;
 }) => {
   const { effects, image, name, rarity, type } = card;
@@ -60,7 +60,7 @@ export const CardFront = ({
             </Text>
           </Card.Section>
           <Stack align="center" gap="0" h="100%" justify="center">
-            {effects.map((effect, index) => (
+            {effects?.map((effect, index) => (
               <Text
                 key={index}
                 className={

@@ -9,7 +9,8 @@
     "format": "prettier --write .",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "tsc": "tsc -p ./tsconfig.json"
   },
   "dependencies": {
     "@mantine/core": "^7.16.1",
@@ -47,12 +48,14 @@
     "postcss-simple-vars": "^7",
     "prettier": "^3",
     "tailwindcss": "^4",
+    "tsc-files": "^1.1.4",
     "typescript": "^5",
     "vite": "^6"
   },
   "lint-staged": {
     "**/*.ts": [
       "prettier --write",
+      "tsc-files",
       "eslint --max-warnings 0"
     ]
   },

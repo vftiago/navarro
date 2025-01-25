@@ -23,28 +23,32 @@ export enum CardTypeT {
   TRAP = "Trap",
 }
 
-export type CardEffectsT = {
-  callback?: (gameState: GameState) => void;
+export type CardEffectT = {
+  callback: (gameState: GameState) => GameState;
   description: {
     text: string;
     isKeyword?: true;
   };
-}[];
+};
 
-export type CardBaseT = {
+export type CardSubroutineT = {
+  callback: (gameState: GameState) => GameState;
+  description: {
+    text: string;
+    isKeyword?: true;
+  };
+};
+
+export type CardPropertiesT = {
   id: string;
   name: string;
   rarity: CardRarityT;
   type: CardTypeT;
   image: string;
-  effects: CardEffectsT;
+  subroutines?: CardSubroutineT[];
+  effects?: CardEffectT[];
 };
 
-export type CardStateT = {
-  isRevealed?: boolean;
+export type PlayingCardT = CardPropertiesT & {
+  deckContextId: string;
 };
-
-export type CardT = CardBaseT &
-  CardStateT & {
-    deckContextId: string;
-  };

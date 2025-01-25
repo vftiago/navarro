@@ -1,11 +1,13 @@
 import { v4 as uuid } from "uuid";
-import { CardBaseT, CardT } from "../cards/cards";
+import { CardPropertiesT, PlayingCardT } from "../cards/cards";
 
-export const buildDeck = (deck: CardBaseT[]): CardT[] => {
-  return deck.map((card) => {
-    return {
-      ...card,
-      deckContextId: uuid(),
-    };
-  });
+export const createDeck = (deck: CardPropertiesT[]): PlayingCardT[] => {
+  return deck.map(createPlayingCard);
+};
+
+export const createPlayingCard = (card: CardPropertiesT): PlayingCardT => {
+  return {
+    ...card,
+    deckContextId: uuid(),
+  };
 };

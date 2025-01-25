@@ -1,7 +1,7 @@
 import { playerCards } from "../../cards/playerCards/playerCards";
-import { buildDeck } from "../buildDeck";
+import { createDeck } from "../buildDeck";
 
-export const starterDeck = buildDeck([
+export const playerStarterDeck = createDeck([
   playerCards[0],
   playerCards[0],
   playerCards[0],

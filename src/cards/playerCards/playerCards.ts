@@ -1,8 +1,8 @@
 import { GameState } from "../../gameReducer";
-import { CardRarityT, CardBaseT, CardTypeT } from "../cards";
+import { CardRarityT, CardPropertiesT, CardTypeT } from "../cards";
 import { v4 as uuid } from "uuid";
 
-export const playerCards: CardBaseT[] = [
+export const playerCards: CardPropertiesT[] = [
   {
     id: uuid(),
     name: "Hack",
@@ -11,7 +11,28 @@ export const playerCards: CardBaseT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: () => {},
+        callback: (gameState: GameState): GameState => {
+          const randomServerCard =
+            gameState.server.currentDeck[
+              Math.floor(Math.random() * gameState.server.currentDeck.length)
+            ];
+
+          const newGameState = {
+            ...gameState,
+            server: {
+              ...gameState.server,
+              currentDeck: gameState.server.currentDeck.filter(
+                (card) => card.id !== randomServerCard.id,
+              ),
+            },
+            player: {
+              ...gameState.player,
+              discard: [...gameState.player.discard, randomServerCard],
+            },
+          };
+
+          return newGameState;
+        },
         description: {
           text: "Fetch 1 file.",
         },
@@ -26,24 +47,9 @@ export const playerCards: CardBaseT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
-          text: "Fetch 1 file.",
-        },
-      },
-    ],
-  },
-  {
-    id: uuid(),
-    name: "Crack",
-    image: "_644f230d-81bb-48a3-858c-0bf9051fe449.jpeg",
-    rarity: CardRarityT.BASIC,
-    type: CardTypeT.ACTION,
-    effects: [
-      {
-        callback: () => {},
-        description: {
-          text: "Fetch 1 file.",
+          text: "Reduce the Security level by 1.",
         },
       },
     ],
@@ -56,7 +62,7 @@ export const playerCards: CardBaseT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
           text: "Add 2 block.",
         },
@@ -71,22 +77,28 @@ export const playerCards: CardBaseT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: (gameState: GameState) => {
-          gameState.tick += 3;
+        callback: (gameState) => {
+          return {
+            ...gameState,
+            player: {
+              ...gameState.player,
+              ticksPerTurn: gameState.player.ticksPerTurn + 3,
+            },
+          };
         },
         description: {
           text: "Gain 3 ticks.",
         },
       },
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
           text: "Crash.",
           isKeyword: true,
         },
       },
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
           text: "Trash.",
           isKeyword: true,

@@ -1,6 +1,6 @@
-import { CardRarityT, CardBaseT, CardTypeT } from "../cards.ts";
+import { CardRarityT, CardPropertiesT, CardTypeT } from "../cards";
 
-export const serverCards: CardBaseT[] = [
+export const serverCards: CardPropertiesT[] = [
   {
     id: "0",
     name: "Junk",
@@ -9,6 +9,7 @@ export const serverCards: CardBaseT[] = [
     image: "_2c63c6dc-7f51-4cac-9e6b-83be70b8909d.jpeg",
     effects: [
       {
+        callback: (gameState) => gameState,
         description: {
           text: "Ethereal.",
           isKeyword: true,
@@ -24,7 +25,7 @@ export const serverCards: CardBaseT[] = [
     type: CardTypeT.EVENT,
     effects: [
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
           text: "When you fetch this card, end the run.",
         },
@@ -39,7 +40,7 @@ export const serverCards: CardBaseT[] = [
     type: CardTypeT.AGENDA,
     effects: [
       {
-        callback: () => {},
+        callback: (gameState) => gameState,
         description: {
           text: "When you fetch this card, get 1 tag.",
         },

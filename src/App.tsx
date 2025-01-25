@@ -1,23 +1,20 @@
-import {
-  Button,
-  Container,
-  Flex,
-  Modal,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
-import { useCallback, useEffect, useReducer } from "react";
-import { ServerRow } from "./ServerRow";
-import { PlayingCardT } from "./cards/cards";
-import { PlayerHand } from "./PlayerHand";
+import { Button, Container, Flex, Stack } from "@mantine/core";
+import { useCallback, useEffect, useReducer, useRef } from "react";
+import { IceRow } from "./ui/IceRow";
+import { PlayingCardT } from "./cards/card";
+import { PlayerHand } from "./ui/PlayerHand";
 import { useDisclosure } from "@mantine/hooks";
-import { gameReducer, initialGameState } from "./gameReducer";
-import { CardFront } from "./CardFront";
-import { TbClock2, TbCloudLock } from "react-icons/tb";
-import { useGameState } from "./useGameState";
+import { GamePhase, gameReducer, initialGameState } from "./gameReducer";
+import { StatusRow } from "./ui/StatusRow";
+import { EXIT_ANIMATION_DURATION } from "./ui/constants";
+import { Modals } from "./ui/Modals";
+import { delay } from "framer-motion";
+import { ClickWidget } from "./ui/ClickWidget";
+import { TagWidget } from "./ui/TagWidget";
 
 export const App = () => {
+  const currentAnimationKey = useRef(0);
+
   const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
 
   const [isDeckModalOpen, { open: openDeckModal, close: closeDeckModal }] =
@@ -28,137 +25,146 @@ export const App = () => {
     { open: openDiscardModal, close: closeDiscardModal },
   ] = useDisclosure(false);
 
-  const {
-    isNewTurn,
-    setIsNewTurn,
-    currentTurn,
-    setCurrentTurn,
-    currentTick,
-    setCurrentTick,
-    currentPlayerCards,
-    setCurrentPlayerCards,
-  } = useGameState({
-    turn: gameState.turn,
-    tick: gameState.tick,
-    hand: gameState.player.hand,
-  });
+  const [
+    isCardDisplayModalOpen,
+    { open: openCardDisplayModal, close: closeCardDisplayModal },
+  ] = useDisclosure(false);
+
+  const [isTrashModalOpen, { open: openTrashModal, close: closeTrashModal }] =
+    useDisclosure(false);
+
+  const [isScoreModalOpen, { open: openScoreModal, close: closeScoreModal }] =
+    useDisclosure(false);
 
   useEffect(() => {
-    setIsNewTurn(true);
-  }, [gameState.turn, setIsNewTurn]);
-
-  useEffect(() => {
-    if (currentTurn !== gameState.turn) {
-      setCurrentTurn(gameState.turn);
+    if (gameState.animationKey !== currentAnimationKey.current) {
+      currentAnimationKey.current = gameState.animationKey;
     }
-  }, [currentTurn, gameState.turn, setCurrentTurn]);
+  }, [gameState.animationKey]);
 
   useEffect(() => {
-    if (currentTick !== gameState.tick) {
-      setCurrentTick(gameState.tick);
+    if (gameState.accessedCards.length > 0) {
+      openCardDisplayModal();
     }
-  }, [currentTick, gameState.tick, setCurrentTick]);
+  }, [gameState.accessedCards, openCardDisplayModal]);
 
-  useEffect(() => {
-    setCurrentPlayerCards(gameState.player.hand);
-  }, [gameState.player.hand, setCurrentPlayerCards]);
-
-  const onClickPlayerCard = (card: PlayingCardT, index: number) => {
-    dispatch({ type: "playCard", card, index });
-    setIsNewTurn(false);
-  };
-
-  const onClickEndTurn = useCallback(() => {
-    dispatch({ type: "endTurn" });
+  const onClickPlayerCard = useCallback((card: PlayingCardT, index: number) => {
+    delay(() => {
+      dispatch({ type: GamePhase.Play, card, index });
+      // we only need to wait when the animationKey changes
+    }, EXIT_ANIMATION_DURATION);
   }, []);
 
+  const onCloseDisplayCardModal = useCallback(() => {
+    closeCardDisplayModal();
+    delay(() => {
+      if (gameState.nextAction) {
+        dispatch(gameState.nextAction);
+      }
+    }, EXIT_ANIMATION_DURATION);
+  }, [closeCardDisplayModal, gameState.nextAction]);
+
+  const onClickEndTurn = useCallback(() => {
+    if (gameState.currentPhase !== GamePhase.Main) {
+      return;
+    }
+
+    dispatch({ type: GamePhase.Discard });
+  }, [gameState.currentPhase]);
+
+  useEffect(() => {
+    if (
+      !gameState.nextAction ||
+      gameState.currentPhase === GamePhase.Main ||
+      gameState.currentPhase === GamePhase.Access
+    ) {
+      return;
+    }
+
+    dispatch(gameState.nextAction);
+  }, [gameState]);
+
+  useEffect(() => {
+    if (gameState.shouldDiscard) {
+      dispatch({ type: GamePhase.Discard });
+    }
+  }, [gameState.shouldDiscard]);
+
   return (
-    <Container fluid className="overflow-hidden" h="100%" maw={1600} p="xs">
-      <Modal
-        fullScreen
-        opened={isDeckModalOpen}
-        title="Deck"
-        onClose={closeDeckModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {gameState.player.currentDeck.length ? (
-              gameState.player.currentDeck.map((card, index) => {
-                return <CardFront key={index} card={card} />;
-              })
-            ) : (
-              <Stack align="center" h="400px" justify="center" w="100%">
-                <Text>Your deck is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
-      <Modal
-        fullScreen
-        opened={isDiscardModalOpen}
-        title="Discard"
-        onClose={closeDiscardModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {gameState.player.discard.length ? (
-              gameState.player.discard.map((card, index) => {
-                return (
-                  <span key={index}>
-                    <CardFront card={card} />
-                  </span>
-                );
-              })
-            ) : (
-              <Stack align="center" justify="center" w="100%">
-                <Text>Your discard pile is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
+    <Container fluid className="overflow-hidden h-full" maw={1620} p="lg">
+      <Modals
+        closeCardDisplayModal={onCloseDisplayCardModal}
+        closeDeckModal={closeDeckModal}
+        closeDiscardModal={closeDiscardModal}
+        closeScoreModal={closeScoreModal}
+        closeTrashModal={closeTrashModal}
+        gameState={gameState}
+        isCardDisplayModalOpen={isCardDisplayModalOpen}
+        isDeckModalOpen={isDeckModalOpen}
+        isDiscardModalOpen={isDiscardModalOpen}
+        isScoreModalOpen={isScoreModalOpen}
+        isTrashModalOpen={isTrashModalOpen}
+      />
       <Stack content="space-between" h="100%" justify="space-between">
-        <Stack>
-          <Stack>
-            <Title order={2}>Server</Title>
-            <Flex justify="space-between" w="100%">
-              <ServerRow serverCards={gameState.server.currentDeck} />
-            </Flex>
-            <Flex align="center" gap="sm">
-              Server security level:
-              {Array.from({ length: gameState.securityLevel }).map(
-                (_, index) => (
-                  <TbCloudLock key={index} size="24px" />
-                ),
-              )}
-            </Flex>
-            <Flex align="center" gap="sm">
-              Remaining ticks:
-              {Array.from({ length: gameState.tick }).map((_, index) => (
-                <TbClock2 key={index} size="24px" />
-              ))}
-            </Flex>
-          </Stack>
+        <Stack gap="xs">
+          <IceRow gameState={gameState} />
+          <StatusRow
+            currentPhase={gameState.currentPhase}
+            securityLevel={gameState.securityLevel}
+          />
         </Stack>
+
         <Flex className="justify-between">
-          <Stack className="flex-col-reverse">
+          <Stack className="flex-col-reverse" w="10rem">
             <Button size="lg" variant="gradient" onClick={openDeckModal}>
               Deck ({gameState.player.currentDeck.length})
             </Button>
+            <ClickWidget remainingClicks={gameState.tick} />
+            <TagWidget tagCount={gameState.player.tags} />
           </Stack>
-          <PlayerHand
-            key={`${currentTurn}-${currentTick}`}
-            isNewTurn={isNewTurn}
-            playerCards={currentPlayerCards}
-            onClick={onClickPlayerCard}
-          />
-          <Stack className="flex-col-reverse">
-            <Button size="xl" variant="gradient" onClick={onClickEndTurn}>
+
+          {gameState.currentPhase === GamePhase.Main &&
+          gameState.player.hand.length === 0 ? (
+            <div>Your hand is empty.</div>
+          ) : (
+            <PlayerHand
+              animationKey={gameState.animationKey}
+              gameState={gameState}
+              playerCards={gameState.player.hand}
+              onClick={onClickPlayerCard}
+            />
+          )}
+
+          <Stack className="flex-col-reverse" w="10rem">
+            <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
               End turn ({gameState.turn})
             </Button>
-            <Button size="lg" variant="gradient" onClick={openDiscardModal}>
+            <Button
+              className="self-end"
+              size="sm"
+              variant="gradient"
+              w="8rem"
+              onClick={openDiscardModal}
+            >
               Discard ({gameState.player.discard.length})
+            </Button>
+            <Button
+              className="self-end"
+              size="sm"
+              variant="gradient"
+              w="8rem"
+              onClick={openTrashModal}
+            >
+              Trash ({gameState.player.trash.length})
+            </Button>
+            <Button
+              className="self-end"
+              color="yellow"
+              size="sm"
+              w="8rem"
+              onClick={openScoreModal}
+            >
+              Score ({gameState.player.victoryPoints})
             </Button>
           </Stack>
         </Flex>

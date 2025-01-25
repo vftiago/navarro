@@ -1,42 +1,61 @@
 import arrayShuffle from "array-shuffle";
-import { PlayingCardT } from "./cards/cards";
+import { CardKeywordT, PlayingCardT } from "./cards/cards";
 import { playerStarterDeck } from "./decks/playerDecks/starterDeck";
 import { shuffle } from "./gameUtils";
 import { serverStarterDeck } from "./decks/serverDecks/starterDeck";
 
+export enum GamePhase {
+  Draw = "Draw", // Drawing new cards
+  Main = "Main", // Player can play cards
+  Discard = "Discard", // Cards are being discarded
+}
+
 export type GameState = {
+  currentPhase: GamePhase;
   securityLevel: number;
   turn: number;
   tick: number;
+  animationKey: number;
   player: {
     deck: PlayingCardT[];
     currentDeck: PlayingCardT[];
     hand: PlayingCardT[];
     discard: PlayingCardT[];
+    trash: PlayingCardT[];
     handSize: number;
     ticksPerTurn: number;
+    tags: number;
   };
   server: {
     deck: PlayingCardT[];
     currentDeck: PlayingCardT[];
   };
+  fetchedCards: PlayingCardT[];
 };
 
 export type GameAction =
   | {
-      type: "endTurn";
+      type: "drawPhase";
     }
   | {
-      type: "playCard";
-      card: PlayingCardT;
-      index: number;
+      type: "discardPhase";
+    }
+  | {
+      type: "mainPhase";
+      card?: PlayingCardT;
+      index?: number;
+    }
+  | {
+      type: "phaseComplete";
     };
 
-const endTurn = (state: GameState) => {
-  const currentDiscard = [...state.player.discard, ...state.player.hand];
+const applyDraw = (state: GameState) => {
   const currentHandSize = state.player.handSize;
 
+  const currentDiscard = [...state.player.discard];
+
   let currentDeck = [...state.player.currentDeck];
+
   let newHand: PlayingCardT[] = [];
 
   while (newHand.length < currentHandSize) {
@@ -54,17 +73,52 @@ const endTurn = (state: GameState) => {
     currentDeck = currentDeck.slice(drawCount);
   }
 
+  const newDeck = currentDeck;
+
   return {
     ...state,
+    animationKey: state.animationKey + 1,
+    currentPhase: GamePhase.Draw,
     player: {
       ...state.player,
       hand: newHand,
-      currentDeck,
+      currentDeck: newDeck,
       discard: currentDiscard,
     },
     securityLevel: state.securityLevel + 1,
     turn: state.turn + 1,
     tick: state.player.ticksPerTurn,
+  };
+};
+
+const applyDiscard = (state: GameState) => {
+  const newTrash = [...state.player.trash];
+
+  const newDiscard = [...state.player.discard];
+
+  for (let i = 0; i < state.player.hand.length; i++) {
+    const card = state.player.hand[i];
+
+    const shouldTrash = card.keywords?.includes(CardKeywordT.ETHEREAL);
+
+    if (shouldTrash) {
+      newTrash.push(card);
+    } else {
+      newDiscard.push(card);
+    }
+  }
+
+  return {
+    ...state,
+    animationKey: state.animationKey + 1,
+    currentPhase: GamePhase.Discard,
+    tick: -1,
+    player: {
+      ...state.player,
+      hand: [],
+      discard: newDiscard,
+      trash: newTrash,
+    },
   };
 };
 
@@ -81,7 +135,14 @@ const applyEffects = (
 
 export const gameReducer = (state: GameState, action: GameAction) => {
   switch (action.type) {
-    case "playCard": {
+    case "mainPhase": {
+      if (!action.card || action.index === undefined) {
+        return {
+          ...state,
+          currentPhase: GamePhase.Main,
+        };
+      }
+
       const card = action.card;
       const cardIndex = action.index;
       const newHand = state.player.hand.filter(
@@ -94,28 +155,39 @@ export const gameReducer = (state: GameState, action: GameAction) => {
 
       const stateAfterEffects = applyEffects(state, card.effects);
 
-      const newDiscard = [...stateAfterEffects.player.discard, card];
+      const shouldTrash = card.keywords?.includes(CardKeywordT.TRASH);
 
-      const newTick = state.tick - 1;
+      const newTrash = [...stateAfterEffects.player.trash];
 
-      if (newTick === 0) {
-        return endTurn(state);
+      const newDiscard = [...stateAfterEffects.player.discard];
+
+      if (shouldTrash) {
+        newTrash.push(card);
+      } else {
+        newDiscard.push(card);
       }
 
+      const newTick = stateAfterEffects.tick - 1;
+
       return {
-        ...state,
+        ...stateAfterEffects,
+        currentPhase: GamePhase.Main,
         tick: newTick,
         player: {
-          ...state.player,
+          ...stateAfterEffects.player,
           hand: newHand,
           discard: newDiscard,
+          trash: newTrash,
         },
-        isNewTurn: false,
       };
     }
 
-    case "endTurn": {
-      return endTurn(state);
+    case "discardPhase": {
+      return applyDiscard(state);
+    }
+
+    case "drawPhase": {
+      return applyDraw(state);
     }
 
     default:
@@ -135,16 +207,21 @@ export const initialGameState: GameState = {
   securityLevel: 1,
   turn: 1,
   tick: 3,
+  currentPhase: GamePhase.Draw,
+  animationKey: 0,
   player: {
     deck: initialPlayerDeck,
     currentDeck: initialPlayerDeck,
     hand: initialPlayerDeck.splice(0, initialHandSize),
     discard: [],
+    trash: [],
     handSize: initialHandSize,
     ticksPerTurn: initialTicksPerTurn,
+    tags: 0,
   },
   server: {
     deck: initialServerDeck,
     currentDeck: initialServerDeck,
   },
+  fetchedCards: [],
 };

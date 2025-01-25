@@ -4,10 +4,10 @@ import { PlayingCardT } from "./cards/cards";
 
 export const ServerRow = ({ serverCards }: { serverCards: PlayingCardT[] }) => {
   return (
-    <Flex className="relative ml-20">
+    <Flex className="relative ml-50">
       {serverCards.map((card, index) => {
         return (
-          <div key={index} className={`-ml-20`}>
+          <div key={index} className="-ml-50">
             <CardFront card={card} size="md" />
           </div>
         );

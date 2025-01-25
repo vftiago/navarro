@@ -21,6 +21,14 @@ export enum CardTypeT {
   EVENT = "Event",
   CONNECTION = "Connection",
   TRAP = "Trap",
+  ICE = "ICE",
+}
+
+export enum CardKeywordT {
+  UNPLAYABLE = "Unplayable",
+  ETHEREAL = "Ethereal",
+  CRASH = "Crash",
+  TRASH = "Trash",
 }
 
 export type CardEffectT = {
@@ -45,6 +53,7 @@ export type CardPropertiesT = {
   rarity: CardRarityT;
   type: CardTypeT;
   image: string;
+  keywords?: CardKeywordT[];
   subroutines?: CardSubroutineT[];
   effects?: CardEffectT[];
 };

@@ -1,4 +1,9 @@
-import { CardRarityT, CardPropertiesT, CardTypeT } from "../cards";
+import {
+  CardRarityT,
+  CardPropertiesT,
+  CardTypeT,
+  CardKeywordT,
+} from "../cards";
 
 export const serverCards: CardPropertiesT[] = [
   {
@@ -7,7 +12,15 @@ export const serverCards: CardPropertiesT[] = [
     rarity: CardRarityT.BASIC,
     type: CardTypeT.FILE,
     image: "_2c63c6dc-7f51-4cac-9e6b-83be70b8909d.jpeg",
+    keywords: [CardKeywordT.UNPLAYABLE, CardKeywordT.ETHEREAL],
     effects: [
+      {
+        callback: (gameState) => gameState,
+        description: {
+          text: "Unplayable.",
+          isKeyword: true,
+        },
+      },
       {
         callback: (gameState) => gameState,
         description: {
@@ -27,7 +40,7 @@ export const serverCards: CardPropertiesT[] = [
       {
         callback: (gameState) => gameState,
         description: {
-          text: "When you fetch this card, end the run.",
+          text: "If the server security level is 3 or more, end the run.",
         },
       },
     ],

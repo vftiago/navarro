@@ -18,7 +18,7 @@ export const CardFront = ({
   return (
     <Card
       withBorder
-      className="select-none hover:cursor-pointer hover: hover:border-cyan-200"
+      className="select-none hover:cursor-pointer hover:border-cyan-200"
       h={sizes[size].h}
       padding="0"
       radius="md"
@@ -59,7 +59,7 @@ export const CardFront = ({
               {rarity} {type}
             </Text>
           </Card.Section>
-          <Stack align="center" gap="0" h="100%" justify="center">
+          <Stack align="center" gap="0" h="100%" justify="center" p="lg">
             {effects?.map((effect, index) => (
               <Text
                 key={index}
@@ -67,7 +67,6 @@ export const CardFront = ({
                   effect.description.isKeyword ? "text-purple-300" : ""
                 }
                 fw={500}
-                p="lg"
                 size={size}
               >
                 {effect.description.text}

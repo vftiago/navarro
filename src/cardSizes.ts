@@ -1,4 +1,4 @@
-export type SizeT = "xs" | "sm" | "md";
+export type SizeT = "xs" | "sm" | "md" | "lg";
 
 export const sizes = {
   xs: {
@@ -12,5 +12,9 @@ export const sizes = {
   md: {
     w: 240,
     h: 360,
+  },
+  lg: {
+    w: 300,
+    h: 450,
   },
 };

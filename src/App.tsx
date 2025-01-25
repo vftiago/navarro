@@ -1,21 +1,14 @@
-import {
-  Button,
-  Container,
-  Flex,
-  Modal,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Button, Container, Flex, Stack, Title } from "@mantine/core";
 import { useCallback, useEffect, useReducer } from "react";
 import { ServerRow } from "./ServerRow";
-import { PlayingCardT } from "./cards/cards";
+import { CardKeywordT, PlayingCardT } from "./cards/cards";
 import { PlayerHand } from "./PlayerHand";
 import { useDisclosure } from "@mantine/hooks";
-import { gameReducer, initialGameState } from "./gameReducer";
-import { CardFront } from "./CardFront";
-import { TbClock2, TbCloudLock } from "react-icons/tb";
-import { useGameState } from "./useGameState";
+import { GamePhase, gameReducer, initialGameState } from "./gameReducer";
+import { StatusRow } from "./StatusRow";
+import { EXIT_ANIMATION_DURATION } from "./constants";
+import { Modals } from "./Modals";
+import { delay } from "framer-motion";
 
 export const App = () => {
   const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
@@ -28,96 +21,81 @@ export const App = () => {
     { open: openDiscardModal, close: closeDiscardModal },
   ] = useDisclosure(false);
 
-  const {
-    isNewTurn,
-    setIsNewTurn,
-    currentTurn,
-    setCurrentTurn,
-    currentTick,
-    setCurrentTick,
-    currentPlayerCards,
-    setCurrentPlayerCards,
-  } = useGameState({
-    turn: gameState.turn,
-    tick: gameState.tick,
-    hand: gameState.player.hand,
-  });
+  const [
+    isCardDisplayModalOpen,
+    { open: openCardDisplayModal, close: closeCardDisplayModal },
+  ] = useDisclosure(false);
+
+  const [isTrashModalOpen, { open: openTrashModal, close: closeTrashModal }] =
+    useDisclosure(false);
 
   useEffect(() => {
-    setIsNewTurn(true);
-  }, [gameState.turn, setIsNewTurn]);
-
-  useEffect(() => {
-    if (currentTurn !== gameState.turn) {
-      setCurrentTurn(gameState.turn);
+    if (gameState.fetchedCards.length > 0) {
+      openCardDisplayModal();
     }
-  }, [currentTurn, gameState.turn, setCurrentTurn]);
+  }, [gameState.fetchedCards, openCardDisplayModal]);
 
-  useEffect(() => {
-    if (currentTick !== gameState.tick) {
-      setCurrentTick(gameState.tick);
-    }
-  }, [currentTick, gameState.tick, setCurrentTick]);
+  const onClickPlayerCard = useCallback(
+    (card: PlayingCardT, index: number) => {
+      if (
+        gameState.currentPhase !== GamePhase.Main ||
+        card.keywords?.includes(CardKeywordT.UNPLAYABLE)
+      ) {
+        return;
+      }
 
-  useEffect(() => {
-    setCurrentPlayerCards(gameState.player.hand);
-  }, [gameState.player.hand, setCurrentPlayerCards]);
-
-  const onClickPlayerCard = (card: PlayingCardT, index: number) => {
-    dispatch({ type: "playCard", card, index });
-    setIsNewTurn(false);
-  };
+      delay(() => {
+        // i think we should set a transition phase here, which should take as long as EXIT_ANIMATION_DURATION, and then switch to the next phase. All player input should be disabled during this transition phase.
+        dispatch({ type: "mainPhase", card, index });
+      }, EXIT_ANIMATION_DURATION);
+    },
+    [gameState.currentPhase],
+  );
 
   const onClickEndTurn = useCallback(() => {
-    dispatch({ type: "endTurn" });
-  }, []);
+    if (gameState.currentPhase !== GamePhase.Main) {
+      return;
+    }
+
+    dispatch({ type: "discardPhase" });
+  }, [gameState.currentPhase]);
+
+  useEffect(() => {
+    switch (gameState.currentPhase) {
+      case GamePhase.Discard:
+        delay(() => {
+          dispatch({ type: "drawPhase" });
+        }, EXIT_ANIMATION_DURATION * gameState.player.hand.length);
+        break;
+
+      case GamePhase.Draw:
+        delay(() => {
+          dispatch({ type: "mainPhase" });
+        }, EXIT_ANIMATION_DURATION * gameState.player.hand.length);
+
+        break;
+    }
+  }, [gameState.currentPhase, gameState.player.hand.length]);
+
+  useEffect(() => {
+    if (gameState.tick === 0 && gameState.currentPhase === GamePhase.Main) {
+      dispatch({ type: "discardPhase" });
+    }
+  }, [gameState.tick, gameState.currentPhase]);
 
   return (
     <Container fluid className="overflow-hidden" h="100%" maw={1600} p="xs">
-      <Modal
-        fullScreen
-        opened={isDeckModalOpen}
-        title="Deck"
-        onClose={closeDeckModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {gameState.player.currentDeck.length ? (
-              gameState.player.currentDeck.map((card, index) => {
-                return <CardFront key={index} card={card} />;
-              })
-            ) : (
-              <Stack align="center" h="400px" justify="center" w="100%">
-                <Text>Your deck is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
-      <Modal
-        fullScreen
-        opened={isDiscardModalOpen}
-        title="Discard"
-        onClose={closeDiscardModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {gameState.player.discard.length ? (
-              gameState.player.discard.map((card, index) => {
-                return (
-                  <span key={index}>
-                    <CardFront card={card} />
-                  </span>
-                );
-              })
-            ) : (
-              <Stack align="center" justify="center" w="100%">
-                <Text>Your discard pile is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
+      <Modals
+        closeCardDisplayModal={closeCardDisplayModal}
+        closeDeckModal={closeDeckModal}
+        closeDiscardModal={closeDiscardModal}
+        closeTrashModal={closeTrashModal}
+        gameState={gameState}
+        isCardDisplayModalOpen={isCardDisplayModalOpen}
+        isDeckModalOpen={isDeckModalOpen}
+        isDiscardModalOpen={isDiscardModalOpen}
+        isTrashModalOpen={isTrashModalOpen}
+      />
       <Stack content="space-between" h="100%" justify="space-between">
         <Stack>
           <Stack>
@@ -125,20 +103,12 @@ export const App = () => {
             <Flex justify="space-between" w="100%">
               <ServerRow serverCards={gameState.server.currentDeck} />
             </Flex>
-            <Flex align="center" gap="sm">
-              Server security level:
-              {Array.from({ length: gameState.securityLevel }).map(
-                (_, index) => (
-                  <TbCloudLock key={index} size="24px" />
-                ),
-              )}
-            </Flex>
-            <Flex align="center" gap="sm">
-              Remaining ticks:
-              {Array.from({ length: gameState.tick }).map((_, index) => (
-                <TbClock2 key={index} size="24px" />
-              ))}
-            </Flex>
+            <StatusRow
+              currentPhase={gameState.currentPhase}
+              securityLevel={gameState.securityLevel}
+              tags={gameState.player.tags}
+              tick={gameState.tick}
+            />
           </Stack>
         </Stack>
         <Flex className="justify-between">
@@ -147,18 +117,27 @@ export const App = () => {
               Deck ({gameState.player.currentDeck.length})
             </Button>
           </Stack>
-          <PlayerHand
-            key={`${currentTurn}-${currentTick}`}
-            isNewTurn={isNewTurn}
-            playerCards={currentPlayerCards}
-            onClick={onClickPlayerCard}
-          />
+
+          {gameState.currentPhase === GamePhase.Main &&
+          gameState.player.hand.length === 0 ? (
+            <div>Your hand is empty.</div>
+          ) : (
+            <PlayerHand
+              animationKey={gameState.animationKey}
+              playerCards={gameState.player.hand}
+              onClick={onClickPlayerCard}
+            />
+          )}
+
           <Stack className="flex-col-reverse">
             <Button size="xl" variant="gradient" onClick={onClickEndTurn}>
               End turn ({gameState.turn})
             </Button>
-            <Button size="lg" variant="gradient" onClick={openDiscardModal}>
+            <Button size="md" variant="gradient" onClick={openDiscardModal}>
               Discard ({gameState.player.discard.length})
+            </Button>
+            <Button size="md" variant="gradient" onClick={openTrashModal}>
+              Trash ({gameState.player.trash.length})
             </Button>
           </Stack>
         </Flex>

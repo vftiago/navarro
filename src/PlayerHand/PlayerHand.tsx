@@ -1,96 +1,109 @@
 import { CardFront } from "../CardFront";
-import { PlayingCardT } from "../cards/cards";
+import { CardKeywordT, PlayingCardT } from "../cards/cards";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
-import { stagger } from "framer-motion/dom";
-import { useEffect, useState } from "react";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
+import { EXIT_ANIMATION_DURATION } from "../constants";
 
-const EXIT_ANIMATION_DURATION = 200;
+const containerVariants = {
+  hidden: {
+    opacity: 0,
+  },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 100 },
+  show: { opacity: 1, y: 0 },
+  exit: {
+    opacity: 0,
+    y: -100,
+  },
+};
 
 export const PlayerHand = ({
-  isNewTurn,
+  animationKey,
   playerCards,
   onClick,
 }: {
-  isNewTurn: boolean;
+  animationKey: number;
   playerCards: PlayingCardT[];
   onClick: (card: PlayingCardT, index: number) => void;
 }) => {
   const [scope, animate] = useAnimate();
-  const [removingIndex, setRemovingIndex] = useState<number | null>(null);
 
   const rotationValues = calculateCardRotations(playerCards.length);
   const topValues = calculateCardTopValues(playerCards.length);
 
-  const cardVariants = playerCards.map((_, index) => ({
-    initial: {
-      y: isNewTurn ? 100 : 0,
-      opacity: isNewTurn ? 0 : 1,
-      rotate: rotationValues[index],
-      top: topValues[index],
-    },
-    animate: {
-      y: 0,
-    },
-    whileHover: {
-      scale: 1.1,
-      zIndex: 10,
-      y: -30,
-      rotate: 0,
-      top: 0,
-    },
-    exit: {
-      opacity: 0,
-      y: -100,
-      transition: { duration: EXIT_ANIMATION_DURATION / 1000 },
-    },
-  }));
+  const handleCardClick = (card: PlayingCardT, index: number) => {
+    if (card.keywords?.includes(CardKeywordT.UNPLAYABLE)) {
+      return;
+    }
 
-  useEffect(() => {
-    if (!isNewTurn) return;
+    const cardElement = document.getElementById(card.deckContextId);
+
+    if (!cardElement) {
+      return;
+    }
 
     void animate(
-      "li",
-      { opacity: 1, y: 0 },
-      { delay: stagger(0.05, { startDelay: 0.15 }) },
+      cardElement,
+      { opacity: 0, y: -100, rotate: 0 },
+      {
+        duration: EXIT_ANIMATION_DURATION / 1000,
+      },
     );
-  }, [animate, isNewTurn]);
 
-  const handleCardClick = (card: PlayingCardT, index: number) => {
-    /**
-     * we're essentially triggering a rerender by setting a new state which results
-     * in rendering all cards except the one that was clicked,
-     * thus ensuring its exit animation can playbefore the entire component is remounted
-     */
-    setRemovingIndex(index);
-
-    setTimeout(() => {
-      onClick(card, index);
-    }, EXIT_ANIMATION_DURATION);
+    onClick(card, index);
   };
 
   return (
-    <ol ref={scope} className="flex ml-24">
-      <AnimatePresence>
+    <AnimatePresence mode="wait">
+      <motion.ol
+        key={animationKey}
+        ref={scope}
+        animate="show"
+        className="flex ml-24"
+        exit="exit"
+        initial="hidden"
+        variants={containerVariants}
+      >
         {playerCards.map((card, index) => {
-          if (index === removingIndex) return null;
-
           return (
             <motion.li
               key={card.deckContextId}
-              animate="animate"
               className="-ml-24 list-none relative"
-              exit="exit"
-              initial="initial"
-              variants={cardVariants[index]}
-              whileHover="whileHover"
-              onClick={() => handleCardClick(card, index)}
+              id={card.deckContextId}
+              style={{
+                top: topValues[index],
+                rotate: rotationValues[index],
+              }}
+              variants={itemVariants}
+              whileHover={{
+                scale: 1.1,
+                top: -50,
+                rotate: 0,
+                zIndex: 1,
+              }}
+              onClick={() => {
+                handleCardClick(card, index);
+              }}
             >
               <CardFront card={card} />
             </motion.li>
           );
         })}
-      </AnimatePresence>
-    </ol>
+      </motion.ol>
+    </AnimatePresence>
   );
 };

@@ -12,7 +12,7 @@ export const playerStarterDeck = createDeck([
   playerCards[0],
   playerCards[0],
   playerCards[1],
-  playerCards[0],
+  playerCards[3],
   playerCards[0],
   playerCards[0],
   playerCards[0],

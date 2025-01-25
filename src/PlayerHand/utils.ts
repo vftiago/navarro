@@ -2,6 +2,10 @@ export const calculateCardRotations = (
   cardCount: number,
   maxRotationAngle: number = 10,
 ): number[] => {
+  if (cardCount === 1) {
+    return [0];
+  }
+
   const rotations: number[] = [];
   const midpoint = (cardCount - 1) / 2; // adjusted to work with 0-based index
 
@@ -18,6 +22,10 @@ export const calculateCardTopValues = (
   cardCount: number,
   maxTopValue: number = 24,
 ): number[] => {
+  if (cardCount === 1) {
+    return [0];
+  }
+
   const topValues: number[] = [];
   const midpoint = (cardCount - 1) / 2;
 

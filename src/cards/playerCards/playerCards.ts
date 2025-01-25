@@ -1,5 +1,9 @@
-import { GameState } from "../../gameReducer";
-import { CardRarityT, CardPropertiesT, CardTypeT } from "../cards";
+import {
+  CardRarityT,
+  CardPropertiesT,
+  CardTypeT,
+  CardKeywordT,
+} from "../cards";
 import { v4 as uuid } from "uuid";
 
 export const playerCards: CardPropertiesT[] = [
@@ -11,7 +15,7 @@ export const playerCards: CardPropertiesT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: (gameState: GameState): GameState => {
+        callback: (gameState) => {
           const randomServerCard =
             gameState.server.currentDeck[
               Math.floor(Math.random() * gameState.server.currentDeck.length)
@@ -22,13 +26,14 @@ export const playerCards: CardPropertiesT[] = [
             server: {
               ...gameState.server,
               currentDeck: gameState.server.currentDeck.filter(
-                (card) => card.id !== randomServerCard.id,
+                (card) => card.deckContextId !== randomServerCard.deckContextId,
               ),
             },
             player: {
               ...gameState.player,
               discard: [...gameState.player.discard, randomServerCard],
             },
+            fetchedCards: [randomServerCard],
           };
 
           return newGameState;
@@ -47,9 +52,16 @@ export const playerCards: CardPropertiesT[] = [
     type: CardTypeT.ACTION,
     effects: [
       {
-        callback: (gameState) => gameState,
+        callback: (gameState) => {
+          const newGameState = {
+            ...gameState,
+            securityLevel: gameState.securityLevel - 1,
+          };
+
+          return newGameState;
+        },
         description: {
-          text: "Reduce the Security level by 1.",
+          text: "Reduce the server security level by 1.",
         },
       },
     ],
@@ -75,15 +87,13 @@ export const playerCards: CardPropertiesT[] = [
     image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",
     rarity: CardRarityT.RARE,
     type: CardTypeT.ACTION,
+    keywords: [CardKeywordT.CRASH, CardKeywordT.TRASH],
     effects: [
       {
         callback: (gameState) => {
           return {
             ...gameState,
-            player: {
-              ...gameState.player,
-              ticksPerTurn: gameState.player.ticksPerTurn + 3,
-            },
+            tick: gameState.tick + 3,
           };
         },
         description: {

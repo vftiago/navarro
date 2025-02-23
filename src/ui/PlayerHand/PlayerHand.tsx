@@ -1,8 +1,9 @@
-import { CardFront } from "../CardFront";
-import { CardKeywordT, PlayingCardT } from "../cards/cards";
+import { CardFront } from "../Card/CardFront";
+import { Keyword, PlayingCardT } from "../../cards/card";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 import { EXIT_ANIMATION_DURATION } from "../constants";
+import { GameState } from "../../gameReducer";
 
 const containerVariants = {
   hidden: {
@@ -32,10 +33,12 @@ const itemVariants = {
 };
 
 export const PlayerHand = ({
+  gameState,
   animationKey,
   playerCards,
   onClick,
 }: {
+  gameState: GameState;
   animationKey: number;
   playerCards: PlayingCardT[];
   onClick: (card: PlayingCardT, index: number) => void;
@@ -46,7 +49,9 @@ export const PlayerHand = ({
   const topValues = calculateCardTopValues(playerCards.length);
 
   const handleCardClick = (card: PlayingCardT, index: number) => {
-    if (card.keywords?.includes(CardKeywordT.UNPLAYABLE)) {
+    if (
+      card.cardEffects?.some((effect) => effect.keyword === Keyword.UNPLAYABLE)
+    ) {
       return;
     }
 
@@ -73,7 +78,7 @@ export const PlayerHand = ({
         key={animationKey}
         ref={scope}
         animate="show"
-        className="flex ml-24"
+        className="flex ml-24 relative top-6"
         exit="exit"
         initial="hidden"
         variants={containerVariants}
@@ -91,7 +96,7 @@ export const PlayerHand = ({
               variants={itemVariants}
               whileHover={{
                 scale: 1.1,
-                top: -50,
+                top: -40,
                 rotate: 0,
                 zIndex: 1,
               }}
@@ -99,7 +104,7 @@ export const PlayerHand = ({
                 handleCardClick(card, index);
               }}
             >
-              <CardFront card={card} />
+              <CardFront card={card} gameState={gameState} />
             </motion.li>
           );
         })}

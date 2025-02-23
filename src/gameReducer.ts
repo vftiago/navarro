@@ -1,13 +1,14 @@
 import arrayShuffle from "array-shuffle";
-import { CardKeywordT, PlayingCardT } from "./cards/cards";
-import { playerStarterDeck } from "./decks/playerDecks/starterDeck";
-import { shuffle } from "./gameUtils";
-import { serverStarterDeck } from "./decks/serverDecks/starterDeck";
+import { Keyword, PlayingCardT, TriggerMoment } from "./cards/card";
+import { playerStarterDeck } from "./decks/playerStarterDeck";
+import { applyEffects, shuffle } from "./utils";
+import { serverICEDeck, serverStarterDeck } from "./decks/serverStarterDeck";
 
 export enum GamePhase {
   Draw = "Draw", // Drawing new cards
   Main = "Main", // Player can play cards
   Discard = "Discard", // Cards are being discarded
+  End = "End", // End of turn
 }
 
 export type GameState = {
@@ -16,19 +17,24 @@ export type GameState = {
   turn: number;
   tick: number;
   animationKey: number;
+  shouldDiscard: boolean;
   player: {
     deck: PlayingCardT[];
     currentDeck: PlayingCardT[];
     hand: PlayingCardT[];
     discard: PlayingCardT[];
     trash: PlayingCardT[];
+    score: PlayingCardT[];
     handSize: number;
     ticksPerTurn: number;
     tags: number;
+    victoryPoints: number;
+    programs: PlayingCardT[];
   };
   server: {
     deck: PlayingCardT[];
     currentDeck: PlayingCardT[];
+    ice: PlayingCardT[];
   };
   fetchedCards: PlayingCardT[];
 };
@@ -44,6 +50,9 @@ export type GameAction =
       type: "mainPhase";
       card?: PlayingCardT;
       index?: number;
+    }
+  | {
+      type: "endPhase";
     }
   | {
       type: "phaseComplete";
@@ -75,7 +84,7 @@ const applyDraw = (state: GameState) => {
 
   const newDeck = currentDeck;
 
-  return {
+  const newState = {
     ...state,
     animationKey: state.animationKey + 1,
     currentPhase: GamePhase.Draw,
@@ -89,6 +98,28 @@ const applyDraw = (state: GameState) => {
     turn: state.turn + 1,
     tick: state.player.ticksPerTurn,
   };
+
+  const combinedPlayerEffects = state.player.hand
+    .map((card) => card.cardEffects)
+    .flat();
+
+  const stateAfterDrawEffects = applyEffects(
+    newState,
+    combinedPlayerEffects,
+    TriggerMoment.ON_DRAW,
+  );
+
+  const combinedIceEffects = state.server.ice
+    .map((card) => card.cardEffects)
+    .flat();
+
+  const stateAfterIceEffects = applyEffects(
+    stateAfterDrawEffects,
+    combinedIceEffects,
+    TriggerMoment.ON_TURN_START,
+  );
+
+  return stateAfterIceEffects;
 };
 
 const applyDiscard = (state: GameState) => {
@@ -99,12 +130,14 @@ const applyDiscard = (state: GameState) => {
   for (let i = 0; i < state.player.hand.length; i++) {
     const card = state.player.hand[i];
 
-    const shouldTrash = card.keywords?.includes(CardKeywordT.ETHEREAL);
+    const shouldTrash = card.cardEffects?.some(
+      (effect) => effect.keyword === Keyword.TRASH,
+    );
 
     if (shouldTrash) {
-      newTrash.push(card);
+      newTrash.unshift(card);
     } else {
-      newDiscard.push(card);
+      newDiscard.unshift(card);
     }
   }
 
@@ -112,7 +145,6 @@ const applyDiscard = (state: GameState) => {
     ...state,
     animationKey: state.animationKey + 1,
     currentPhase: GamePhase.Discard,
-    tick: -1,
     player: {
       ...state.player,
       hand: [],
@@ -122,15 +154,17 @@ const applyDiscard = (state: GameState) => {
   };
 };
 
-const applyEffects = (
-  initialGameState: GameState,
-  cardEffects: PlayingCardT["effects"],
-): GameState => {
-  return cardEffects
-    ? cardEffects.reduce((currentState, effect) => {
-        return effect.callback(currentState);
-      }, initialGameState)
-    : initialGameState;
+const applyEndPhase = (state: GameState) => {
+  const rezzedIce = serverICEDeck.pop();
+
+  return {
+    ...state,
+    currentPhase: GamePhase.End,
+    server: {
+      ...state.server,
+      ice: rezzedIce ? [...state.server.ice, rezzedIce] : state.server.ice,
+    },
+  };
 };
 
 export const gameReducer = (state: GameState, action: GameAction) => {
@@ -149,13 +183,15 @@ export const gameReducer = (state: GameState, action: GameAction) => {
         (_card, index) => index !== cardIndex,
       );
 
-      card.effects?.forEach((effect) => {
-        effect.callback?.(state);
-      });
+      const stateAfterEffects = applyEffects(
+        state,
+        card.cardEffects,
+        TriggerMoment.ON_PLAY,
+      );
 
-      const stateAfterEffects = applyEffects(state, card.effects);
-
-      const shouldTrash = card.keywords?.includes(CardKeywordT.TRASH);
+      const shouldTrash = card.cardEffects?.some(
+        (effect) => effect.keyword === Keyword.TRASH,
+      );
 
       const newTrash = [...stateAfterEffects.player.trash];
 
@@ -172,6 +208,7 @@ export const gameReducer = (state: GameState, action: GameAction) => {
       return {
         ...stateAfterEffects,
         currentPhase: GamePhase.Main,
+        shouldDiscard: newTick <= 0,
         tick: newTick,
         player: {
           ...stateAfterEffects.player,
@@ -184,6 +221,10 @@ export const gameReducer = (state: GameState, action: GameAction) => {
 
     case "discardPhase": {
       return applyDiscard(state);
+    }
+
+    case "endPhase": {
+      return applyEndPhase(state);
     }
 
     case "drawPhase": {
@@ -209,19 +250,24 @@ export const initialGameState: GameState = {
   tick: 3,
   currentPhase: GamePhase.Draw,
   animationKey: 0,
+  shouldDiscard: false,
   player: {
     deck: initialPlayerDeck,
     currentDeck: initialPlayerDeck,
     hand: initialPlayerDeck.splice(0, initialHandSize),
     discard: [],
     trash: [],
+    score: [],
     handSize: initialHandSize,
     ticksPerTurn: initialTicksPerTurn,
     tags: 0,
+    victoryPoints: 0,
+    programs: [],
   },
   server: {
     deck: initialServerDeck,
     currentDeck: initialServerDeck,
+    ice: [],
   },
   fetchedCards: [],
 };

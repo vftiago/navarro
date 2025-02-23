@@ -1,6 +1,7 @@
 import { Container, Flex, Modal, Stack, Text } from "@mantine/core";
-import { CardFront } from "./CardFront";
-import { GameState } from "./gameReducer";
+import { CardFront } from "./Card/CardFront";
+import { GameState } from "../gameReducer";
+import { motion } from "framer-motion";
 
 export const Modals = ({
   gameState,
@@ -8,36 +9,46 @@ export const Modals = ({
   isDeckModalOpen,
   isDiscardModalOpen,
   isTrashModalOpen,
+  isScoreModalOpen,
   closeCardDisplayModal,
   closeDeckModal,
   closeDiscardModal,
   closeTrashModal,
+  closeScoreModal,
 }: {
   gameState: GameState;
   isCardDisplayModalOpen: boolean;
   isDeckModalOpen: boolean;
   isDiscardModalOpen: boolean;
   isTrashModalOpen: boolean;
+  isScoreModalOpen: boolean;
   closeCardDisplayModal: () => void;
   closeDeckModal: () => void;
   closeDiscardModal: () => void;
   closeTrashModal: () => void;
+  closeScoreModal: () => void;
 }) => {
   return (
     <>
-      <Modal
+      <Modal.Root
         opened={isCardDisplayModalOpen}
         padding={0}
         size="auto"
-        withCloseButton={false}
         onClose={closeCardDisplayModal}
       >
-        <Stack align="center" gap={32}>
-          {gameState.fetchedCards?.map((card, index) => {
-            return <CardFront key={index} card={card} size="lg" />;
-          })}
-        </Stack>
-      </Modal>
+        <Modal.Overlay />
+        <Modal.Content className="bg-transparent overflow-visible">
+          <Flex gap={32}>
+            {gameState.fetchedCards?.map((card, index) => {
+              return (
+                <motion.div key={index} whileHover={{ scale: 1.1 }}>
+                  <CardFront card={card} gameState={gameState} />
+                </motion.div>
+              );
+            })}
+          </Flex>
+        </Modal.Content>
+      </Modal.Root>
       <Modal
         fullScreen
         opened={isDeckModalOpen}
@@ -48,7 +59,9 @@ export const Modals = ({
           <Flex gap={32} wrap="wrap">
             {gameState.player.currentDeck.length ? (
               gameState.player.currentDeck.map((card, index) => {
-                return <CardFront key={index} card={card} />;
+                return (
+                  <CardFront key={index} card={card} gameState={gameState} />
+                );
               })
             ) : (
               <Stack align="center" h="400px" justify="center" w="100%">
@@ -70,7 +83,7 @@ export const Modals = ({
               gameState.player.discard.map((card, index) => {
                 return (
                   <span key={index}>
-                    <CardFront card={card} />
+                    <CardFront card={card} gameState={gameState} />
                   </span>
                 );
               })
@@ -94,13 +107,37 @@ export const Modals = ({
               gameState.player.trash.map((card, index) => {
                 return (
                   <span key={index}>
-                    <CardFront card={card} />
+                    <CardFront card={card} gameState={gameState} />
                   </span>
                 );
               })
             ) : (
               <Stack align="center" justify="center" w="100%">
                 <Text>Your trash pile is empty.</Text>
+              </Stack>
+            )}
+          </Flex>
+        </Container>
+      </Modal>
+      <Modal
+        fullScreen
+        opened={isScoreModalOpen}
+        title="Score"
+        onClose={closeScoreModal}
+      >
+        <Container size="1360px">
+          <Flex gap={32} wrap="wrap">
+            {gameState.player.score.length ? (
+              gameState.player.score.map((card, index) => {
+                return (
+                  <span key={index}>
+                    <CardFront card={card} gameState={gameState} />
+                  </span>
+                );
+              })
+            ) : (
+              <Stack align="center" justify="center" w="100%">
+                <Text>Your score is empty.</Text>
               </Stack>
             )}
           </Flex>

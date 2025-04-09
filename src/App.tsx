@@ -91,85 +91,91 @@ export const App = () => {
   }, [gameState.shouldDiscard]);
 
   return (
-    <Container fluid className="overflow-hidden h-full" maw={1620} p="lg">
-      <Modals
-        closeCardDisplayModal={onCloseDisplayCardModal}
-        closeDeckModal={closeDeckModal}
-        closeDiscardModal={closeDiscardModal}
-        closeScoreModal={closeScoreModal}
-        closeTrashModal={closeTrashModal}
-        gameState={gameState}
-        isCardDisplayModalOpen={isCardDisplayModalOpen}
-        isDeckModalOpen={isDeckModalOpen}
-        isDiscardModalOpen={isDiscardModalOpen}
-        isScoreModalOpen={isScoreModalOpen}
-        isTrashModalOpen={isTrashModalOpen}
-      />
-      <Stack content="space-between" h="100%" justify="space-between">
-        <Stack gap="xs">
-          <IceRow gameState={gameState} />
-          <StatusRow
-            currentPhase={gameState.currentPhase}
-            securityLevel={gameState.securityLevel}
+    <div className="h-full relative overflow-hidden">
+      <div className="h-full overflow-auto pb-48">
+        <Container fluid maw={1620} p="lg">
+          <Modals
+            closeCardDisplayModal={onCloseDisplayCardModal}
+            closeDeckModal={closeDeckModal}
+            closeDiscardModal={closeDiscardModal}
+            closeScoreModal={closeScoreModal}
+            closeTrashModal={closeTrashModal}
+            gameState={gameState}
+            isCardDisplayModalOpen={isCardDisplayModalOpen}
+            isDeckModalOpen={isDeckModalOpen}
+            isDiscardModalOpen={isDiscardModalOpen}
+            isScoreModalOpen={isScoreModalOpen}
+            isTrashModalOpen={isTrashModalOpen}
           />
-        </Stack>
-
-        <Flex className="justify-between">
-          <Stack className="flex-col-reverse" w="10rem">
-            <Button size="lg" variant="gradient" onClick={openDeckModal}>
-              Deck ({gameState.player.currentDeck.length})
-            </Button>
-            <ClickWidget remainingClicks={gameState.tick} />
-            <TagWidget tagCount={gameState.player.tags} />
-          </Stack>
-
-          {gameState.currentPhase === GamePhase.Main &&
-          gameState.player.hand.length === 0 ? (
-            <div>Your hand is empty.</div>
-          ) : (
-            <PlayerHand
-              animationKey={gameState.animationKey}
-              gameState={gameState}
-              playerCards={gameState.player.hand}
-              onClick={onClickPlayerCard}
+          <Stack gap="xs">
+            <IceRow gameState={gameState} />
+            <StatusRow
+              currentPhase={gameState.currentPhase}
+              securityLevel={gameState.securityLevel}
             />
-          )}
-
-          <Stack className="flex-col-reverse" w="10rem">
-            <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
-              End turn ({gameState.turn})
-            </Button>
-            <Button
-              className="self-end"
-              size="sm"
-              variant="gradient"
-              w="8rem"
-              onClick={openDiscardModal}
-            >
-              Discard ({gameState.player.discard.length})
-            </Button>
-            <Button
-              className="self-end"
-              size="sm"
-              variant="gradient"
-              w="8rem"
-              onClick={openTrashModal}
-            >
-              Trash ({gameState.player.trash.length})
-            </Button>
-            <Button
-              className="self-end"
-              color="yellow"
-              size="sm"
-              w="8rem"
-              onClick={openScoreModal}
-            >
-              Score ({gameState.player.victoryPoints})
-            </Button>
           </Stack>
-        </Flex>
-      </Stack>
-    </Container>
+        </Container>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        <Container fluid maw={1620} p="lg">
+          <Flex className="justify-between items-end">
+            <Stack className="flex-col-reverse" w="10rem">
+              <Button size="lg" variant="gradient" onClick={openDeckModal}>
+                Deck ({gameState.player.currentDeck.length})
+              </Button>
+              <ClickWidget remainingClicks={gameState.tick} />
+              <TagWidget tagCount={gameState.player.tags} />
+            </Stack>
+
+            {gameState.currentPhase === GamePhase.Main &&
+            gameState.player.hand.length === 0 ? (
+              <div>Your hand is empty.</div>
+            ) : (
+              <PlayerHand
+                animationKey={gameState.animationKey}
+                gameState={gameState}
+                playerCards={gameState.player.hand}
+                onClick={onClickPlayerCard}
+              />
+            )}
+
+            <Stack className="flex-col-reverse" w="10rem">
+              <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
+                End turn ({gameState.turn})
+              </Button>
+              <Button
+                className="self-end"
+                size="sm"
+                variant="gradient"
+                w="8rem"
+                onClick={openDiscardModal}
+              >
+                Discard ({gameState.player.discard.length})
+              </Button>
+              <Button
+                className="self-end"
+                size="sm"
+                variant="gradient"
+                w="8rem"
+                onClick={openTrashModal}
+              >
+                Trash ({gameState.player.trash.length})
+              </Button>
+              <Button
+                className="self-end"
+                color="yellow"
+                size="sm"
+                w="8rem"
+                onClick={openScoreModal}
+              >
+                Score ({gameState.player.victoryPoints})
+              </Button>
+            </Stack>
+          </Flex>
+        </Container>
+      </div>
+    </div>
   );
 };
 

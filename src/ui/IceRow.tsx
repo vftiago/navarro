@@ -11,7 +11,7 @@ export const IceRow = ({ gameState }: { gameState: GameState }) => {
       {serverCards.map((card, index) => {
         return (
           <div key={index}>
-            <CardFront card={card} gameState={gameState} size="sm" />
+            <CardFront card={card} size="sm" />
           </div>
         );
       })}

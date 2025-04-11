@@ -3,7 +3,7 @@ import { Keyword, PlayingCardT } from "../../cards/card";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 import { EXIT_ANIMATION_DURATION } from "../constants";
-import { GameState } from "../../gameReducer";
+import { useGameState } from "../../context/useGameState";
 
 const containerVariants = {
   hidden: {
@@ -33,20 +33,18 @@ const itemVariants = {
 };
 
 export const PlayerHand = ({
-  gameState,
-  animationKey,
-  playerCards,
   onClick,
 }: {
-  gameState: GameState;
-  animationKey: number;
-  playerCards: PlayingCardT[];
   onClick: (card: PlayingCardT, index: number) => void;
 }) => {
+  const {
+    gameState: { player, animationKey },
+  } = useGameState();
+
   const [scope, animate] = useAnimate();
 
-  const rotationValues = calculateCardRotations(playerCards.length);
-  const topValues = calculateCardTopValues(playerCards.length);
+  const rotationValues = calculateCardRotations(player.hand.length);
+  const topValues = calculateCardTopValues(player.hand.length);
 
   const handleCardClick = (card: PlayingCardT, index: number) => {
     if (
@@ -83,7 +81,7 @@ export const PlayerHand = ({
         initial="hidden"
         variants={containerVariants}
       >
-        {playerCards.map((card, index) => {
+        {player.hand.map((card, index) => {
           return (
             <motion.li
               key={card.deckContextId}
@@ -104,7 +102,7 @@ export const PlayerHand = ({
                 handleCardClick(card, index);
               }}
             >
-              <CardFront card={card} gameState={gameState} />
+              <CardFront card={card} />
             </motion.li>
           );
         })}

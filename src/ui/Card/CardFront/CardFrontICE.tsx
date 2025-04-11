@@ -8,17 +8,17 @@ import {
 } from "../../../cards/card";
 import { IoMdReturnRight } from "react-icons/io";
 import { CARD_SIZES } from "../cardSizes";
-import { GameState } from "../../../gameReducer";
+import { useGameState } from "../../../context/useGameState";
 
 export const CardFrontICE = ({
   card,
   size,
-  gameState,
 }: {
   card: ICECardPropertiesT;
   size: "xs" | "sm" | "md";
-  gameState: GameState;
 }) => {
+  const { gameState } = useGameState();
+
   const { cardEffects, image, name, rarity, type, subtype, flavorText } = card;
 
   const isICE = type === CardType.ICE;

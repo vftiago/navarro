@@ -1,14 +1,12 @@
 import { Flex } from "@mantine/core";
 import { TbCloudLock } from "react-icons/tb";
-import { GamePhase } from "../gameReducer";
+import { useGameState } from "../context/useGameState";
 
-export const StatusRow = ({
-  currentPhase,
-  securityLevel,
-}: {
-  currentPhase: GamePhase;
-  securityLevel: number;
-}) => {
+export const StatusRow = () => {
+  const {
+    gameState: { securityLevel, currentPhase },
+  } = useGameState();
+
   return (
     <Flex className="bg-neutral-900 p-2.5 rounded-xl" justify="space-between">
       <Flex align="center" gap="xs">

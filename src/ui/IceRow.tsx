@@ -1,17 +1,19 @@
 import { Flex } from "@mantine/core";
 import { CardBack } from "./Card/CardBack";
 import { CardFront } from "./Card/CardFront";
-import { GameState } from "../gameReducer";
+import { useGameState } from "../context/useGameState";
 
-export const IceRow = ({ gameState }: { gameState: GameState }) => {
-  const serverCards = gameState.server.ice;
+export const IceRow = () => {
+  const {
+    gameState: { server },
+  } = useGameState();
 
   return (
     <Flex className="bg-neutral-900 p-2.5 rounded-xl justify-end" gap="1rem">
-      {serverCards.map((card, index) => {
+      {server.ice.map((card, index) => {
         return (
           <div key={index}>
-            <CardFront card={card} gameState={gameState} size="sm" />
+            <CardFront card={card} size="sm" />
           </div>
         );
       })}

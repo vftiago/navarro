@@ -15,7 +15,16 @@ import { useGameState } from "./context/useGameState";
 export const App = () => {
   const currentAnimationKey = useRef(0);
 
-  const { gameState, dispatch } = useGameState();
+  const {
+    gameState: {
+      animationKey,
+      accessedCards,
+      currentPhase,
+      nextAction,
+      shouldDiscard,
+    },
+    dispatch,
+  } = useGameState();
 
   const [isDeckModalOpen, { open: openDeckModal, close: closeDeckModal }] =
     useDisclosure(false);
@@ -37,58 +46,61 @@ export const App = () => {
     useDisclosure(false);
 
   useEffect(() => {
-    if (gameState.animationKey !== currentAnimationKey.current) {
-      currentAnimationKey.current = gameState.animationKey;
+    if (animationKey !== currentAnimationKey.current) {
+      currentAnimationKey.current = animationKey;
     }
-  }, [gameState.animationKey]);
+  }, [animationKey]);
 
   useEffect(() => {
-    if (gameState.accessedCards.length > 0) {
+    if (accessedCards.length > 0) {
       openCardDisplayModal();
     }
-  }, [gameState.accessedCards, openCardDisplayModal]);
+  }, [accessedCards, openCardDisplayModal]);
 
-  const onClickPlayerCard = useCallback((card: PlayingCardT, index: number) => {
-    delay(() => {
-      dispatch({ type: GamePhase.Play, card, index });
-      // we only need to wait when the animationKey changes
-    }, EXIT_ANIMATION_DURATION);
-  }, []);
+  const onClickPlayerCard = useCallback(
+    (card: PlayingCardT, index: number) => {
+      delay(() => {
+        dispatch({ type: GamePhase.Play, card, index });
+        // we only need to wait when the animationKey changes
+      }, EXIT_ANIMATION_DURATION);
+    },
+    [dispatch],
+  );
 
   const onCloseDisplayCardModal = useCallback(() => {
     closeCardDisplayModal();
     delay(() => {
-      if (gameState.nextAction) {
-        dispatch(gameState.nextAction);
+      if (nextAction) {
+        dispatch(nextAction);
       }
     }, EXIT_ANIMATION_DURATION);
-  }, [closeCardDisplayModal, gameState.nextAction, dispatch]);
+  }, [closeCardDisplayModal, nextAction, dispatch]);
 
   const onClickEndTurn = useCallback(() => {
-    if (gameState.currentPhase !== GamePhase.Main) {
+    if (currentPhase !== GamePhase.Main) {
       return;
     }
 
     dispatch({ type: GamePhase.Discard });
-  }, [gameState.currentPhase, dispatch]);
+  }, [currentPhase, dispatch]);
 
   useEffect(() => {
     if (
-      !gameState.nextAction ||
-      gameState.currentPhase === GamePhase.Main ||
-      gameState.currentPhase === GamePhase.Access
+      !nextAction ||
+      currentPhase === GamePhase.Main ||
+      currentPhase === GamePhase.Access
     ) {
       return;
     }
 
-    dispatch(gameState.nextAction);
-  }, [gameState, dispatch]);
+    dispatch(nextAction);
+  }, [currentPhase, nextAction, dispatch]);
 
   useEffect(() => {
-    if (gameState.shouldDiscard) {
+    if (shouldDiscard) {
       dispatch({ type: GamePhase.Discard });
     }
-  }, [gameState.shouldDiscard, dispatch]);
+  }, [shouldDiscard, dispatch]);
 
   return (
     <div className="h-full relative overflow-hidden">
@@ -107,11 +119,8 @@ export const App = () => {
             isTrashModalOpen={isTrashModalOpen}
           />
           <Stack gap="xs">
-            <IceRow gameState={gameState} />
-            <StatusRow
-              currentPhase={gameState.currentPhase}
-              securityLevel={gameState.securityLevel}
-            />
+            <IceRow />
+            <StatusRow />
           </Stack>
         </Container>
       </div>

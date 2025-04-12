@@ -2,7 +2,7 @@ import { Card, Image } from "@mantine/core";
 import { CARD_SIZES } from "./cardSizes";
 
 export const CardBack = ({
-  size = "sm",
+  size = "xs",
   orientation = "vertical",
 }: {
   size?: "xs" | "sm" | "md";

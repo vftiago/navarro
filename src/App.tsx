@@ -1,7 +1,6 @@
 import { Container, Stack } from "@mantine/core";
 import { useCallback, useEffect, useRef } from "react";
 import { IceRow } from "./ui/IceRow";
-import { PlayingCardT } from "./cards/card";
 import { useDisclosure } from "@mantine/hooks";
 import { GamePhase } from "./gameReducer";
 import { StatusRow } from "./ui/StatusRow";
@@ -59,32 +58,15 @@ export const App = () => {
     }
   }, [accessedCards, openCardDisplayModal]);
 
-  const onClickPlayerCard = useCallback(
-    (card: PlayingCardT, index: number) => {
-      delay(() => {
-        dispatch({ type: GamePhase.Play, card, index });
-        // we only need to wait when the animationKey changes
-      }, EXIT_ANIMATION_DURATION);
-    },
-    [dispatch],
-  );
-
   const onCloseDisplayCardModal = useCallback(() => {
     closeCardDisplayModal();
+
     delay(() => {
       if (nextAction) {
         dispatch(nextAction);
       }
     }, EXIT_ANIMATION_DURATION);
   }, [closeCardDisplayModal, nextAction, dispatch]);
-
-  const onClickEndTurn = useCallback(() => {
-    if (currentPhase !== GamePhase.Main) {
-      return;
-    }
-
-    dispatch({ type: GamePhase.Discard });
-  }, [currentPhase, dispatch]);
 
   useEffect(() => {
     if (shouldWaitForPlayerInput || !nextAction) {
@@ -125,8 +107,6 @@ export const App = () => {
         openDiscardModal={openDiscardModal}
         openScoreModal={openScoreModal}
         openTrashModal={openTrashModal}
-        onClickEndTurn={onClickEndTurn}
-        onClickPlayerCard={onClickPlayerCard}
       />
     </div>
   );

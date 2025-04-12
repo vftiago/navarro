@@ -6,10 +6,10 @@ import { CARD_SIZES } from "./cardSizes";
 
 export const CardFrontFullArt = ({
   card,
-  size = "sm",
+  size = "xs",
 }: {
   card: PlayingCardT;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }) => {
   const { image, name, type } = card;
 

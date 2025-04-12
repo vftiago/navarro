@@ -3,27 +3,32 @@ import { ClickWidget } from "./ClickWidget";
 import { TagWidget } from "./TagWidget";
 import { PlayerHand } from "./PlayerHand";
 import { useGameState } from "../../context/useGameState";
+import { useCallback } from "react";
 import { GamePhase } from "../../gameReducer";
-import { PlayingCardT } from "../../cards/card";
 
 export const PlayerDashboard = ({
-  onClickPlayerCard,
-  onClickEndTurn,
   openDeckModal,
   openDiscardModal,
   openTrashModal,
   openScoreModal,
 }: {
-  onClickPlayerCard: (card: PlayingCardT, index: number) => void;
-  onClickEndTurn: () => void;
   openDeckModal: () => void;
   openDiscardModal: () => void;
   openTrashModal: () => void;
   openScoreModal: () => void;
 }) => {
   const {
-    gameState: { animationKey, player, currentPhase, currentTurn, tick },
+    dispatch,
+    gameState: { player, currentPhase, currentTurn, tick },
   } = useGameState();
+
+  const onClickEndTurn = useCallback(() => {
+    if (currentPhase !== GamePhase.Main) {
+      return;
+    }
+
+    dispatch({ type: GamePhase.Discard });
+  }, [currentPhase, dispatch]);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-10">
@@ -37,11 +42,9 @@ export const PlayerDashboard = ({
             <TagWidget tagCount={player.tags} />
           </Stack>
 
-          {currentPhase === GamePhase.Main && player.hand.length === 0 ? (
-            <div>Your hand is empty.</div>
-          ) : (
-            <PlayerHand key={animationKey} onClick={onClickPlayerCard} />
-          )}
+          <div className="flex-1 flex justify-center">
+            <PlayerHand />
+          </div>
 
           <Stack className="flex-col-reverse" w="10rem">
             <Button size="lg" variant="gradient" onClick={onClickEndTurn}>

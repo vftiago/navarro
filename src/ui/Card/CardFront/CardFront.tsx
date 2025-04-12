@@ -6,7 +6,7 @@ import { CardFrontAgenda } from "./CardFrontAgenda";
 
 export const CardFront = ({
   card,
-  size = "sm",
+  size = "xs",
 }: {
   card: CardPropertiesT;
   size?: "xs" | "sm" | "md";

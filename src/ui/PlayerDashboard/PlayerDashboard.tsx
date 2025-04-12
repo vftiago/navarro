@@ -22,7 +22,7 @@ export const PlayerDashboard = ({
   openScoreModal: () => void;
 }) => {
   const {
-    gameState: { animationKey, player, currentPhase, turn, tick },
+    gameState: { animationKey, player, currentPhase, currentTurn, tick },
   } = useGameState();
 
   return (
@@ -45,7 +45,7 @@ export const PlayerDashboard = ({
 
           <Stack className="flex-col-reverse" w="10rem">
             <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
-              End turn ({turn})
+              End turn ({currentTurn})
             </Button>
             <Button
               className="self-end"

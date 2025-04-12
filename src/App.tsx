@@ -11,6 +11,8 @@ import { delay } from "framer-motion";
 
 import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { useGameState } from "./context/useGameState";
+import { ProgramRow } from "./ui/ProgramRow";
+import { CorpTurn } from "./ui/CorpTurn";
 
 export const App = () => {
   const currentAnimationKey = useRef(0);
@@ -21,7 +23,7 @@ export const App = () => {
       accessedCards,
       currentPhase,
       nextAction,
-      shouldDiscard,
+      shouldWaitForPlayerInput,
     },
     dispatch,
   } = useGameState();
@@ -85,45 +87,39 @@ export const App = () => {
   }, [currentPhase, dispatch]);
 
   useEffect(() => {
-    if (
-      !nextAction ||
-      currentPhase === GamePhase.Main ||
-      currentPhase === GamePhase.Access
-    ) {
+    if (shouldWaitForPlayerInput || !nextAction) {
       return;
     }
 
-    dispatch(nextAction);
-  }, [currentPhase, nextAction, dispatch]);
-
-  useEffect(() => {
-    if (shouldDiscard) {
-      dispatch({ type: GamePhase.Discard });
-    }
-  }, [shouldDiscard, dispatch]);
+    delay(() => {
+      if (nextAction) {
+        dispatch(nextAction);
+      }
+    }, EXIT_ANIMATION_DURATION);
+  }, [nextAction, dispatch, shouldWaitForPlayerInput]);
 
   return (
-    <div className="h-full relative overflow-hidden">
-      <div className="h-full overflow-auto pb-48">
-        <Container fluid maw={1620} p="lg">
-          <Modals
-            closeCardDisplayModal={onCloseDisplayCardModal}
-            closeDeckModal={closeDeckModal}
-            closeDiscardModal={closeDiscardModal}
-            closeScoreModal={closeScoreModal}
-            closeTrashModal={closeTrashModal}
-            isCardDisplayModalOpen={isCardDisplayModalOpen}
-            isDeckModalOpen={isDeckModalOpen}
-            isDiscardModalOpen={isDiscardModalOpen}
-            isScoreModalOpen={isScoreModalOpen}
-            isTrashModalOpen={isTrashModalOpen}
-          />
-          <Stack gap="xs">
-            <IceRow />
-            <StatusRow />
-          </Stack>
-        </Container>
-      </div>
+    <div className="overflow-hidden">
+      {currentPhase === GamePhase.Corp ? <CorpTurn /> : null}
+      <Container fluid maw={1620} p="lg">
+        <Modals
+          closeCardDisplayModal={onCloseDisplayCardModal}
+          closeDeckModal={closeDeckModal}
+          closeDiscardModal={closeDiscardModal}
+          closeScoreModal={closeScoreModal}
+          closeTrashModal={closeTrashModal}
+          isCardDisplayModalOpen={isCardDisplayModalOpen}
+          isDeckModalOpen={isDeckModalOpen}
+          isDiscardModalOpen={isDiscardModalOpen}
+          isScoreModalOpen={isScoreModalOpen}
+          isTrashModalOpen={isTrashModalOpen}
+        />
+        <Stack gap="xs">
+          <IceRow />
+          <StatusRow />
+          <ProgramRow />
+        </Stack>
+      </Container>
       <PlayerDashboard
         openDeckModal={openDeckModal}
         openDiscardModal={openDiscardModal}

@@ -13,6 +13,10 @@ import {
   weightedServerCards,
   weightedServerICEDeck,
 } from "./decks/serverStarterDeck";
+import {
+  createICEPlayingCard,
+  createServerPlayingCard,
+} from "./cards/createPlayingCard";
 
 export enum GamePhase {
   Draw = "Draw", // Drawing new cards
@@ -23,15 +27,17 @@ export enum GamePhase {
   Fetch = "Fetch", // Player is fetching server cards
   Discard = "Discard", // Cards are being discarded
   End = "End", // End of turn
+  Corp = "Corp", // Corp turn
 }
 
 export type GameState = {
   currentPhase: GamePhase;
   securityLevel: number;
-  turn: number;
+  currentTurn: number;
   tick: number;
   animationKey: number;
   shouldDiscard: boolean;
+  shouldWaitForPlayerInput: boolean;
   nextAction: null | GameAction;
   player: {
     cardInPlay?: PlayingCardT;
@@ -82,6 +88,9 @@ export type GameAction =
     }
   | {
       type: GamePhase.End;
+    }
+  | {
+      type: GamePhase.Corp;
     };
 
 const applyDraw = (state: GameState) => {
@@ -124,7 +133,7 @@ const applyDraw = (state: GameState) => {
       discard: currentDiscard,
     },
     securityLevel: state.securityLevel + 1,
-    turn: state.turn + 1,
+    currentTurn: state.currentTurn + 1,
     tick: state.player.ticksPerTurn,
   };
 
@@ -160,7 +169,7 @@ const applyDiscard = (state: GameState) => {
     const card = state.player.hand[i];
 
     const shouldTrash = card.cardEffects?.some(
-      (effect) => effect.keyword === Keyword.TRASH,
+      (effect) => effect.keyword === Keyword.ETHEREAL,
     );
 
     if (shouldTrash) {
@@ -205,6 +214,8 @@ const applyPlayPhase = (
     TriggerMoment.ON_PLAY,
   );
 
+  const isProgram = card.type === CardType.PROGRAM;
+
   const shouldTrash = card.cardEffects?.some(
     (effect) => effect.keyword === Keyword.TRASH,
   );
@@ -213,10 +224,16 @@ const applyPlayPhase = (
 
   const newDiscard = [...stateAfterEffects.player.discard];
 
-  if (shouldTrash) {
-    newTrash.push(card);
+  const newPrograms = [...stateAfterEffects.player.programs];
+
+  if (isProgram) {
+    newPrograms.push(card);
   } else {
-    newDiscard.push(card);
+    if (shouldTrash) {
+      newTrash.push(card);
+    } else {
+      newDiscard.push(card);
+    }
   }
 
   const newHand = stateAfterEffects.player.hand.filter(
@@ -236,6 +253,7 @@ const applyPlayPhase = (
       ...stateAfterEffects.player,
       hand: newHand,
       discard: newDiscard,
+      programs: newPrograms,
       trash: newTrash,
       cardInPlay: card,
     },
@@ -243,10 +261,11 @@ const applyPlayPhase = (
 };
 
 const applyAccessPhase = (gameState: GameState) => {
-  const combinedIceEffects = gameState.server.ice.reduce(
-    (acc, ice) => [...acc, ...ice.cardEffects],
-    [] as CardEffectT[],
-  );
+  const combinedIceEffects = gameState.server.ice.reduce((acc, ice) => {
+    return ice.type === CardType.ICE && ice.rezzed
+      ? [...acc, ...ice.cardEffects]
+      : acc;
+  }, [] as CardEffectT[]);
 
   const stateAfterOnAccessEffects = applyEffects(
     gameState,
@@ -254,11 +273,7 @@ const applyAccessPhase = (gameState: GameState) => {
     TriggerMoment.ON_ACCESS,
   );
 
-  const randomServerCard = weightedServerCards.pick();
-
-  const newServerCurrentDeck = gameState.server.currentDeck.filter(
-    (card) => card.id !== randomServerCard.id,
-  );
+  const randomServerCard = createServerPlayingCard(weightedServerCards.pick());
 
   const newAccessedCards = [...gameState.accessedCards];
 
@@ -272,11 +287,11 @@ const applyAccessPhase = (gameState: GameState) => {
   return {
     ...stateAfterOnAccessEffects,
     currentPhase: GamePhase.Access,
+    shouldWaitForPlayerInput: true,
     nextAction,
     accessedCards: newAccessedCards,
     server: {
       ...stateAfterOnAccessEffects.server,
-      currentDeck: newServerCurrentDeck,
     },
   };
 };
@@ -307,6 +322,7 @@ const applyFetchPhase = (
 
   return {
     ...stateAfterOnFetchEffects,
+    shouldWaitForPlayerInput: false,
     currentPhase: GamePhase.Fetch,
     nextAction,
     player: {
@@ -334,9 +350,9 @@ const applyResolvePhase = (gameState: GameState) => {
 };
 
 const applyEndPhase = (state: GameState) => {
-  const rezzedIce = weightedServerICEDeck.pick();
+  const rezzedIce = createICEPlayingCard(weightedServerICEDeck.pick());
 
-  const nextAction = { type: GamePhase.Draw } as const;
+  const nextAction = { type: GamePhase.Corp } as const;
 
   return {
     ...state,
@@ -346,6 +362,16 @@ const applyEndPhase = (state: GameState) => {
       ...state.server,
       ice: rezzedIce ? [...state.server.ice, rezzedIce] : state.server.ice,
     },
+  };
+};
+
+const applyCorpPhase = (state: GameState) => {
+  const nextAction = { type: GamePhase.Draw } as const;
+
+  return {
+    ...state,
+    currentPhase: GamePhase.Corp,
+    nextAction,
   };
 };
 
@@ -383,6 +409,10 @@ export const gameReducer = (state: GameState, action: GameAction) => {
       return applyEndPhase(state);
     }
 
+    case GamePhase.Corp: {
+      return applyCorpPhase(state);
+    }
+
     case GamePhase.Draw: {
       return applyDraw(state);
     }
@@ -402,12 +432,13 @@ const initialTicksPerTurn = 3;
 
 export const initialGameState: GameState = {
   securityLevel: 1,
-  turn: 1,
+  currentTurn: 1,
   tick: 3,
   currentPhase: GamePhase.Draw,
   nextAction: { type: GamePhase.Main },
   animationKey: 0,
   shouldDiscard: false,
+  shouldWaitForPlayerInput: false,
   player: {
     deck: initialPlayerDeck,
     currentDeck: initialPlayerDeck,

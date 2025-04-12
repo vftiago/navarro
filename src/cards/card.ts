@@ -80,6 +80,7 @@ export type BaseCardPropertiesT = {
 export type ICECardPropertiesT = BaseCardPropertiesT & {
   type: CardType.ICE;
   subtype: CardSubtype.BARRIER | CardSubtype.CODE_GATE | CardSubtype.SENTRY;
+  rezzed: boolean;
   getStrength: (gameState: GameState) => number;
 };
 

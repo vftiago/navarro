@@ -1,4 +1,3 @@
-import { createServerPlayingCard } from "../cards/createPlayingCard";
 import { createServerDeck } from "./createDeck";
 
 import { addWeight, weighted } from "@lrkit/weighted";
@@ -14,10 +13,10 @@ export const serverStarterDeck = createServerDeck([
 ]);
 
 const weightedServerICECardList = [
-  addWeight([createServerPlayingCard("Fire Wall")], 1),
-  addWeight([createServerPlayingCard("Ice Wall")], 1),
-  addWeight([createServerPlayingCard("Authenticator")], 1),
-  addWeight([createServerPlayingCard("Bad Moon")], 1),
+  addWeight(["Fire Wall"], 1),
+  addWeight(["Ice Wall"], 3),
+  addWeight(["Authenticator"], 5),
+  addWeight(["Bad Moon"], 3),
 ];
 
 export const weightedServerICEDeck = weighted(
@@ -25,10 +24,10 @@ export const weightedServerICEDeck = weighted(
 );
 
 const weightedServerCardList = [
-  addWeight([createServerPlayingCard("Junk")], 5),
-  addWeight([createServerPlayingCard("Scintillating Scotoma")], 1),
-  addWeight([createServerPlayingCard("Signal Broadcast")], 1),
-  addWeight([createServerPlayingCard("Corporate Secrets")], 1),
+  addWeight(["Junk"], 5),
+  addWeight(["Scintillating Scotoma"], 1),
+  addWeight(["Signal Broadcast"], 1),
+  addWeight(["Corporate Secrets"], 1),
 ];
 
 export const weightedServerCards = weighted(

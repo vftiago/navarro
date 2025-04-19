@@ -38,9 +38,6 @@ importers:
       react-icons:
         specifier: ^5.5.0
         version: 5.5.0(react@19.0.0)
-      use-interval:
-        specifier: ^1.4.0
-        version: 1.4.0(react@19.0.0)
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2051,12 +2048,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  use-interval@1.4.0:
-    resolution: {integrity: sha512-1betIJun2rXKLxa30AFOBZCeZhsBJoJ/3+gkCeYbJ63lAR//EnAb1NjNeFqzgqeM7zQfR76rrCUaA8DvfgoOpA==}
-    engines: {node: '>=8', npm: '>=5'}
-    peerDependencies:
-      react: '>=16.8.0 || ^17'
 
   use-isomorphic-layout-effect@1.2.0:
     resolution: {integrity: sha512-q6ayo8DWoPZT0VdG4u3D3uxcgONP3Mevx2i2b0434cwWBoL+aelL1DzkXI6w3PhTZzUeR2kaVlZn70iCiseP6w==}
@@ -4225,10 +4216,6 @@ snapshots:
       react: 19.0.0
     optionalDependencies:
       '@types/react': 19.0.10
-
-  use-interval@1.4.0(react@19.0.0):
-    dependencies:
-      react: 19.0.0
 
   use-isomorphic-layout-effect@1.2.0(@types/react@19.0.10)(react@19.0.0):
     dependencies:

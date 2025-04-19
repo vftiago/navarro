@@ -6,7 +6,7 @@ import { EXIT_ANIMATION_DURATION } from "../constants";
 import { useGameState } from "../../context/useGameState";
 import { useEffect, useState } from "react";
 import { Text } from "@mantine/core";
-import { GamePhase } from "../../gameReducer";
+import { GamePhase } from "../../state/gameReducer";
 import clsx from "clsx";
 
 const containerVariants = {

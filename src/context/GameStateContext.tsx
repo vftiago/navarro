@@ -1,5 +1,5 @@
 import { createContext, Dispatch } from "react";
-import { GameState, GameAction } from "../gameReducer";
+import { GameState, GameAction } from "../state/gameReducer";
 
 export type GameStateContextType = {
   gameState: GameState;

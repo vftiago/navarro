@@ -1,5 +1,5 @@
 import { ReactNode, useReducer } from "react";
-import { gameReducer, initialGameState } from "../gameReducer";
+import { gameReducer, initialGameState } from "../state/gameReducer";
 import { GameStateContext } from "./GameStateContext";
 
 export const GameStateContextProvider = ({

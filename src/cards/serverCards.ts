@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { CardRarity, CardPropertiesT, CardType, TriggerMoment } from "./card";
 import { KEYWORD_EFFECTS } from "./keywords";
-import { GameState } from "../gameReducer";
+import { GameState } from "../state/gameReducer";
 
 export const serverCards: CardPropertiesT[] = [
   {

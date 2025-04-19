@@ -4,7 +4,7 @@ import { TagWidget } from "./TagWidget";
 import { PlayerHand } from "./PlayerHand";
 import { useGameState } from "../../context/useGameState";
 import { useCallback } from "react";
-import { GamePhase } from "../../gameReducer";
+import { GamePhase } from "../../state/gameReducer";
 
 export const PlayerDashboard = ({
   openDeckModal,

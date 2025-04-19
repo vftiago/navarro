@@ -1,7 +1,7 @@
 import { CardRarity, CardPropertiesT, CardType, TriggerMoment } from "./card";
 import { v4 as uuid } from "uuid";
 import { KEYWORD_EFFECTS } from "./keywords";
-import { GamePhase } from "../gameReducer";
+import { GamePhase } from "../state/gameReducer";
 
 export const playerCards: CardPropertiesT[] = [
   {

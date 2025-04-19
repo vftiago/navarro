@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { GameState } from "../gameReducer";
+import { GameState } from "../state/gameReducer";
 
 export enum CardRarity {
   BASIC = "Basic",

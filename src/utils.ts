@@ -1,5 +1,5 @@
 import { PlayingCardT, TriggerMoment } from "./cards/card";
-import { GameState } from "./gameReducer";
+import { GameState } from "./state/gameReducer";
 
 export const shuffle = <T>(array: T[]): T[] => {
   const newArray = [...array];

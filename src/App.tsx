@@ -2,7 +2,6 @@ import { Container, Stack } from "@mantine/core";
 import { useCallback, useEffect, useRef } from "react";
 import { IceRow } from "./ui/IceRow";
 import { useDisclosure } from "@mantine/hooks";
-import { GamePhase } from "./gameReducer";
 import { StatusRow } from "./ui/StatusRow";
 import { EXIT_ANIMATION_DURATION } from "./ui/constants";
 import { Modals } from "./ui/Modals";
@@ -12,6 +11,7 @@ import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { useGameState } from "./context/useGameState";
 import { ProgramRow } from "./ui/ProgramRow";
 import { CorpTurn } from "./ui/CorpTurn";
+import { GamePhase } from "./state/gameReducer";
 
 export const App = () => {
   const currentAnimationKey = useRef(0);

@@ -5,18 +5,18 @@ import {
   Keyword,
   PlayingCardT,
   TriggerMoment,
-} from "./cards/card";
-import { playerStarterDeck } from "./decks/playerStarterDeck";
-import { applyEffects, shuffle } from "./utils";
+} from "../cards/card";
+import { playerStarterDeck } from "../decks/playerStarterDeck";
+import { applyEffects, shuffle } from "../utils";
 import {
   serverStarterDeck,
   weightedServerCards,
   weightedServerICEDeck,
-} from "./decks/serverStarterDeck";
+} from "../decks/serverStarterDeck";
 import {
   createICEPlayingCard,
   createServerPlayingCard,
-} from "./cards/createPlayingCard";
+} from "../cards/createPlayingCard";
 
 export enum GamePhase {
   Draw = "Draw", // Drawing new cards

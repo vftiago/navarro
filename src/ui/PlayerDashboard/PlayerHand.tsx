@@ -3,11 +3,14 @@ import { Keyword, PlayingCardT } from "../../cards/card";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 import { EXIT_ANIMATION_DURATION } from "../constants";
-import { useGameState } from "../../context/useGameState";
 import { useEffect, useState } from "react";
 import { Text } from "@mantine/core";
-import { GamePhase } from "../../state/gameReducer";
 import clsx from "clsx";
+import { useThunk } from "../../context/useThunk";
+import { useGameState } from "../../context/useGameState";
+import { getTurnCurrentPhase, getPlayerHand } from "../../state/selectors";
+import { GamePhase } from "../../state/types";
+import { executePlayPhase } from "../../state/thunks";
 
 const containerVariants = {
   hidden: {
@@ -37,35 +40,36 @@ const itemVariants = {
 };
 
 export const PlayerHand = () => {
-  const {
-    dispatch,
-    gameState: { player, currentPhase, animationKey },
-  } = useGameState();
+  const { gameState } = useGameState();
+  const dispatchThunk = useThunk();
 
-  const [visibleCards, setVisibleCards] = useState<PlayingCardT[]>(player.hand);
+  const turnCurrentPhase = getTurnCurrentPhase(gameState);
+  const playerHand = getPlayerHand(gameState);
+
+  const [visibleCards, setVisibleCards] = useState<PlayingCardT[]>(playerHand);
   const [exitingCards, setExitingCards] = useState<string[]>([]);
   const [showEmptyMessage, setShowEmptyMessage] = useState(
-    player.hand.length === 0,
+    playerHand.length === 0,
   );
 
   const [scope, animate] = useAnimate();
 
   useEffect(() => {
-    if (player.hand.length === 0 && currentPhase === GamePhase.Main) {
+    if (playerHand.length === 0 && turnCurrentPhase === GamePhase.Main) {
       setShowEmptyMessage(true);
     } else {
       setShowEmptyMessage(false);
     }
-  }, [player.hand, currentPhase]);
+  }, [playerHand, turnCurrentPhase]);
 
   useEffect(() => {
-    if (currentPhase !== GamePhase.Discard) {
-      setVisibleCards(player.hand);
+    if (turnCurrentPhase !== GamePhase.Discard) {
+      setVisibleCards(playerHand);
     }
-  }, [player.hand, currentPhase]);
+  }, [playerHand, turnCurrentPhase]);
 
   useEffect(() => {
-    if (currentPhase === GamePhase.Discard && visibleCards.length > 0) {
+    if (turnCurrentPhase === GamePhase.Discard && visibleCards.length > 0) {
       setExitingCards(visibleCards.map((card) => card.deckContextId));
 
       const timer = setTimeout(() => {
@@ -75,7 +79,7 @@ export const PlayerHand = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [currentPhase, visibleCards.length, player.hand.length, visibleCards]);
+  }, [turnCurrentPhase, visibleCards.length, playerHand.length, visibleCards]);
 
   const rotationValues = calculateCardRotations(visibleCards.length);
   const topValues = calculateCardTopValues(visibleCards.length);
@@ -110,7 +114,7 @@ export const PlayerHand = () => {
       setExitingCards((prev) => prev.filter((id) => id !== card.deckContextId));
     }, EXIT_ANIMATION_DURATION);
 
-    dispatch({ type: GamePhase.Play, card, index });
+    dispatchThunk(executePlayPhase(card, index));
   };
 
   if (showEmptyMessage) {
@@ -124,7 +128,6 @@ export const PlayerHand = () => {
   return (
     <AnimatePresence mode="wait">
       <motion.ol
-        key={`hand-${animationKey}`}
         ref={scope}
         layout
         animate="show"

@@ -4,10 +4,10 @@ import {
   CardType,
   TriggerMoment,
   CardSubtype,
-  ICECardPropertiesT,
+  IceCardPropertiesT,
 } from "./card";
 
-export const iceCards: ICECardPropertiesT[] = [
+export const iceCards: IceCardPropertiesT[] = [
   {
     id: uuid(),
     name: "Ice Wall",
@@ -15,7 +15,8 @@ export const iceCards: ICECardPropertiesT[] = [
     rarity: CardRarity.COMMON,
     type: CardType.ICE,
     subtype: CardSubtype.BARRIER,
-    rezzed: false,
+    isRezzed: false,
+    damage: 0,
     getStrength: () => 8,
     cardEffects: [
       {
@@ -23,7 +24,10 @@ export const iceCards: ICECardPropertiesT[] = [
         callback: (gameState) => {
           return {
             ...gameState,
-            tick: gameState.tick - 1,
+            turnState: {
+              ...gameState.turnState,
+              turnRemainingClicks: gameState.turnState.turnRemainingClicks - 1,
+            },
           };
         },
         getText: () => "Lose 1 tick.",
@@ -38,8 +42,9 @@ export const iceCards: ICECardPropertiesT[] = [
     rarity: CardRarity.COMMON,
     type: CardType.ICE,
     subtype: CardSubtype.BARRIER,
-    rezzed: false,
-    getStrength: (gameState) => gameState.securityLevel,
+    isRezzed: false,
+    damage: 0,
+    getStrength: (gameState) => gameState.serverState.serverSecurityLevel,
     cardEffects: [
       {
         triggerMoment: TriggerMoment.PERMANENT,
@@ -52,10 +57,10 @@ export const iceCards: ICECardPropertiesT[] = [
       {
         triggerMoment: TriggerMoment.ON_ACCESS,
         callback: (gameState) => {
-          const newDiscard = [...gameState.player.discard];
+          const newDiscard = [...gameState.playerState.playerDiscardPile];
 
-          for (let i = 0; i < gameState.securityLevel; i++) {
-            const card = gameState.player.hand[i];
+          for (let i = 0; i < gameState.serverState.serverSecurityLevel; i++) {
+            const card = gameState.playerState.playerHand[i];
 
             if (!card) {
               break;
@@ -64,15 +69,15 @@ export const iceCards: ICECardPropertiesT[] = [
             newDiscard.unshift(card);
           }
 
-          const newPlayerHand = gameState.player.hand.slice(
+          const newPlayerHand = gameState.playerState.playerHand.slice(
             0,
-            -gameState.securityLevel,
+            -gameState.serverState.serverSecurityLevel,
           );
 
           return {
             ...gameState,
             player: {
-              ...gameState.player,
+              ...gameState.playerState,
               hand: newPlayerHand,
               discard: newDiscard,
             },
@@ -89,7 +94,8 @@ export const iceCards: ICECardPropertiesT[] = [
     rarity: CardRarity.COMMON,
     type: CardType.ICE,
     subtype: CardSubtype.CODE_GATE,
-    rezzed: false,
+    isRezzed: false,
+    damage: 0,
     getStrength: () => 5,
     cardEffects: [
       {
@@ -97,9 +103,9 @@ export const iceCards: ICECardPropertiesT[] = [
         callback: (gameState) => {
           return {
             ...gameState,
-            player: {
-              ...gameState.player,
-              tags: gameState.player.tags + 1,
+            playerState: {
+              ...gameState.playerState,
+              playerTags: gameState.playerState.playerTags + 1,
             },
           };
         },
@@ -114,7 +120,8 @@ export const iceCards: ICECardPropertiesT[] = [
     rarity: CardRarity.COMMON,
     type: CardType.ICE,
     subtype: CardSubtype.SENTRY,
-    rezzed: false,
+    isRezzed: false,
+    damage: 0,
     getStrength: () => 4,
     cardEffects: [
       {

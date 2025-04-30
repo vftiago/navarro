@@ -2,6 +2,13 @@ import { Container, Flex, Modal, Stack, Text } from "@mantine/core";
 import { CardFront } from "./Card/CardFront";
 import { motion } from "framer-motion";
 import { useGameState } from "../context/useGameState";
+import {
+  getAccessedCards,
+  getPlayerDeck,
+  getPlayerDiscardPile,
+  getPlayerScoreArea,
+  getPlayerTrashPile,
+} from "../state/selectors";
 
 export const Modals = ({
   isCardDisplayModalOpen,
@@ -26,9 +33,13 @@ export const Modals = ({
   closeTrashModal: () => void;
   closeScoreModal: () => void;
 }) => {
-  const {
-    gameState: { accessedCards, player },
-  } = useGameState();
+  const { gameState } = useGameState();
+
+  const accessedCards = getAccessedCards(gameState);
+  const playerDeck = getPlayerDeck(gameState);
+  const playerDiscardPile = getPlayerDiscardPile(gameState);
+  const playerTrashPile = getPlayerTrashPile(gameState);
+  const playerScoreArea = getPlayerScoreArea(gameState);
 
   return (
     <>
@@ -59,8 +70,8 @@ export const Modals = ({
       >
         <Container size="1360px">
           <Flex gap={32} wrap="wrap">
-            {player.currentDeck.length ? (
-              player.currentDeck.map((card, index) => {
+            {playerDeck.length ? (
+              playerDeck.map((card, index) => {
                 return <CardFront key={index} card={card} />;
               })
             ) : (
@@ -79,8 +90,8 @@ export const Modals = ({
       >
         <Container size="1360px">
           <Flex gap={32} wrap="wrap">
-            {player.discard.length ? (
-              player.discard.map((card, index) => {
+            {playerDiscardPile.length ? (
+              playerDiscardPile.map((card, index) => {
                 return (
                   <span key={index}>
                     <CardFront card={card} />
@@ -103,8 +114,8 @@ export const Modals = ({
       >
         <Container size="1360px">
           <Flex gap={32} wrap="wrap">
-            {player.trash.length ? (
-              player.trash.map((card, index) => {
+            {playerTrashPile.length ? (
+              playerTrashPile.map((card, index) => {
                 return (
                   <span key={index}>
                     <CardFront card={card} />
@@ -127,8 +138,8 @@ export const Modals = ({
       >
         <Container size="1360px">
           <Flex gap={32} wrap="wrap">
-            {player.score.length ? (
-              player.score.map((card, index) => {
+            {playerScoreArea.length ? (
+              playerScoreArea.map((card, index) => {
                 return (
                   <span key={index}>
                     <CardFront card={card} />

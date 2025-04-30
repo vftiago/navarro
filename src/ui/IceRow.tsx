@@ -1,23 +1,21 @@
 import { Flex } from "@mantine/core";
 import { CardFront } from "./Card/CardFront";
-import { useGameState } from "../context/useGameState";
-import { CardType } from "../cards/card";
 import { CardBack } from "./Card/CardBack";
+import { useGameState } from "../context/useGameState";
+import { getServerInstalledIce } from "../state/selectors";
 
 export const IceRow = () => {
-  const {
-    gameState: { server },
-  } = useGameState();
+  const { gameState } = useGameState();
 
-  const ice = server.ice.filter((card) => card.type === CardType.ICE);
+  const installedIce = getServerInstalledIce(gameState);
 
   return (
     <Flex
       className="bg-neutral-900 p-2.5 rounded-xl justify-end h-[332px]"
       gap="xs"
     >
-      {ice.map((card, index) => {
-        return card.rezzed ? (
+      {installedIce.map((card, index) => {
+        return card.isRezzed ? (
           <CardFront key={index} card={card} size="xs" />
         ) : (
           <CardBack key={index} size="xs" />

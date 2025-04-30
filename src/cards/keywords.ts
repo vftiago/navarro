@@ -1,6 +1,12 @@
 import { CardEffectT, Keyword, TriggerMoment } from "./card";
 
 export const KEYWORD_EFFECTS: Record<Keyword, CardEffectT> = {
+  [Keyword.BOOST]: {
+    triggerMoment: TriggerMoment.PERMANENT,
+    keyword: Keyword.BOOST,
+    callback: (gameState) => gameState,
+    getText: () => `${Keyword.UNPLAYABLE}.`,
+  },
   [Keyword.UNPLAYABLE]: {
     triggerMoment: TriggerMoment.ON_PLAY,
     keyword: Keyword.UNPLAYABLE,

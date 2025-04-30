@@ -1,7 +1,7 @@
 import { CardRarity, CardPropertiesT, CardType, TriggerMoment } from "./card";
 import { v4 as uuid } from "uuid";
 import { KEYWORD_EFFECTS } from "./keywords";
-import { GamePhase } from "../state/gameReducer";
+import { GamePhase } from "../state/types";
 
 export const playerCards: CardPropertiesT[] = [
   {
@@ -38,7 +38,11 @@ export const playerCards: CardPropertiesT[] = [
         callback: (gameState) => {
           const newGameState = {
             ...gameState,
-            securityLevel: gameState.securityLevel - 1,
+            serverState: {
+              ...gameState.serverState,
+              serverSecurityLevel:
+                gameState.serverState.serverSecurityLevel - 1,
+            },
           };
 
           return newGameState;
@@ -59,7 +63,10 @@ export const playerCards: CardPropertiesT[] = [
         callback: (gameState) => {
           const newGameState = {
             ...gameState,
-            tick: gameState.tick + 3,
+            turnState: {
+              ...gameState.turnState,
+              turnRemainingClicks: gameState.turnState.turnRemainingClicks + 3,
+            },
           };
 
           return newGameState;
@@ -97,9 +104,9 @@ export const playerCards: CardPropertiesT[] = [
         callback: (gameState) => {
           const newGameState = {
             ...gameState,
-            player: {
-              ...gameState.player,
-              victoryPoints: gameState.player.victoryPoints + 1,
+            playerState: {
+              ...gameState.playerState,
+              playerMaxHandSize: gameState.playerState.playerMaxHandSize + 1,
             },
           };
 
@@ -121,9 +128,10 @@ export const playerCards: CardPropertiesT[] = [
         callback: (gameState) => {
           const newGameState = {
             ...gameState,
-            player: {
-              ...gameState.player,
-              victoryPoints: gameState.player.victoryPoints + 1,
+            playerState: {
+              ...gameState.playerState,
+              playerVictoryPoints:
+                gameState.playerState.playerVictoryPoints + 1,
             },
           };
 
@@ -146,9 +154,10 @@ export const playerCards: CardPropertiesT[] = [
         callback: (gameState) => {
           const newGameState = {
             ...gameState,
-            player: {
-              ...gameState.player,
-              victoryPoints: gameState.player.victoryPoints + 1,
+            playerState: {
+              ...gameState.playerState,
+              playerVictoryPoints:
+                gameState.playerState.playerVictoryPoints + 1,
             },
           };
 

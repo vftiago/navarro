@@ -29,7 +29,7 @@ export const createPlayerPlayingCard = (name: string) => {
   };
 };
 
-export const createICEPlayingCard = (name: string) => {
+export const createIcePlayingCard = (name: string) => {
   const card = iceCards.find((card) => card.name === name);
 
   if (!card) {

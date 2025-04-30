@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { CardRarity, CardPropertiesT, CardType, TriggerMoment } from "./card";
 import { KEYWORD_EFFECTS } from "./keywords";
-import { GameState } from "../state/gameReducer";
+import { GameState } from "../state/types";
 
 export const serverCards: CardPropertiesT[] = [
   {
@@ -40,9 +40,9 @@ export const serverCards: CardPropertiesT[] = [
         callback: (gameState) => {
           return {
             ...gameState,
-            player: {
-              ...gameState.player,
-              tags: gameState.player.tags + 1,
+            playerState: {
+              ...gameState.playerState,
+              tags: gameState.playerState.playerTags + 1,
             },
           };
         },
@@ -53,9 +53,9 @@ export const serverCards: CardPropertiesT[] = [
         callback: (gameState) => {
           return {
             ...gameState,
-            player: {
-              ...gameState.player,
-              victoryPoints: gameState.player.victoryPoints + 2,
+            playerState: {
+              ...gameState.playerState,
+              victoryPoints: gameState.playerState.playerVictoryPoints + 2,
             },
           };
         },
@@ -76,9 +76,9 @@ export const serverCards: CardPropertiesT[] = [
         callback: (gameState) => {
           return {
             ...gameState,
-            player: {
-              ...gameState.player,
-              victoryPoints: gameState.player.victoryPoints + 1,
+            playerState: {
+              ...gameState.playerState,
+              victoryPoints: gameState.playerState.playerVictoryPoints + 1,
             },
           };
         },
@@ -98,7 +98,10 @@ export const serverCards: CardPropertiesT[] = [
         callback: (gameState: GameState) => {
           return {
             ...gameState,
-            tick: gameState.tick - 1,
+            turnState: {
+              ...gameState.turnState,
+              turnRemainingClicks: gameState.turnState.turnRemainingClicks - 1,
+            },
           };
         },
         getText: () => "When you draw this card, lose 1 tick.",

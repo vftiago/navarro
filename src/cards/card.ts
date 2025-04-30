@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { GameState } from "../state/gameReducer";
+import { GameState } from "../state/types";
 
 export enum CardRarity {
   BASIC = "Basic",
@@ -53,6 +53,7 @@ export enum TriggerMoment {
 }
 
 export enum Keyword {
+  BOOST = "Boost",
   UNPLAYABLE = "Unplayable",
   ETHEREAL = "Ethereal",
   CRASH = "Crash",
@@ -77,10 +78,11 @@ export type BaseCardPropertiesT = {
   flavorText?: string;
 };
 
-export type ICECardPropertiesT = BaseCardPropertiesT & {
+export type IceCardPropertiesT = BaseCardPropertiesT & {
   type: CardType.ICE;
   subtype: CardSubtype.BARRIER | CardSubtype.CODE_GATE | CardSubtype.SENTRY;
-  rezzed: boolean;
+  isRezzed: boolean;
+  damage: number;
   getStrength: (gameState: GameState) => number;
 };
 
@@ -95,9 +97,21 @@ export type DefaultCardPropertiesT = BaseCardPropertiesT & {
 
 export type CardPropertiesT =
   | DefaultCardPropertiesT
-  | ICECardPropertiesT
+  | IceCardPropertiesT
   | AgendaCardPropertiesT;
 
 export type PlayingCardT = CardPropertiesT & {
+  deckContextId: string;
+};
+
+export type DefaultPlayingCardT = DefaultCardPropertiesT & {
+  deckContextId: string;
+};
+
+export type IcePlayingCardT = IceCardPropertiesT & {
+  deckContextId: string;
+};
+
+export type AgendaPlayingCardT = AgendaCardPropertiesT & {
   deckContextId: string;
 };

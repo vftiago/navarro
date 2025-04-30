@@ -2,15 +2,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { TbClock2 } from "react-icons/tb";
 
 export const ClickWidget = ({
-  remainingClicks,
+  turnRemainingClicks,
 }: {
-  remainingClicks: number;
+  turnRemainingClicks: number;
 }) => {
   return (
     <div>
       <ul className="flex flex-wrap gap-2.5">
         <AnimatePresence>
-          {Array.from({ length: remainingClicks }).map((_, index) => (
+          {Array.from({ length: turnRemainingClicks }).map((_, index) => (
             <motion.li
               key={index}
               animate={{ opacity: 1, scale: 1, y: 0 }}

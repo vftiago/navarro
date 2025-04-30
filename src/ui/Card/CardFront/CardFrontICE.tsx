@@ -3,7 +3,7 @@ import clsx from "clsx";
 import {
   CardRarity,
   CardType,
-  ICECardPropertiesT,
+  IceCardPropertiesT,
   TriggerMoment,
 } from "../../../cards/card";
 import { IoMdReturnRight } from "react-icons/io";
@@ -14,7 +14,7 @@ export const CardFrontICE = ({
   card,
   size,
 }: {
-  card: ICECardPropertiesT;
+  card: IceCardPropertiesT;
   size: "xs" | "sm" | "md";
 }) => {
   const { gameState } = useGameState();

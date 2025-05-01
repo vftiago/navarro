@@ -1,15 +1,19 @@
-import { createPlayerDeck } from "./createDeck";
+import { createPlayerPlayingCard } from "../cardDefinitions/createPlayingCard";
 
-export const playerStarterDeck = createPlayerDeck([
-  "Hack",
-  "Hack",
-  "Hack",
-  "Hack",
-  "Hack",
-  "Hack",
+const deckList = [
+  "Run",
+  "Run",
+  "Run",
+  "Run",
+  "Run",
+  "Run",
   "Crack",
   "Boost",
   "Sledgehammer",
   "Sledgehammer",
   "Deep Thoughts",
-]);
+];
+
+export const playerStarterDeck = deckList.map((card) =>
+  createPlayerPlayingCard(card),
+);

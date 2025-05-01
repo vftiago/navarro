@@ -2,9 +2,10 @@ import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
 import {
   CardRarity,
-  DefaultCardPropertiesT,
+  ServerCardDefinitions,
+  ProgramCardDefinitions,
   TriggerMoment,
-} from "../../../cards/card";
+} from "../../../cardDefinitions/card";
 import { IoMdReturnRight } from "react-icons/io";
 import { CARD_SIZES } from "../cardSizes";
 
@@ -12,7 +13,7 @@ export const CardFrontDefault = ({
   card,
   size,
 }: {
-  card: DefaultCardPropertiesT;
+  card: ServerCardDefinitions | ProgramCardDefinitions;
   size: "xs" | "sm" | "md";
 }) => {
   const { cardEffects, image, name, rarity, type, flavorText } = card;

@@ -1,5 +1,5 @@
 import { ReactNode, useReducer } from "react";
-import { gameReducer, initialGameState } from "../state/gameReducer";
+import { rootReducer, initialGameState } from "../state/reducer";
 import { GameStateContext } from "./GameStateContext";
 
 export const GameStateContextProvider = ({
@@ -7,7 +7,7 @@ export const GameStateContextProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
+  const [gameState, dispatch] = useReducer(rootReducer, initialGameState);
 
   return (
     <GameStateContext.Provider value={{ gameState, dispatch }}>

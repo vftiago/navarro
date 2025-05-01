@@ -1,19 +1,22 @@
-import { CardPropertiesT, CardType } from "../../../cards/card";
+import { CardDefinitions, CardType } from "../../../cardDefinitions/card";
 
-import { CardFrontICE } from "./CardFrontICE";
+import { CardFrontIce } from "./CardFrontIce";
 import { CardFrontDefault } from "./CardFrontDefault";
 import { CardFrontAgenda } from "./CardFrontAgenda";
+import { CardFrontProgram } from "./CardFrontProgram";
 
 export const CardFront = ({
   card,
   size = "xs",
 }: {
-  card: CardPropertiesT;
+  card: CardDefinitions;
   size?: "xs" | "sm" | "md";
 }) => {
   switch (card.type) {
+    case CardType.PROGRAM:
+      return <CardFrontProgram card={card} size={size} />;
     case CardType.ICE:
-      return <CardFrontICE card={card} size={size} />;
+      return <CardFrontIce card={card} size={size} />;
     case CardType.AGENDA:
       return <CardFrontAgenda card={card} size={size} />;
     default:

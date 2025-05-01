@@ -1,21 +1,33 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
 import {
-  AgendaCardDefinitions,
   CardRarity,
-  TriggerMoment,
+  EffectCost,
+  ProgramCardDefinitions,
 } from "../../../cardDefinitions/card";
-import { IoMdReturnRight } from "react-icons/io";
 import { CARD_SIZES } from "../cardSizes";
+import { TbClock2, TbTrash } from "react-icons/tb";
 
-export const CardFrontAgenda = ({
+const renderEffectCost = (cost: EffectCost) => {
+  switch (cost) {
+    case EffectCost.TRASH:
+      return <TbTrash className="inline -mt-0.5" />;
+    case EffectCost.CLICK:
+      return <TbClock2 className="inline" />;
+
+    default:
+      return null;
+  }
+};
+
+export const CardFrontProgram = ({
   card,
   size,
 }: {
-  card: AgendaCardDefinitions;
+  card: ProgramCardDefinitions;
   size: "xs" | "sm" | "md";
 }) => {
-  const { cardEffects, image, name, rarity, type, flavorText } = card;
+  const { cardEffects, image, name, rarity, type, subtype, flavorText } = card;
 
   const renderCardEffects = () => {
     if (!cardEffects) {
@@ -25,27 +37,20 @@ export const CardFrontAgenda = ({
     const effects = cardEffects.map((effect, index) => {
       const isKeywordEffect = Boolean(effect.keyword);
 
-      const isSubroutine = effect.triggerMoment === TriggerMoment.ON_ACCESS;
+      const { getText, cost } = effect;
 
-      const text = effect.getText();
-
-      return isSubroutine ? (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="xs"
-        >
-          <IoMdReturnRight className="inline -mt-0.5" /> {text}
-        </Text>
-      ) : (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="xs"
-        >
-          {text}
+      return (
+        <Text key={index} fw="500" size="xs">
+          {cost ? (
+            <span className="inline mr-1">{renderEffectCost(cost)}:</span>
+          ) : null}
+          <span
+            className={clsx("inline", {
+              "text-purple-300": isKeywordEffect,
+            })}
+          >
+            {getText()}
+          </span>
         </Text>
       );
     });
@@ -64,7 +69,7 @@ export const CardFrontAgenda = ({
       w={`${CARD_SIZES[size].w}rem`}
     >
       <Stack align="center" justify="center">
-        <Text className="text-yellow-300" fw={500} size="sm">
+        <Text fw={500} size="sm">
           {name}
         </Text>
       </Stack>
@@ -87,6 +92,7 @@ export const CardFrontAgenda = ({
       >
         <Text size="xs">
           {rarity} {type}
+          {subtype ? ` — ${subtype}` : ""}
         </Text>
       </Card.Section>
       <Stack align="center" gap="0.25rem" h="100%" justify="center" p="md">

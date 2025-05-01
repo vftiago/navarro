@@ -1,7 +1,7 @@
 export const CARD_SIZES = {
   xs: {
-    h: 19.5,
-    w: 13,
+    h: 18,
+    w: 12,
   },
   sm: {
     h: 21,

@@ -1,14 +1,14 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
-import { CardType } from "../../cards/card";
-import { PlayingCardT } from "../../cards/card";
+import { CardType } from "../../cardDefinitions/card";
+import { PlayingCard } from "../../cardDefinitions/card";
 import { CARD_SIZES } from "./cardSizes";
 
 export const CardFrontFullArt = ({
   card,
   size = "xs",
 }: {
-  card: PlayingCardT;
+  card: PlayingCard;
   size?: "xs" | "sm" | "md";
 }) => {
   const { image, name, type } = card;

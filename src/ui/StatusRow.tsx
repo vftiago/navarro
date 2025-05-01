@@ -4,19 +4,21 @@ import { useGameState } from "../context/useGameState";
 
 export const StatusRow = () => {
   const {
-    gameState: { securityLevel, currentPhase },
+    gameState: { serverState, turnState },
   } = useGameState();
 
   return (
     <Flex className="bg-neutral-900 p-2.5 rounded-xl" justify="space-between">
       <Flex align="center" gap="xs">
         Server security level
-        {Array.from({ length: securityLevel }).map((_, index) => (
-          <TbCloudLock key={index} size="24px" />
-        ))}
+        {Array.from({ length: serverState.serverSecurityLevel }).map(
+          (_, index) => (
+            <TbCloudLock key={index} size="24px" />
+          ),
+        )}
       </Flex>
       <Flex align="center" gap="sm">
-        Current Phase: {currentPhase}
+        Current Phase: {turnState.turnCurrentPhase}
       </Flex>
     </Flex>
   );

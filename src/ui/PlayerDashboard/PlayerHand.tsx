@@ -1,13 +1,15 @@
 import { CardFront } from "../Card/CardFront";
-import { Keyword, PlayingCardT } from "../../cards/card";
+import { Keyword, PlayingCard } from "../../cardDefinitions/card";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 import { EXIT_ANIMATION_DURATION } from "../constants";
 import { useGameState } from "../../context/useGameState";
 import { useEffect, useState } from "react";
 import { Text } from "@mantine/core";
-import { GamePhase } from "../../state/gameReducer";
 import clsx from "clsx";
+import { TurnPhase } from "../../state/reducers/turnReducer";
+import { useThunk } from "../../context/useThunk";
+import { startPlayPhase } from "../../state/thunks";
 
 const containerVariants = {
   hidden: {
@@ -38,49 +40,41 @@ const itemVariants = {
 
 export const PlayerHand = () => {
   const {
-    dispatch,
-    gameState: { player, currentPhase, animationKey },
+    gameState: { playerState, turnState },
   } = useGameState();
 
-  const [visibleCards, setVisibleCards] = useState<PlayingCardT[]>(player.hand);
+  const dispatchThunk = useThunk();
+
+  const { playerHand } = playerState;
+  const { turnCurrentPhase } = turnState;
+
   const [exitingCards, setExitingCards] = useState<string[]>([]);
   const [showEmptyMessage, setShowEmptyMessage] = useState(
-    player.hand.length === 0,
+    playerHand.length === 0,
   );
+
+  const [animationKey, setAnimationKey] = useState(0);
 
   const [scope, animate] = useAnimate();
 
   useEffect(() => {
-    if (player.hand.length === 0 && currentPhase === GamePhase.Main) {
+    if (turnCurrentPhase === TurnPhase.End || playerHand.length === 0) {
+      setAnimationKey((prev) => prev + 1);
+    }
+  }, [turnCurrentPhase, playerHand.length]);
+
+  useEffect(() => {
+    if (playerHand.length === 0 && turnCurrentPhase === TurnPhase.Main) {
       setShowEmptyMessage(true);
     } else {
       setShowEmptyMessage(false);
     }
-  }, [player.hand, currentPhase]);
+  }, [playerHand, turnCurrentPhase]);
 
-  useEffect(() => {
-    if (currentPhase !== GamePhase.Discard) {
-      setVisibleCards(player.hand);
-    }
-  }, [player.hand, currentPhase]);
+  const rotationValues = calculateCardRotations(playerHand.length);
+  const topValues = calculateCardTopValues(playerHand.length);
 
-  useEffect(() => {
-    if (currentPhase === GamePhase.Discard && visibleCards.length > 0) {
-      setExitingCards(visibleCards.map((card) => card.deckContextId));
-
-      const timer = setTimeout(() => {
-        setVisibleCards([]);
-        setExitingCards([]);
-      }, EXIT_ANIMATION_DURATION);
-
-      return () => clearTimeout(timer);
-    }
-  }, [currentPhase, visibleCards.length, player.hand.length, visibleCards]);
-
-  const rotationValues = calculateCardRotations(visibleCards.length);
-  const topValues = calculateCardTopValues(visibleCards.length);
-
-  const handleCardClick = (card: PlayingCardT, index: number) => {
+  const handleCardClick = (card: PlayingCard, index: number) => {
     if (
       card.cardEffects?.some((effect) => effect.keyword === Keyword.UNPLAYABLE)
     ) {
@@ -104,13 +98,10 @@ export const PlayerHand = () => {
     );
 
     setTimeout(() => {
-      setVisibleCards((prev) =>
-        prev.filter((c) => c.deckContextId !== card.deckContextId),
-      );
       setExitingCards((prev) => prev.filter((id) => id !== card.deckContextId));
-    }, EXIT_ANIMATION_DURATION);
 
-    dispatch({ type: GamePhase.Play, card, index });
+      dispatchThunk(startPlayPhase(card, index));
+    }, EXIT_ANIMATION_DURATION);
   };
 
   if (showEmptyMessage) {
@@ -124,7 +115,7 @@ export const PlayerHand = () => {
   return (
     <AnimatePresence mode="wait">
       <motion.ol
-        key={`hand-${animationKey}`}
+        key={animationKey}
         ref={scope}
         layout
         animate="show"
@@ -136,7 +127,7 @@ export const PlayerHand = () => {
         }}
         variants={containerVariants}
       >
-        {visibleCards.map((card, index) => {
+        {playerHand.map((card, index) => {
           const isExiting = exitingCards.includes(card.deckContextId);
 
           return (
@@ -165,7 +156,7 @@ export const PlayerHand = () => {
                 }
               }}
             >
-              <CardFront card={card} size="xs" />
+              <CardFront card={card} />
             </motion.li>
           );
         })}

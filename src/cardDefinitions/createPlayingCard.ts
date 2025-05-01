@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { serverCards } from "./serverCards";
 import { playerCards } from "./playerCards";
-import { iceCards } from "./iceCards";
+import { iceCards } from "./serverCards/ice";
 
 export const createServerPlayingCard = (name: string) => {
   const card = serverCards.find((card) => card.name === name);
@@ -29,7 +29,7 @@ export const createPlayerPlayingCard = (name: string) => {
   };
 };
 
-export const createICEPlayingCard = (name: string) => {
+export const createIcePlayingCard = (name: string) => {
   const card = iceCards.find((card) => card.name === name);
 
   if (!card) {

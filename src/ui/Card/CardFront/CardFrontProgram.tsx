@@ -1,21 +1,18 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
-import {
-  ServerCardDefinitions,
-  ProgramCardDefinitions,
-} from "../../../cardDefinitions/card";
+import { ProgramCardDefinitions } from "../../../cardDefinitions/card";
 import { CARD_SIZES } from "../cardSizes";
 import { CardTitle } from "./components/CardTitle";
 import { CardEffects } from "./components/CardEffects";
 import { CardTypeLine } from "./components/CardTypeLine";
 
-export const CardFrontDefault = ({
+export const CardFrontProgram = ({
   card,
   size,
 }: {
-  card: ServerCardDefinitions | ProgramCardDefinitions;
+  card: ProgramCardDefinitions;
   size: "xs" | "sm" | "md";
 }) => {
-  const { cardEffects, image, name, rarity, type, flavorText } = card;
+  const { cardEffects, image, name, rarity, type, subtype, flavorText } = card;
 
   return (
     <Card
@@ -30,6 +27,7 @@ export const CardFrontDefault = ({
       <Card.Section>
         <CardTitle name={name} />
       </Card.Section>
+
       <Card.Section>
         <Image
           alt={name}
@@ -39,18 +37,21 @@ export const CardFrontDefault = ({
         />
       </Card.Section>
       <Card.Section>
-        <CardTypeLine rarity={rarity} size={size} type={type} />
+        <CardTypeLine
+          rarity={rarity}
+          size={size}
+          subtype={subtype}
+          type={type}
+        />
       </Card.Section>
-      <Card.Section flex={1}>
-        <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
-          <CardEffects cardEffects={cardEffects} size={size} />
-          {flavorText ? (
-            <Text className="italic" size={size}>
-              {flavorText}
-            </Text>
-          ) : null}
-        </Stack>
-      </Card.Section>
+      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="sm">
+        <CardEffects cardEffects={cardEffects} size={size} />
+        {flavorText ? (
+          <Text className="italic" size={size}>
+            {flavorText}
+          </Text>
+        ) : null}
+      </Stack>
     </Card>
   );
 };

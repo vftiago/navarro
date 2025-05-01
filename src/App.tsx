@@ -1,31 +1,27 @@
 import { Container, Stack } from "@mantine/core";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { IceRow } from "./ui/IceRow";
 import { useDisclosure } from "@mantine/hooks";
 import { StatusRow } from "./ui/StatusRow";
-import { EXIT_ANIMATION_DURATION } from "./ui/constants";
 import { Modals } from "./ui/Modals";
-import { delay } from "framer-motion";
 
 import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { useGameState } from "./context/useGameState";
 import { ProgramRow } from "./ui/ProgramRow";
 import { CorpTurn } from "./ui/CorpTurn";
-import { GamePhase } from "./state/gameReducer";
+import { TurnPhase } from "./state/reducers/turnReducer";
+import { PhaseManager } from "./PhaseManager";
+import { useThunk } from "./context/useThunk";
+import { endRunPhase } from "./state/thunks";
+import { getPlayerAccessedCards, getTurnCurrentPhase } from "./state/selectors";
+import { ServerRow } from "./ui/ServerRow";
 
 export const App = () => {
-  const currentAnimationKey = useRef(0);
+  const { gameState } = useGameState();
+  const dispatchThunk = useThunk();
 
-  const {
-    gameState: {
-      animationKey,
-      accessedCards,
-      currentPhase,
-      nextAction,
-      shouldWaitForPlayerInput,
-    },
-    dispatch,
-  } = useGameState();
+  const turnCurrentPhase = getTurnCurrentPhase(gameState);
+  const playerAccessedCards = getPlayerAccessedCards(gameState);
 
   const [isDeckModalOpen, { open: openDeckModal, close: closeDeckModal }] =
     useDisclosure(false);
@@ -47,42 +43,20 @@ export const App = () => {
     useDisclosure(false);
 
   useEffect(() => {
-    if (animationKey !== currentAnimationKey.current) {
-      currentAnimationKey.current = animationKey;
-    }
-  }, [animationKey]);
-
-  useEffect(() => {
-    if (accessedCards.length > 0) {
+    if (playerAccessedCards.length > 0) {
       openCardDisplayModal();
     }
-  }, [accessedCards, openCardDisplayModal]);
+  }, [playerAccessedCards, openCardDisplayModal]);
 
   const onCloseDisplayCardModal = useCallback(() => {
     closeCardDisplayModal();
-
-    delay(() => {
-      if (nextAction) {
-        dispatch(nextAction);
-      }
-    }, EXIT_ANIMATION_DURATION);
-  }, [closeCardDisplayModal, nextAction, dispatch]);
-
-  useEffect(() => {
-    if (shouldWaitForPlayerInput || !nextAction) {
-      return;
-    }
-
-    delay(() => {
-      if (nextAction) {
-        dispatch(nextAction);
-      }
-    }, EXIT_ANIMATION_DURATION);
-  }, [nextAction, dispatch, shouldWaitForPlayerInput]);
+    dispatchThunk(endRunPhase());
+  }, [closeCardDisplayModal, dispatchThunk]);
 
   return (
     <div className="overflow-hidden">
-      {currentPhase === GamePhase.Corp ? <CorpTurn /> : null}
+      <PhaseManager />
+      {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
       <Container fluid maw={1620} p="lg">
         <Modals
           closeCardDisplayModal={onCloseDisplayCardModal}
@@ -97,6 +71,7 @@ export const App = () => {
           isTrashModalOpen={isTrashModalOpen}
         />
         <Stack gap="xs">
+          <ServerRow />
           <IceRow />
           <StatusRow />
           <ProgramRow />

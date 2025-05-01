@@ -1,28 +1,28 @@
-import { CardEffectT, Keyword, TriggerMoment } from "./card";
+import { CardEffect, Keyword, TriggerMoment } from "./card";
 
-export const KEYWORD_EFFECTS: Record<Keyword, CardEffectT> = {
+export const KEYWORD_EFFECTS: Record<Keyword, CardEffect> = {
   [Keyword.UNPLAYABLE]: {
     triggerMoment: TriggerMoment.ON_PLAY,
     keyword: Keyword.UNPLAYABLE,
-    callback: (gameState) => gameState,
+    getActions: () => [],
     getText: () => `${Keyword.UNPLAYABLE}.`,
   },
   [Keyword.ETHEREAL]: {
     triggerMoment: TriggerMoment.ON_DISCARD,
     keyword: Keyword.ETHEREAL,
-    callback: (gameState) => gameState,
+    getActions: () => [],
     getText: () => `${Keyword.ETHEREAL}.`,
   },
   [Keyword.CRASH]: {
     triggerMoment: TriggerMoment.ON_PLAY,
     keyword: Keyword.CRASH,
-    callback: (gameState) => gameState,
+    getActions: () => [],
     getText: () => `${Keyword.CRASH}.`,
   },
   [Keyword.TRASH]: {
     triggerMoment: TriggerMoment.ON_DISCARD,
     keyword: Keyword.TRASH,
-    callback: (gameState) => gameState,
+    getActions: () => [],
     getText: () => `${Keyword.TRASH}.`,
   },
 };

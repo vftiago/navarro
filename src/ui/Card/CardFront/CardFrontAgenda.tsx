@@ -1,57 +1,18 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
-import clsx from "clsx";
-import {
-  AgendaCardPropertiesT,
-  CardRarity,
-  TriggerMoment,
-} from "../../../cards/card";
-import { IoMdReturnRight } from "react-icons/io";
+import { AgendaCardDefinitions } from "../../../cardDefinitions/card";
 import { CARD_SIZES } from "../cardSizes";
+import { CardTitle } from "./components/CardTitle";
+import { CardTypeLine } from "./components/CardTypeLine";
+import { CardEffects } from "./components/CardEffects";
 
 export const CardFrontAgenda = ({
   card,
   size,
 }: {
-  card: AgendaCardPropertiesT;
+  card: AgendaCardDefinitions;
   size: "xs" | "sm" | "md";
 }) => {
   const { cardEffects, image, name, rarity, type, flavorText } = card;
-
-  const renderCardEffects = () => {
-    if (!cardEffects) {
-      return null;
-    }
-
-    const effects = cardEffects.map((effect, index) => {
-      const isKeywordEffect = Boolean(effect.keyword);
-
-      const isSubroutine = effect.triggerMoment === TriggerMoment.ON_ACCESS;
-
-      const text = effect.getText();
-
-      return isSubroutine ? (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="sm"
-        >
-          <IoMdReturnRight className="inline -mt-0.5" /> {text}
-        </Text>
-      ) : (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="sm"
-        >
-          {text}
-        </Text>
-      );
-    });
-
-    return effects;
-  };
 
   return (
     <Card
@@ -63,40 +24,29 @@ export const CardFrontAgenda = ({
       shadow="lg"
       w={`${CARD_SIZES[size].w}rem`}
     >
-      <Stack align="center" justify="center">
-        <Text className="text-yellow-300" fw={500} size="sm">
-          {name}
-        </Text>
-      </Stack>
+      <Card.Section>
+        <CardTitle name={name} rootClassName="text-yellow-300" />
+      </Card.Section>
       <Card.Section>
         <Image
-          alt={name}
           h={`${CARD_SIZES[size].h / 2}rem`}
           loading="eager"
           src={`./assets/${image}`}
         />
       </Card.Section>
-      <Card.Section
-        className={clsx({
-          "bg-gray-900": rarity === CardRarity.BASIC,
-          "bg-gray-600": rarity === CardRarity.COMMON,
-          "bg-cyan-600": rarity === CardRarity.UNCOMMON,
-          "bg-indigo-500": rarity === CardRarity.RARE,
-        })}
-        px="sm"
-      >
-        <Text size="xs">
-          {rarity} {type}
-        </Text>
+      <Card.Section>
+        <CardTypeLine rarity={rarity} size={size} type={type} />
       </Card.Section>
-      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="md">
-        {renderCardEffects()}
-        {flavorText ? (
-          <Text className="italic" size="xs">
-            {flavorText}
-          </Text>
-        ) : null}
-      </Stack>
+      <Card.Section flex={1}>
+        <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
+          <CardEffects cardEffects={cardEffects} size={size} />
+          {flavorText ? (
+            <Text className="italic" size={size}>
+              {flavorText}
+            </Text>
+          ) : null}
+        </Stack>
+      </Card.Section>
     </Card>
   );
 };

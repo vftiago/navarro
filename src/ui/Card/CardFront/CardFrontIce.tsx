@@ -1,21 +1,27 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
-import {
-  ServerCardDefinitions,
-  ProgramCardDefinitions,
-} from "../../../cardDefinitions/card";
+import { IcePlayingCard } from "../../../cardDefinitions/card";
 import { CARD_SIZES } from "../cardSizes";
+import { useGameState } from "../../../context/useGameState";
 import { CardTitle } from "./components/CardTitle";
 import { CardEffects } from "./components/CardEffects";
 import { CardTypeLine } from "./components/CardTypeLine";
+import { getIceStrength } from "../../../state/selectors";
+import clsx from "clsx";
 
-export const CardFrontDefault = ({
+export const CardFrontIce = ({
   card,
   size,
 }: {
-  card: ServerCardDefinitions | ProgramCardDefinitions;
+  card: IcePlayingCard;
   size: "xs" | "sm" | "md";
 }) => {
-  const { cardEffects, image, name, rarity, type, flavorText } = card;
+  const { gameState } = useGameState();
+
+  const { cardEffects, image, name, rarity, type, subtype, flavorText } = card;
+
+  const currentStrenght = getIceStrength(gameState, card);
+
+  const baseStrength = card.getStrength(gameState);
 
   return (
     <Card
@@ -39,7 +45,12 @@ export const CardFrontDefault = ({
         />
       </Card.Section>
       <Card.Section>
-        <CardTypeLine rarity={rarity} size={size} type={type} />
+        <CardTypeLine
+          rarity={rarity}
+          size={size}
+          subtype={subtype}
+          type={type}
+        />
       </Card.Section>
       <Card.Section flex={1}>
         <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
@@ -51,6 +62,17 @@ export const CardFrontDefault = ({
           ) : null}
         </Stack>
       </Card.Section>
+      <div
+        className={clsx(
+          "absolute flex items-center font-bold justify-center border-1 border-gray-500 rounded-md size-6 right-0 m-1 bottom-0",
+          {
+            "text-green-300": currentStrenght > baseStrength,
+            "text-red-300": currentStrenght < baseStrength,
+          },
+        )}
+      >
+        {currentStrenght}
+      </div>
     </Card>
   );
 };

@@ -19,7 +19,7 @@ export const programCards: ProgramCardDefinitions[] = [
     cardEffects: [
       {
         triggerMoment: TriggerMoment.ON_CLICK,
-        cost: EffectCost.TRASH,
+        costs: [EffectCost.CLICK, EffectCost.TRASH],
         getActions: () => [],
         getText: () => "Destroy target Barrier. Increase noise by 2.",
       },

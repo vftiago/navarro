@@ -9,7 +9,7 @@ export const ProgramRow = () => {
   return (
     <Flex className="bg-neutral-900 p-2.5 rounded-xl h-[308px]" gap="xs">
       {playerState.playerInstalledPrograms.map((card, index) => (
-        <CardFront key={index} card={card} size="xs" />
+        <CardFront key={index} card={card} />
       ))}
     </Flex>
   );

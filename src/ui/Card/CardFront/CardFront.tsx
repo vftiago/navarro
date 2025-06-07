@@ -1,17 +1,21 @@
-import { CardDefinitions, CardType } from "../../../cardDefinitions/card";
+import { CardType } from "../../../cardDefinitions/card";
 
 import { CardFrontIce } from "./CardFrontIce";
 import { CardFrontDefault } from "./CardFrontDefault";
 import { CardFrontAgenda } from "./CardFrontAgenda";
 import { CardFrontProgram } from "./CardFrontProgram";
+import { ComponentProps } from "react";
 
-export const CardFront = ({
-  card,
-  size = "xs",
-}: {
-  card: CardDefinitions;
-  size?: "xs" | "sm" | "md";
-}) => {
+export const CardFront = (
+  props: ComponentProps<
+    | typeof CardFrontProgram
+    | typeof CardFrontIce
+    | typeof CardFrontAgenda
+    | typeof CardFrontDefault
+  >,
+) => {
+  const { card, size = "xs" } = props;
+
   switch (card.type) {
     case CardType.PROGRAM:
       return <CardFrontProgram card={card} size={size} />;

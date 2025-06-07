@@ -4,10 +4,10 @@ import {
   CardRarity,
   ServerCardDefinitions,
   ProgramCardDefinitions,
-  TriggerMoment,
 } from "../../../cardDefinitions/card";
-import { IoMdReturnRight } from "react-icons/io";
 import { CARD_SIZES } from "../cardSizes";
+import { CardTitle } from "./components/CardTitle";
+import { CardEffects } from "./components/CardEffects";
 
 export const CardFrontDefault = ({
   card,
@@ -17,42 +17,6 @@ export const CardFrontDefault = ({
   size: "xs" | "sm" | "md";
 }) => {
   const { cardEffects, image, name, rarity, type, flavorText } = card;
-
-  const renderCardEffects = () => {
-    if (!cardEffects) {
-      return null;
-    }
-
-    const effects = cardEffects.map((effect, index) => {
-      const isKeywordEffect = Boolean(effect.keyword);
-
-      const isSubroutine = effect.triggerMoment === TriggerMoment.ON_ACCESS;
-
-      const text = effect.getText();
-
-      return isSubroutine ? (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="xs"
-        >
-          <IoMdReturnRight className="inline -mt-0.5" /> {text}
-        </Text>
-      ) : (
-        <Text
-          key={index}
-          className={isKeywordEffect ? "text-purple-300" : ""}
-          fw="500"
-          size="xs"
-        >
-          {text}
-        </Text>
-      );
-    });
-
-    return effects;
-  };
 
   return (
     <Card
@@ -64,11 +28,9 @@ export const CardFrontDefault = ({
       shadow="lg"
       w={`${CARD_SIZES[size].w}rem`}
     >
-      <Stack align="center" justify="center">
-        <Text fw={500} size="sm">
-          {name}
-        </Text>
-      </Stack>
+      <Card.Section>
+        <CardTitle name={name} />
+      </Card.Section>
       <Card.Section>
         <Image
           alt={name}
@@ -84,16 +46,16 @@ export const CardFrontDefault = ({
           "bg-cyan-600": rarity === CardRarity.UNCOMMON,
           "bg-indigo-500": rarity === CardRarity.RARE,
         })}
-        px="sm"
+        px={size}
       >
-        <Text size="xs">
+        <Text size={size}>
           {rarity} {type}
         </Text>
       </Card.Section>
-      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="md">
-        {renderCardEffects()}
+      <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
+        <CardEffects cardEffects={cardEffects} size={size} />
         {flavorText ? (
-          <Text className="italic" size="xs">
+          <Text className="italic" size={size}>
             {flavorText}
           </Text>
         ) : null}

@@ -156,7 +156,7 @@ export const PlayerHand = () => {
                 }
               }}
             >
-              <CardFront card={card} size="xs" />
+              <CardFront card={card} />
             </motion.li>
           );
         })}

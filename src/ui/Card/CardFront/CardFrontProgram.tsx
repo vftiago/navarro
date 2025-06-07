@@ -1,24 +1,9 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
-import clsx from "clsx";
-import {
-  CardRarity,
-  EffectCost,
-  ProgramCardDefinitions,
-} from "../../../cardDefinitions/card";
+import { ProgramCardDefinitions } from "../../../cardDefinitions/card";
 import { CARD_SIZES } from "../cardSizes";
-import { TbClock2, TbTrash } from "react-icons/tb";
-
-const renderEffectCost = (cost: EffectCost) => {
-  switch (cost) {
-    case EffectCost.TRASH:
-      return <TbTrash className="inline -mt-0.5" />;
-    case EffectCost.CLICK:
-      return <TbClock2 className="inline" />;
-
-    default:
-      return null;
-  }
-};
+import { CardTitle } from "./components/CardTitle";
+import { CardEffects } from "./components/CardEffects";
+import { CardTypeLine } from "./components/CardTypeLine";
 
 export const CardFrontProgram = ({
   card,
@@ -27,36 +12,7 @@ export const CardFrontProgram = ({
   card: ProgramCardDefinitions;
   size: "xs" | "sm" | "md";
 }) => {
-  const { cardEffects, image, name, rarity, type, subtype, flavorText } = card;
-
-  const renderCardEffects = () => {
-    if (!cardEffects) {
-      return null;
-    }
-
-    const effects = cardEffects.map((effect, index) => {
-      const isKeywordEffect = Boolean(effect.keyword);
-
-      const { getText, cost } = effect;
-
-      return (
-        <Text key={index} fw="500" size="xs">
-          {cost ? (
-            <span className="inline mr-1">{renderEffectCost(cost)}:</span>
-          ) : null}
-          <span
-            className={clsx("inline", {
-              "text-purple-300": isKeywordEffect,
-            })}
-          >
-            {getText()}
-          </span>
-        </Text>
-      );
-    });
-
-    return effects;
-  };
+  const { cardEffects, image, name, rarity, type, flavorText } = card;
 
   return (
     <Card
@@ -68,11 +24,10 @@ export const CardFrontProgram = ({
       shadow="lg"
       w={`${CARD_SIZES[size].w}rem`}
     >
-      <Stack align="center" justify="center">
-        <Text fw={500} size="sm">
-          {name}
-        </Text>
-      </Stack>
+      <Card.Section>
+        <CardTitle name={name} />
+      </Card.Section>
+
       <Card.Section>
         <Image
           alt={name}
@@ -81,24 +36,13 @@ export const CardFrontProgram = ({
           src={`./assets/${image}`}
         />
       </Card.Section>
-      <Card.Section
-        className={clsx({
-          "bg-gray-900": rarity === CardRarity.BASIC,
-          "bg-gray-600": rarity === CardRarity.COMMON,
-          "bg-cyan-600": rarity === CardRarity.UNCOMMON,
-          "bg-indigo-500": rarity === CardRarity.RARE,
-        })}
-        px="sm"
-      >
-        <Text size="xs">
-          {rarity} {type}
-          {subtype ? ` — ${subtype}` : ""}
-        </Text>
+      <Card.Section>
+        <CardTypeLine rarity={rarity} size={size} type={type} />
       </Card.Section>
-      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="md">
-        {renderCardEffects()}
+      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="sm">
+        <CardEffects cardEffects={cardEffects} size={size} />
         {flavorText ? (
-          <Text className="italic" size="xs">
+          <Text className="italic" size={size}>
             {flavorText}
           </Text>
         ) : null}

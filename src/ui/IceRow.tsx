@@ -15,9 +15,9 @@ export const IceRow = () => {
       {gameState.serverState.serverInstalledIce.map(
         (card: IcePlayingCard, index: number) => {
           return card.isRezzed ? (
-            <CardFront key={index} card={card} size="xs" />
+            <CardFront key={index} card={card} />
           ) : (
-            <CardBack key={index} size="xs" />
+            <CardBack key={index} />
           );
         },
       )}

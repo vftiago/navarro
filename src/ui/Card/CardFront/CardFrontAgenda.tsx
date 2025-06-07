@@ -7,6 +7,7 @@ import {
 } from "../../../cardDefinitions/card";
 import { IoMdReturnRight } from "react-icons/io";
 import { CARD_SIZES } from "../cardSizes";
+import { CardTitle } from "./components/CardTitle";
 
 export const CardFrontAgenda = ({
   card,
@@ -34,7 +35,7 @@ export const CardFrontAgenda = ({
           key={index}
           className={isKeywordEffect ? "text-purple-300" : ""}
           fw="500"
-          size="xs"
+          size={size}
         >
           <IoMdReturnRight className="inline -mt-0.5" /> {text}
         </Text>
@@ -43,7 +44,7 @@ export const CardFrontAgenda = ({
           key={index}
           className={isKeywordEffect ? "text-purple-300" : ""}
           fw="500"
-          size="xs"
+          size={size}
         >
           {text}
         </Text>
@@ -63,14 +64,12 @@ export const CardFrontAgenda = ({
       shadow="lg"
       w={`${CARD_SIZES[size].w}rem`}
     >
-      <Stack align="center" justify="center">
-        <Text className="text-yellow-300" fw={500} size="sm">
-          {name}
-        </Text>
-      </Stack>
+      <Card.Section>
+        <CardTitle name={name} rootClassName="text-yellow-300" />
+      </Card.Section>
+
       <Card.Section>
         <Image
-          alt={name}
           h={`${CARD_SIZES[size].h / 2}rem`}
           loading="eager"
           src={`./assets/${image}`}
@@ -83,20 +82,22 @@ export const CardFrontAgenda = ({
           "bg-cyan-600": rarity === CardRarity.UNCOMMON,
           "bg-indigo-500": rarity === CardRarity.RARE,
         })}
-        px="sm"
+        px={size}
       >
-        <Text size="xs">
+        <Text size={size}>
           {rarity} {type}
         </Text>
       </Card.Section>
-      <Stack align="center" gap="0.25rem" h="100%" justify="center" p="md">
-        {renderCardEffects()}
-        {flavorText ? (
-          <Text className="italic" size="xs">
-            {flavorText}
-          </Text>
-        ) : null}
-      </Stack>
+      <Card.Section>
+        <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
+          {renderCardEffects()}
+          {flavorText ? (
+            <Text className="italic" size={size}>
+              {flavorText}
+            </Text>
+          ) : null}
+        </Stack>
+      </Card.Section>
     </Card>
   );
 };

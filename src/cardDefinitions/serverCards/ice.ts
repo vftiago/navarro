@@ -10,7 +10,10 @@ import {
   addPermanentEffect,
   PermanentEffectT,
 } from "../../state/reducers/boardReducer";
-import { removeRandomCardFromHand } from "../../state/reducers/playerReducer";
+import {
+  modifyPlayerTags,
+  removeRandomCardFromHand,
+} from "../../state/reducers/playerReducer";
 import { getServerSecurityLevel } from "../../state/selectors";
 
 export const iceCards: IceCardDefinitions[] = [
@@ -25,12 +28,12 @@ export const iceCards: IceCardDefinitions[] = [
     getStrength: () => 8,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_ACCESS,
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
         getActions: () => [modifyClicks(-1)],
         getText: () => "Lose 1 click.",
       },
     ],
-    flavorText: `"It's gonna take forever to go around that thing."`,
+    flavorText: `"It's gonna take forever to go around that."`,
   },
   {
     name: "Fire Wall",
@@ -94,8 +97,8 @@ export const iceCards: IceCardDefinitions[] = [
     getStrength: () => 5,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_ACCESS,
-        getActions: () => [],
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
+        getActions: () => [modifyPlayerTags(1)],
         getText: () => "Gain 1 tag.",
       },
     ],

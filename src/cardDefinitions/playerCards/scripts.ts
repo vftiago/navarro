@@ -35,6 +35,20 @@ export const scriptCards: CardDefinitions[] = [
     ],
   },
   {
+    name: "Piece of Cake",
+    image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",
+    rarity: CardRarity.RARE,
+    type: CardType.SCRIPT,
+    cardEffects: [
+      {
+        triggerMoment: TriggerMoment.ON_PLAY,
+        getActions: () => [modifyClicks(3)],
+        getText: () => "Draw 3 cards.",
+      },
+      KEYWORD_EFFECTS.Trash,
+    ],
+  },
+  {
     name: "Boost",
     image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",
     rarity: CardRarity.RARE,

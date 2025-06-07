@@ -71,7 +71,7 @@ export enum Keyword {
 }
 
 export type CardEffect = {
-  cost?: EffectCost;
+  costs?: EffectCost[];
   keyword?: Keyword;
   triggerMoment: TriggerMoment;
   getActions: ({

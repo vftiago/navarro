@@ -14,6 +14,7 @@ import { PhaseManager } from "./PhaseManager";
 import { useThunk } from "./context/useThunk";
 import { endRunPhase } from "./state/thunks";
 import { getPlayerAccessedCards, getTurnCurrentPhase } from "./state/selectors";
+import { ServerRow } from "./ui/ServerRow";
 
 export const App = () => {
   const { gameState } = useGameState();
@@ -70,6 +71,7 @@ export const App = () => {
           isTrashModalOpen={isTrashModalOpen}
         />
         <Stack gap="xs">
+          <ServerRow />
           <IceRow />
           <StatusRow />
           <ProgramRow />

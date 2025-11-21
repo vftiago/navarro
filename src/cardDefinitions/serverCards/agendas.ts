@@ -20,7 +20,7 @@ export const agendaCards: AgendaCardDefinitions[] = [
       {
         triggerMoment: TriggerMoment.ON_FETCH,
         getActions: () => [modifyPlayerTags(1)],
-        getText: () => "When you fetch this card, gain 1 tag.",
+        getText: () => "On Fetch, gain 1 tag.",
       },
       {
         triggerMoment: TriggerMoment.ON_FETCH,

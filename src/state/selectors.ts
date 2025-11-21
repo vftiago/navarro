@@ -49,7 +49,7 @@ export const getPlayerMaxHandSize = (state: GameState): number =>
   state.playerState.playerMaxHandSize;
 
 export const getPlayerPlayedCards = (state: GameState): PlayingCard[] =>
-  state.playerState.playerPlayedCardS;
+  state.playerState.playerPlayedCards;
 
 export const getPlayerAccessedCards = (state: GameState): PlayingCard[] =>
   state.playerState.playerAccessedCards;

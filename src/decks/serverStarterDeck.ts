@@ -3,7 +3,7 @@ import { addWeight, weighted } from "@lrkit/weighted";
 const weightedServerIceList = [
   addWeight(["Fire Wall"], 1),
   addWeight(["Ice Wall"], 3),
-  addWeight(["Authenticator"], 5),
+  addWeight(["Biometric Authenticator"], 5),
   addWeight(["Bad Moon"], 3),
 ];
 

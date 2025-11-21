@@ -14,7 +14,7 @@ import {
 export type PlayerState = {
   playerDeck: PlayingCard[];
   playerHand: PlayingCard[];
-  playerPlayedCardS: PlayingCard[];
+  playerPlayedCards: PlayingCard[];
   playerDiscardPile: PlayingCard[];
   playerTrashPile: PlayingCard[];
   playerInstalledPrograms: ProgramPlayingCard[];
@@ -24,6 +24,9 @@ export type PlayerState = {
   playerCardsPerTurn: number;
   playerClicksPerTurn: number;
   playerTags: number;
+  playerNoise: number;
+  playerSignal: number;
+  playerMemory: number;
   playerVictoryPoints: number;
 };
 
@@ -32,16 +35,19 @@ const shuffledDeck = shuffleCards([...playerStarterDeck]);
 export const initialPlayerState: PlayerState = {
   playerDeck: shuffledDeck,
   playerHand: [],
-  playerPlayedCardS: [],
+  playerPlayedCards: [],
   playerDiscardPile: [],
   playerTrashPile: [],
   playerInstalledPrograms: [],
   playerAccessedCards: [],
   playerTags: 0,
+  playerNoise: 0,
+  playerSignal: 0,
   playerVictoryPoints: 0,
   playerMaxHandSize: 10,
   playerCardsPerTurn: 5,
   playerClicksPerTurn: 3,
+  playerMemory: 4,
   playerScoreArea: [],
 };
 
@@ -59,6 +65,8 @@ export enum PlayerActionTypes {
   REMOVE_CARD_FROM_HAND = "REMOVE_CARD_FROM_HAND",
   REMOVE_RANDOM_CARD_FROM_HAND = "REMOVE_RANDOM_CARD_FROM_HAND",
   MODIFY_TAGS = "MODIFY_TAGS",
+  MODIFY_NOISE = "MODIFY_NOISE",
+  MODIFY_SIGNAL = "MODIFY_SIGNAL",
   MODIFY_VICTORY_POINTS = "INCREMENT_VICTORY_POINTS",
 }
 
@@ -85,6 +93,8 @@ export type PlayerAction =
   | { type: PlayerActionTypes.REMOVE_CARD_FROM_HAND; payload: number }
   | { type: PlayerActionTypes.REMOVE_RANDOM_CARD_FROM_HAND }
   | { type: PlayerActionTypes.MODIFY_TAGS; payload: number }
+  | { type: PlayerActionTypes.MODIFY_NOISE; payload: number }
+  | { type: PlayerActionTypes.MODIFY_SIGNAL; payload: number }
   | { type: PlayerActionTypes.MODIFY_VICTORY_POINTS; payload: number };
 
 // player actions
@@ -147,6 +157,16 @@ export const removeRandomCardFromHand = (): PlayerAction => ({
 export const modifyPlayerTags = (tags: number): PlayerAction => ({
   type: PlayerActionTypes.MODIFY_TAGS,
   payload: tags,
+});
+
+export const modifyPlayerNoise = (noise: number): PlayerAction => ({
+  type: PlayerActionTypes.MODIFY_NOISE,
+  payload: noise,
+});
+
+export const modifyPlayerSignal = (signal: number): PlayerAction => ({
+  type: PlayerActionTypes.MODIFY_SIGNAL,
+  payload: signal,
 });
 
 export const modifyPlayerVicotryPoints = (points: number): PlayerAction => ({
@@ -213,7 +233,7 @@ export const playerReducer = (
       const { card } = action.payload;
       return {
         ...state,
-        playerPlayedCardS: [...state.playerPlayedCardS, card],
+        playerPlayedCards: [...state.playerPlayedCards, card],
       };
     }
 
@@ -269,7 +289,7 @@ export const playerReducer = (
     case PlayerActionTypes.CLEAR_PLAYED_CARDS: {
       return {
         ...state,
-        playerPlayedCardS: [],
+        playerPlayedCards: [],
       };
     }
 

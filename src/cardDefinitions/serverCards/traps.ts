@@ -34,7 +34,7 @@ export const trapCards: ServerCardDefinitions[] = [
             : [];
         },
         getText: () =>
-          "If the server security level is 3 or more, end the run.",
+          "On Reveal, if the server security level is 3 or more, end the run.",
       },
     ],
   },
@@ -47,7 +47,7 @@ export const trapCards: ServerCardDefinitions[] = [
       {
         triggerMoment: TriggerMoment.ON_DRAW,
         getActions: () => [modifyClicks(-1)],
-        getText: () => "When you draw this card, lose 1 tick.",
+        getText: () => "On Draw, lose 1 tick.",
       },
       KEYWORD_EFFECTS.Unplayable,
       KEYWORD_EFFECTS.Ethereal,

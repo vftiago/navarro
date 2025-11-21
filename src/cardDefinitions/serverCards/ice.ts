@@ -87,7 +87,7 @@ export const iceCards: IceCardDefinitions[] = [
     ],
   },
   {
-    name: "Authenticator",
+    name: "Biometric Authenticator",
     image: "_61f45f4f-382f-4edd-a7ea-eaef9a2e1e6c.jpg",
     rarity: CardRarity.COMMON,
     type: CardType.ICE,

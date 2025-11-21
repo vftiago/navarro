@@ -5,29 +5,11 @@ import {
   TriggerMoment,
 } from "../../../../cardDefinitions/card";
 import clsx from "clsx";
-import { TbClock2, TbTrash } from "react-icons/tb";
 import { IoMdReturnRight } from "react-icons/io";
 
 const renderEffectCosts = (costs: EffectCost[]) => {
   return costs.map((cost, index) => {
-    switch (cost) {
-      case EffectCost.TRASH:
-        return (
-          <span>
-            <TbTrash className="inline -mt-0.5" size="1rem" />
-            {index >= costs.length - 1 ? ": " : ", "}
-          </span>
-        );
-      case EffectCost.CLICK:
-        return (
-          <span>
-            <TbClock2 className="inline-flex items-center" size="1rem" />
-            {index >= costs.length - 1 ? ": " : ", "}
-          </span>
-        );
-      default:
-        return null;
-    }
+    return `${cost}${index >= costs.length - 1 ? ": " : ", "}`;
   });
 };
 

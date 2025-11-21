@@ -1,16 +1,31 @@
-import { Flex } from "@mantine/core";
+import { Flex, Stack } from "@mantine/core";
 import { useGameState } from "../context/useGameState";
 import { CardFront } from "./Card/CardFront";
+import { MemoryUnitSlot } from "./MemoryUnitSlot";
 
 export const ProgramRow = () => {
   const { gameState } = useGameState();
-  const { playerState } = gameState;
+  const {
+    playerState: { playerInstalledPrograms, playerMemory },
+  } = gameState;
 
   return (
-    <Flex className="bg-neutral-900 p-2.5 rounded-xl h-[308px]" gap="xs">
-      {playerState.playerInstalledPrograms.map((card, index) => (
-        <CardFront key={index} card={card} />
-      ))}
+    <Flex gap="xs">
+      {Array.from({ length: playerMemory }).map((_, index) => {
+        return (
+          <Stack
+            key={index}
+            className="bg-neutral-900 p-2.5 rounded-xl h-[308px]"
+            gap="xs"
+          >
+            {playerInstalledPrograms[index] ? (
+              <CardFront card={playerInstalledPrograms[index]} />
+            ) : (
+              <MemoryUnitSlot index={index} />
+            )}
+          </Stack>
+        );
+      })}
     </Flex>
   );
 };

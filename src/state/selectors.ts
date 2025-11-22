@@ -15,7 +15,7 @@ export const getCardSize = (
 ): {
   h: string;
   w: string;
-} => CARD_SIZES[state.optionsState.cardSize];
+} => CARD_SIZES[state.settingsState.cardSize];
 
 export const getTurnRemainingClicks = (state: GameState): number =>
   state.turnState.turnRemainingClicks;

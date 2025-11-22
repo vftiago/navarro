@@ -16,7 +16,7 @@ const theme = createTheme({
       DEFAULT_THEME.colors.dark[4],
       DEFAULT_THEME.colors.dark[5],
       DEFAULT_THEME.colors.dark[6],
-      "#121212",
+      "#090909",
       DEFAULT_THEME.colors.dark[8],
       DEFAULT_THEME.colors.dark[9],
     ],

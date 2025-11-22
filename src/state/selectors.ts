@@ -2,9 +2,20 @@ import { IcePlayingCard, PlayingCard } from "../cardDefinitions/card";
 import { GameState } from "./reducer";
 import { TurnPhase, TurnSubPhase } from "./reducers/turnReducer";
 
+const CARD_SIZES = {
+  xs: {
+    h: "18rem",
+    w: "12rem",
+  },
+};
+
 // TODO: move selectors closer to the reducers they are related to
-export const getCardSize = (state: GameState): string =>
-  state.optionsState.cardSize;
+export const getCardSize = (
+  state: GameState,
+): {
+  h: string;
+  w: string;
+} => CARD_SIZES[state.optionsState.cardSize];
 
 export const getTurnRemainingClicks = (state: GameState): number =>
   state.turnState.turnRemainingClicks;

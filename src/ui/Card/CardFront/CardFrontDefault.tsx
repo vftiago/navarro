@@ -3,49 +3,51 @@ import {
   ServerCardDefinitions,
   ProgramCardDefinitions,
 } from "../../../cardDefinitions/card";
-import { CARD_SIZES } from "../cardSizes";
 import { CardTitle } from "./components/CardTitle";
 import { CardEffects } from "./components/CardEffects";
 import { CardTypeLine } from "./components/CardTypeLine";
+import { useGameState } from "../../../context/useGameState";
+import { getCardSize } from "../../../state/selectors";
 
 export const CardFrontDefault = ({
   card,
-  size,
 }: {
   card: ServerCardDefinitions | ProgramCardDefinitions;
-  size: "xs" | "sm" | "md";
 }) => {
   const { cardEffects, image, name, rarity, type, flavorText } = card;
+
+  const { gameState } = useGameState();
+
+  const cardSize = getCardSize(gameState);
 
   return (
     <Card
       withBorder
       className="select-none hover:cursor-pointer hover:border-cyan-200"
-      h={`${CARD_SIZES[size].h}rem`}
       padding="0"
       radius="md"
       shadow="lg"
-      w={`${CARD_SIZES[size].w}rem`}
+      {...cardSize}
     >
       <Card.Section>
         <CardTitle name={name} />
       </Card.Section>
-      <Card.Section>
+      <Card.Section className="h-1/2">
         <Image
           alt={name}
-          h={`${CARD_SIZES[size].h / 2}rem`}
+          className="h-full"
           loading="eager"
           src={`./assets/${image}`}
         />
       </Card.Section>
       <Card.Section>
-        <CardTypeLine rarity={rarity} size={size} type={type} />
+        <CardTypeLine rarity={rarity} type={type} />
       </Card.Section>
       <Card.Section flex={1}>
-        <Stack align="center" gap="0.25rem" h="100%" justify="center" p={size}>
-          <CardEffects cardEffects={cardEffects} size={size} />
+        <Stack align="center" gap="0.25rem" h="100%" justify="center" p="xs">
+          <CardEffects cardEffects={cardEffects} />
           {flavorText ? (
-            <Text className="italic" size={size}>
+            <Text className="italic" size="xs">
               {flavorText}
             </Text>
           ) : null}

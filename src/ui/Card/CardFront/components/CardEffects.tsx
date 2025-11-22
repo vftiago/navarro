@@ -13,13 +13,7 @@ const renderEffectCosts = (costs: EffectCost[]) => {
   });
 };
 
-export const CardEffects = ({
-  cardEffects,
-  size,
-}: {
-  cardEffects: CardEffect[];
-  size: string;
-}) => {
+export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
   if (!cardEffects) {
     return null;
   }
@@ -32,7 +26,7 @@ export const CardEffects = ({
     const isSubroutine = triggerMoment === TriggerMoment.ON_ENCOUNTER;
 
     return (
-      <Text key={index} fw="500" size={size}>
+      <Text key={index} fw="500" size="xs">
         {isSubroutine ? (
           <span className="inline">
             <IoMdReturnRight className="inline -mt-0.5" />{" "}

@@ -1,5 +1,5 @@
 export type OptionsState = {
-  cardSize: string;
+  cardSize: "xs";
 };
 
 export const initialOptionsState: OptionsState = {
@@ -12,10 +12,10 @@ export enum OptionsActionTypes {
 
 export type OptionsAction = {
   type: OptionsActionTypes.SET_CARD_SIZE;
-  payload: string;
+  payload: "xs";
 };
 
-export const setCardSize = (cardSize: string): OptionsAction => ({
+export const setCardSize = (cardSize: "xs"): OptionsAction => ({
   type: OptionsActionTypes.SET_CARD_SIZE,
   payload: cardSize,
 });

@@ -6,12 +6,10 @@ export const CardTypeLine = ({
   rarity,
   type,
   subtype,
-  size = "xs",
 }: {
   rarity: CardRarity;
   type: string;
   subtype?: string;
-  size?: "xs" | "sm" | "md";
 }) => {
   return (
     <Flex
@@ -21,9 +19,9 @@ export const CardTypeLine = ({
         "bg-cyan-600": rarity === CardRarity.UNCOMMON,
         "bg-indigo-500": rarity === CardRarity.RARE,
       })}
-      px={size}
+      px="xs"
     >
-      <Text size={size}>
+      <Text size="xs">
         {type}
         {subtype ? ` — ${subtype}` : null}
       </Text>

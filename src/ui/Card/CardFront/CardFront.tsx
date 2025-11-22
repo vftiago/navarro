@@ -6,8 +6,6 @@ import { CardFrontAgenda } from "./CardFrontAgenda";
 import { CardFrontProgram } from "./CardFrontProgram";
 import { ComponentProps } from "react";
 
-const CARD_SIZE = "xs";
-
 export const CardFront = (
   props: Omit<
     ComponentProps<
@@ -23,12 +21,12 @@ export const CardFront = (
 
   switch (card.type) {
     case CardType.PROGRAM:
-      return <CardFrontProgram card={card} size={CARD_SIZE} />;
+      return <CardFrontProgram card={card} />;
     case CardType.ICE:
-      return <CardFrontIce card={card} size={CARD_SIZE} />;
+      return <CardFrontIce card={card} />;
     case CardType.AGENDA:
-      return <CardFrontAgenda card={card} size={CARD_SIZE} />;
+      return <CardFrontAgenda card={card} />;
     default:
-      return <CardFrontDefault card={card} size={CARD_SIZE} />;
+      return <CardFrontDefault card={card} />;
   }
 };

@@ -2,26 +2,24 @@ import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
 import { CardType } from "../../cardDefinitions/card";
 import { PlayingCard } from "../../cardDefinitions/card";
-import { CARD_SIZES } from "./cardSizes";
+import { useGameState } from "../../context/useGameState";
+import { getCardSize } from "../../state/selectors";
 
-export const CardFrontFullArt = ({
-  card,
-  size = "xs",
-}: {
-  card: PlayingCard;
-  size?: "xs" | "sm" | "md";
-}) => {
+export const CardFrontFullArt = ({ card }: { card: PlayingCard }) => {
   const { image, name, type } = card;
+
+  const { gameState } = useGameState();
+
+  const cardSize = getCardSize(gameState);
 
   return (
     <Card
       withBorder
       className="select-none hover:cursor-pointer hover:border-cyan-200"
-      h={`${CARD_SIZES[size].w}rem`}
       padding="0"
       radius="md"
       shadow="lg"
-      w={`${CARD_SIZES[size].w}rem`}
+      {...cardSize}
     >
       <Stack align="center" justify="center">
         <Text

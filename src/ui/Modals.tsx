@@ -1,5 +1,6 @@
-import { Container, Flex, Modal, Stack, Text } from "@mantine/core";
+import { Flex, Modal } from "@mantine/core";
 import { CardFront } from "./Card/CardFront";
+import { CardGridModal } from "./CardGridModal";
 import { motion } from "framer-motion";
 import { useGameState } from "../context/useGameState";
 
@@ -59,98 +60,34 @@ export const Modals = ({
           </Flex>
         </Modal.Content>
       </Modal.Root>
-      <Modal
-        fullScreen
+      <CardGridModal
+        cards={playerDeck}
+        emptyMessage="Your deck is empty."
         opened={isDeckModalOpen}
         title="Deck"
         onClose={closeDeckModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {playerDeck.length ? (
-              playerDeck.map((card, index) => {
-                return <CardFront key={index} card={card} />;
-              })
-            ) : (
-              <Stack align="center" h="400px" justify="center" w="100%">
-                <Text>Your deck is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
-      <Modal
-        fullScreen
+      />
+      <CardGridModal
+        cards={playerDiscardPile}
+        emptyMessage="Your discard pile is empty."
         opened={isDiscardModalOpen}
         title="Discard"
         onClose={closeDiscardModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {playerDiscardPile.length ? (
-              playerDiscardPile.map((card, index) => {
-                return (
-                  <span key={index}>
-                    <CardFront card={card} />
-                  </span>
-                );
-              })
-            ) : (
-              <Stack align="center" justify="center" w="100%">
-                <Text>Your discard pile is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
-      <Modal
-        fullScreen
+      />
+      <CardGridModal
+        cards={playerTrashPile}
+        emptyMessage="Your trash pile is empty."
         opened={isTrashModalOpen}
         title="Trash"
         onClose={closeTrashModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {playerTrashPile.length ? (
-              playerTrashPile.map((card, index) => {
-                return (
-                  <span key={index}>
-                    <CardFront card={card} />
-                  </span>
-                );
-              })
-            ) : (
-              <Stack align="center" justify="center" w="100%">
-                <Text>Your trash pile is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
-      <Modal
-        fullScreen
+      />
+      <CardGridModal
+        cards={playerScoreArea}
+        emptyMessage="Your score is empty."
         opened={isScoreModalOpen}
         title="Score"
         onClose={closeScoreModal}
-      >
-        <Container size="1360px">
-          <Flex gap={32} wrap="wrap">
-            {playerScoreArea.length ? (
-              playerScoreArea.map((card, index) => {
-                return (
-                  <span key={index}>
-                    <CardFront card={card} />
-                  </span>
-                );
-              })
-            ) : (
-              <Stack align="center" justify="center" w="100%">
-                <Text>Your score is empty.</Text>
-              </Stack>
-            )}
-          </Flex>
-        </Container>
-      </Modal>
+      />
     </>
   );
 };

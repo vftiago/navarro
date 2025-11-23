@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { useGameState } from "./useGameState";
 import { GameAction, GameState } from "../state/reducer";
 
@@ -10,11 +10,17 @@ export type ThunkAction = (
 export const useThunk = () => {
   const { gameState, dispatch } = useGameState();
 
+  const stateRef = useRef<GameState>(gameState);
+
+  useEffect(() => {
+    stateRef.current = gameState;
+  }, [gameState]);
+
   const dispatchThunk = useCallback(
     (thunk: ThunkAction) => {
-      thunk(dispatch, () => gameState);
+      thunk(dispatch, () => stateRef.current);
     },
-    [dispatch, gameState],
+    [dispatch],
   );
 
   return dispatchThunk;

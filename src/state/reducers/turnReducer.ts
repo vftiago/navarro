@@ -24,6 +24,7 @@ export type TurnState = {
   turnCurrentPhase: TurnPhase;
   turnCurrentSubPhase: TurnSubPhase;
   turnNextPhase: null | TurnPhase;
+  phaseChangeCounter: number;
 };
 
 export const initialTurnState: TurnState = {
@@ -32,6 +33,7 @@ export const initialTurnState: TurnState = {
   turnCurrentPhase: TurnPhase.Draw,
   turnCurrentSubPhase: TurnSubPhase.Start,
   turnNextPhase: null,
+  phaseChangeCounter: 0,
 };
 
 export enum TurnActionTypes {
@@ -107,6 +109,7 @@ export const turnReducer = (
       return {
         ...state,
         turnCurrentSubPhase: action.payload,
+        phaseChangeCounter: state.phaseChangeCounter + 1,
       };
 
     case TurnActionTypes.SET_TURN_NEXT_PHASE:

@@ -24,9 +24,10 @@ export const PhaseManager = () => {
   const { gameState } = useGameState();
   const dispatchThunk = useThunk();
 
-  const { turnCurrentPhase, turnCurrentSubPhase } = gameState.turnState;
+  const { turnCurrentPhase, turnCurrentSubPhase, phaseChangeCounter } =
+    gameState.turnState;
 
-  const lastProcessedPhaseRef = useRef<string | null>(null);
+  const lastCounterRef = useRef<number>(-1);
 
   type PhaseHandlers = {
     [P in TurnPhase]?: {
@@ -68,16 +69,11 @@ export const PhaseManager = () => {
   }, [dispatchThunk]);
 
   useEffect(() => {
-    const currentPhase = JSON.stringify({
-      turnCurrentPhase,
-      turnCurrentSubPhase,
-    });
-
-    if (currentPhase === lastProcessedPhaseRef.current) {
+    if (phaseChangeCounter === lastCounterRef.current) {
       return;
     }
 
-    lastProcessedPhaseRef.current = currentPhase;
+    lastCounterRef.current = phaseChangeCounter;
 
     const action = PHASE_HANDLERS[turnCurrentPhase]?.[turnCurrentSubPhase];
 
@@ -88,7 +84,12 @@ export const PhaseManager = () => {
         return cleanup;
       }
     }
-  }, [PHASE_HANDLERS, turnCurrentPhase, turnCurrentSubPhase]);
+  }, [
+    PHASE_HANDLERS,
+    phaseChangeCounter,
+    turnCurrentPhase,
+    turnCurrentSubPhase,
+  ]);
 
   return null;
 };

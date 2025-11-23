@@ -6,7 +6,7 @@ import {
 } from "../card";
 import {
   modifyPlayerTags,
-  modifyPlayerVicotryPoints,
+  modifyPlayerVictoryPoints,
 } from "../../state/reducers/playerReducer";
 
 export const agendaCards: AgendaCardDefinitions[] = [
@@ -24,7 +24,7 @@ export const agendaCards: AgendaCardDefinitions[] = [
       },
       {
         triggerMoment: TriggerMoment.ON_FETCH,
-        getActions: () => [modifyPlayerVicotryPoints(3)],
+        getActions: () => [modifyPlayerVictoryPoints(3)],
         getText: () => "Score 3.",
       },
     ],
@@ -38,7 +38,7 @@ export const agendaCards: AgendaCardDefinitions[] = [
     cardEffects: [
       {
         triggerMoment: TriggerMoment.ON_FETCH,
-        getActions: () => [modifyPlayerVicotryPoints(2)],
+        getActions: () => [modifyPlayerVictoryPoints(2)],
         getText: () => "Score 2.",
       },
     ],

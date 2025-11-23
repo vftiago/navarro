@@ -169,7 +169,7 @@ export const modifyPlayerSignal = (signal: number): PlayerAction => ({
   payload: signal,
 });
 
-export const modifyPlayerVicotryPoints = (points: number): PlayerAction => ({
+export const modifyPlayerVictoryPoints = (points: number): PlayerAction => ({
   type: PlayerActionTypes.MODIFY_VICTORY_POINTS,
   payload: points,
 });

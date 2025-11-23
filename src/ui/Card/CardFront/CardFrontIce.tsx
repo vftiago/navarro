@@ -1,15 +1,32 @@
 import clsx from "clsx";
 import { IcePlayingCard } from "../../../cardDefinitions/card";
-import { useGameState } from "../../../context/useGameState";
-import { getIceStrength } from "../../../state/selectors";
+import { getGameState, useGameStore } from "../../../store/gameStore";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 export const CardFrontIce = ({ card }: { card: IcePlayingCard }) => {
-  const { gameState } = useGameState();
+  const boardState = useGameStore((state) => state.boardState);
+
   const { cardEffects, flavorText, image, name, rarity, subtype, type } = card;
 
-  const currentStrength = getIceStrength(gameState, card);
+  // Calculate strength using current state
+  const gameState = getGameState();
   const baseStrength = card.getStrength(gameState);
+
+  // Calculate modified strength
+  const relevantEffects = boardState.permanentEffects.filter(
+    (effect) => effect.targetSelector === "getIceStrength",
+  );
+
+  const modifier = relevantEffects.reduce((acc, { getModifier, sourceId }) => {
+    const mod = getModifier({
+      gameState,
+      sourceId,
+      targetId: card.deckContextId,
+    });
+    return acc + mod;
+  }, 0);
+
+  const currentStrength = baseStrength + modifier;
 
   const strengthOverlay = (
     <div

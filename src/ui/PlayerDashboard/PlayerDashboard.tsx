@@ -1,9 +1,10 @@
 import { Button, Container, Flex, Stack } from "@mantine/core";
 import { useCallback } from "react";
-import { useGameState } from "../../context/useGameState";
+import { useShallow } from "zustand/react/shallow";
 import { useThunk } from "../../context/useThunk";
 import { TurnPhase } from "../../state/reducers/turnReducer";
 import { startEndPhase } from "../../state/thunks";
+import { useGameStore } from "../../store/gameStore";
 import { ClickWidget } from "./ClickWidget";
 import { PlayerHand } from "./PlayerHand";
 import { TagWidget } from "./TagWidget";
@@ -16,23 +17,32 @@ export const PlayerDashboard = ({
 }: {
   openDeckModal: () => void;
   openDiscardModal: () => void;
-  openTrashModal: () => void;
   openScoreModal: () => void;
+  openTrashModal: () => void;
 }) => {
   const {
-    gameState: { playerState, turnState },
-  } = useGameState();
+    playerDeckLength,
+    playerDiscardPileLength,
+    playerTags,
+    playerTrashPileLength,
+    playerVictoryPoints,
+    turnCurrentPhase,
+    turnNumber,
+    turnRemainingClicks,
+  } = useGameStore(
+    useShallow((state) => ({
+      playerDeckLength: state.playerState.playerDeck.length,
+      playerDiscardPileLength: state.playerState.playerDiscardPile.length,
+      playerTags: state.playerState.playerTags,
+      playerTrashPileLength: state.playerState.playerTrashPile.length,
+      playerVictoryPoints: state.playerState.playerVictoryPoints,
+      turnCurrentPhase: state.turnState.turnCurrentPhase,
+      turnNumber: state.turnState.turnNumber,
+      turnRemainingClicks: state.turnState.turnRemainingClicks,
+    })),
+  );
 
   const dispatchThunk = useThunk();
-
-  const {
-    playerDeck,
-    playerDiscardPile,
-    playerTags,
-    playerTrashPile,
-    playerVictoryPoints,
-  } = playerState;
-  const { turnCurrentPhase, turnNumber, turnRemainingClicks } = turnState;
 
   const onClickEndTurn = useCallback(() => {
     if (turnCurrentPhase !== TurnPhase.Main) {
@@ -48,7 +58,7 @@ export const PlayerDashboard = ({
         <Flex className="justify-between items-end">
           <Stack className="flex-col-reverse" w="10rem">
             <Button size="lg" variant="gradient" onClick={openDeckModal}>
-              Deck ({playerDeck.length})
+              Deck ({playerDeckLength})
             </Button>
             <ClickWidget remainingClicks={turnRemainingClicks} />
             <TagWidget tagCount={playerTags} />
@@ -69,7 +79,7 @@ export const PlayerDashboard = ({
               w="8rem"
               onClick={openDiscardModal}
             >
-              Discard ({playerDiscardPile.length})
+              Discard ({playerDiscardPileLength})
             </Button>
             <Button
               className="self-end"
@@ -78,7 +88,7 @@ export const PlayerDashboard = ({
               w="8rem"
               onClick={openTrashModal}
             >
-              Trash ({playerTrashPile.length})
+              Trash ({playerTrashPileLength})
             </Button>
             <Button
               className="self-end"

@@ -1,18 +1,17 @@
 import { Flex } from "@mantine/core";
 import { TbCloudLock } from "react-icons/tb";
-import { useGameState } from "../context/useGameState";
-import {
-  getServerSecurityLevel,
-  getTurnCurrentPhase,
-  getTurnCurrentSubPhase,
-} from "../state/selectors";
+import { useShallow } from "zustand/react/shallow";
+import { useGameStore } from "../store/gameStore";
 
 export const StatusRow = () => {
-  const { gameState } = useGameState();
-
-  const turnCurrentPhase = getTurnCurrentPhase(gameState);
-  const turnCurrentSubPhase = getTurnCurrentSubPhase(gameState);
-  const serverSecurityLevel = getServerSecurityLevel(gameState);
+  const { serverSecurityLevel, turnCurrentPhase, turnCurrentSubPhase } =
+    useGameStore(
+      useShallow((state) => ({
+        serverSecurityLevel: state.serverState.serverSecurityLevel,
+        turnCurrentPhase: state.turnState.turnCurrentPhase,
+        turnCurrentSubPhase: state.turnState.turnCurrentSubPhase,
+      })),
+    );
 
   return (
     <Flex className="bg-neutral-900 p-2.5 rounded-xl" justify="space-between">

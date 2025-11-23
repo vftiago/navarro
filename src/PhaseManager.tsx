@@ -1,31 +1,37 @@
 import { delay } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
-import { useGameState } from "./context/useGameState";
+import { useShallow } from "zustand/react/shallow";
 import { useThunk } from "./context/useThunk";
 import { TurnPhase, TurnSubPhase } from "./state/reducers/turnReducer";
 import {
-  endPlayPhase,
-  endDrawPhase,
-  startDrawPhase,
-  processDrawPhase,
-  processPlayPhase,
-  startRunPhase,
-  processRunPhase,
-  endRunPhase,
-  startEndPhase,
-  processEndPhase,
-  endEndPhase,
-  startCorpPhase,
-  processCorpPhase,
   endCorpPhase,
+  endDrawPhase,
+  endEndPhase,
+  endPlayPhase,
+  endRunPhase,
+  processCorpPhase,
+  processDrawPhase,
+  processEndPhase,
+  processPlayPhase,
+  processRunPhase,
+  startCorpPhase,
+  startDrawPhase,
+  startEndPhase,
+  startRunPhase,
 } from "./state/thunks";
+import { useGameStore } from "./store/gameStore";
 
 export const PhaseManager = () => {
-  const { gameState } = useGameState();
-  const dispatchThunk = useThunk();
-
   const { phaseChangeCounter, turnCurrentPhase, turnCurrentSubPhase } =
-    gameState.turnState;
+    useGameStore(
+      useShallow((state) => ({
+        phaseChangeCounter: state.turnState.phaseChangeCounter,
+        turnCurrentPhase: state.turnState.turnCurrentPhase,
+        turnCurrentSubPhase: state.turnState.turnCurrentSubPhase,
+      })),
+    );
+
+  const dispatchThunk = useThunk();
 
   const lastCounterRef = useRef<number>(-1);
 

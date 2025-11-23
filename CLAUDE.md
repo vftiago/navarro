@@ -22,13 +22,15 @@ Pre-commit hook runs: Prettier → TypeScript → ESLint (all must pass with zer
 
 ## Architecture
 
-### State Management (Redux-like pattern with React Context)
+### State Management (Zustand with Redux-like reducers)
 
+- **Zustand store** (`src/store/gameStore.ts`) wraps the root reducer with devtools middleware
 - **Root reducer** (`src/state/reducer.ts`) combines 5 sub-reducers: player, server, turn, board, settings
 - **Sub-reducers** (`src/state/reducers/`) manage slices of state
 - **Thunks** (`src/state/thunks.ts`) for multi-step actions with side effects
 - **Selectors** (`src/state/selectors.ts`) extract derived state (use `getXxx` naming)
-- **Context** (`src/context/`) provides state via `useGameState()` and `useThunk()` hooks
+- **Access state** via `useGameStore()` with targeted selectors for granular subscriptions
+- **Dispatch actions** via `useGameStore((state) => state.dispatch)` or `useThunk()` for thunks
 
 ### Component Structure
 

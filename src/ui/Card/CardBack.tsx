@@ -1,17 +1,13 @@
-import { Card, Image } from "@mantine/core";
-import { useGameState } from "../../context/useGameState";
+import { Card } from "@mantine/core";
 import { getCardSize } from "../../state/selectors";
-
-const GREY_CARD_BACK = "_787cb567-ce4a-463a-b131-08522b7b43c1.jpeg";
+import { getGameState } from "../../store/gameStore";
 
 export const CardBack = ({
   orientation = "vertical",
 }: {
-  orientation?: "vertical" | "horizontal";
+  orientation?: "horizontal" | "vertical";
 }) => {
-  const { gameState } = useGameState();
-
-  const cardSize = getCardSize(gameState);
+  const cardSize = getCardSize(getGameState());
 
   return (
     <Card
@@ -22,14 +18,6 @@ export const CardBack = ({
       radius="md"
       shadow="lg"
       style={{ transform: orientation === "horizontal" ? "rotate(90deg)" : "" }}
-    >
-      <Card.Section>
-        <Image
-          alt="Card back"
-          {...cardSize}
-          src={`./assets/${GREY_CARD_BACK}`}
-        />
-      </Card.Section>
-    </Card>
+    />
   );
 };

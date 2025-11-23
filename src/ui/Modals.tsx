@@ -1,6 +1,7 @@
 import { Flex, Modal } from "@mantine/core";
 import { motion } from "framer-motion";
-import { useGameState } from "../context/useGameState";
+import { useShallow } from "zustand/react/shallow";
+import { useGameStore } from "../store/gameStore";
 import { CardFront } from "./Card/CardFront";
 import { CardGridModal } from "./CardGridModal";
 
@@ -16,28 +17,32 @@ export const Modals = ({
   isScoreModalOpen,
   isTrashModalOpen,
 }: {
-  isCardDisplayModalOpen: boolean;
-  isDeckModalOpen: boolean;
-  isDiscardModalOpen: boolean;
-  isTrashModalOpen: boolean;
-  isScoreModalOpen: boolean;
   closeCardDisplayModal: () => void;
   closeDeckModal: () => void;
   closeDiscardModal: () => void;
-  closeTrashModal: () => void;
   closeScoreModal: () => void;
+  closeTrashModal: () => void;
+  isCardDisplayModalOpen: boolean;
+  isDeckModalOpen: boolean;
+  isDiscardModalOpen: boolean;
+  isScoreModalOpen: boolean;
+  isTrashModalOpen: boolean;
 }) => {
-  const {
-    gameState: { playerState },
-  } = useGameState();
-
   const {
     playerAccessedCards,
     playerDeck,
     playerDiscardPile,
     playerScoreArea,
     playerTrashPile,
-  } = playerState;
+  } = useGameStore(
+    useShallow((state) => ({
+      playerAccessedCards: state.playerState.playerAccessedCards,
+      playerDeck: state.playerState.playerDeck,
+      playerDiscardPile: state.playerState.playerDiscardPile,
+      playerScoreArea: state.playerState.playerScoreArea,
+      playerTrashPile: state.playerState.playerTrashPile,
+    })),
+  );
 
   return (
     <>

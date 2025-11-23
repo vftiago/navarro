@@ -4,8 +4,8 @@ import { TurnPhase, TurnSubPhase } from "./reducers/turnReducer";
 
 const CARD_SIZES = {
   xs: {
-    h: "18rem",
-    w: "12rem",
+    h: "300px",
+    w: "200px",
   },
 };
 

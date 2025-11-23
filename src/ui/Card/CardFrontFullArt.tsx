@@ -1,16 +1,13 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
 import clsx from "clsx";
-import { CardType } from "../../cardDefinitions/card";
-import { PlayingCard } from "../../cardDefinitions/card";
-import { useGameState } from "../../context/useGameState";
+import { CardType, PlayingCard } from "../../cardDefinitions/card";
 import { getCardSize } from "../../state/selectors";
+import { getGameState } from "../../store/gameStore";
 
 export const CardFrontFullArt = ({ card }: { card: PlayingCard }) => {
   const { image, name, type } = card;
 
-  const { gameState } = useGameState();
-
-  const cardSize = getCardSize(gameState);
+  const cardSize = getCardSize(getGameState());
 
   return (
     <Card

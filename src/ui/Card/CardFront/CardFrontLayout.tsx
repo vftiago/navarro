@@ -6,8 +6,8 @@ import {
   IceSubtype,
   ProgramSubtype,
 } from "../../../cardDefinitions/card";
-import { useGameState } from "../../../context/useGameState";
 import { getCardSize } from "../../../state/selectors";
+import { getGameState } from "../../../store/gameStore";
 import { CardEffects } from "./components/CardEffects";
 import { CardTitle } from "./components/CardTitle";
 import { CardTypeLine } from "./components/CardTypeLine";
@@ -35,8 +35,7 @@ export const CardFrontLayout = ({
   titleClassName,
   type,
 }: CardFrontLayoutProps) => {
-  const { gameState } = useGameState();
-  const cardSize = getCardSize(gameState);
+  const cardSize = getCardSize(getGameState());
 
   return (
     <Card

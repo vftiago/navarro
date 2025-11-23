@@ -2,14 +2,16 @@ import { Text } from "@mantine/core";
 import clsx from "clsx";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Keyword, PlayingCard } from "../../cardDefinitions/card";
-import { useGameState } from "../../context/useGameState";
 import { useThunk } from "../../context/useThunk";
 import { TurnPhase } from "../../state/reducers/turnReducer";
 import { startPlayPhase } from "../../state/thunks";
+import { useGameStore } from "../../store/gameStore";
 import { CardFront } from "../Card/CardFront";
-import { EXIT_ANIMATION_DURATION } from "../constants";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
+
+const EXIT_ANIMATION_DURATION = 200;
 
 const containerVariants = {
   exit: {
@@ -39,15 +41,15 @@ const itemVariants = {
 };
 
 export const PlayerHand = () => {
-  const {
-    gameState: { playerState, turnState },
-  } = useGameState();
+  const { playerHand, turnCurrentPhase } = useGameStore(
+    useShallow((state) => ({
+      playerHand: state.playerState.playerHand,
+      turnCurrentPhase: state.turnState.turnCurrentPhase,
+    })),
+  );
 
   const dispatchThunk = useThunk();
   const [, animate] = useAnimate();
-
-  const { playerHand } = playerState;
-  const { turnCurrentPhase } = turnState;
 
   const [exitingCards, setExitingCards] = useState<Set<string>>(new Set());
   const [showEmptyMessage, setShowEmptyMessage] = useState(

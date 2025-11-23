@@ -4,22 +4,7 @@ import {
   PlayingCard,
   TriggerMoment,
 } from "../cardDefinitions/card";
-import {
-  getCardEffectsByTrigger,
-  getRandomIceCard,
-  getRandomServerCard,
-  hasKeyword,
-} from "./utils";
 import { GameAction, GameState } from "./reducer";
-import {
-  modifyClicks,
-  setClicks,
-  setTurnNextPhase,
-  setTurnCurrentPhase,
-  TurnPhase,
-  setTurnCurrentSubPhase,
-  TurnSubPhase,
-} from "./reducers/turnReducer";
 import {
   addToAccessedCards,
   addToDiscard,
@@ -39,6 +24,15 @@ import {
   removeFromUnencounteredIce,
 } from "./reducers/serverReducer";
 import {
+  modifyClicks,
+  setClicks,
+  setTurnNextPhase,
+  setTurnCurrentPhase,
+  TurnPhase,
+  setTurnCurrentSubPhase,
+  TurnSubPhase,
+} from "./reducers/turnReducer";
+import {
   getPlayerCardsPerTurn,
   getPlayerClicksPerTurn,
   getPlayerPlayedCards,
@@ -46,6 +40,12 @@ import {
   getTurnNextPhase,
   getTurnRemainingClicks,
 } from "./selectors";
+import {
+  getCardEffectsByTrigger,
+  getRandomIceCard,
+  getRandomServerCard,
+  hasKeyword,
+} from "./utils";
 
 type ThunkAction = (
   dispatch: (action: GameAction) => void,

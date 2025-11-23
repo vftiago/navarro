@@ -8,8 +8,8 @@ export type ServerState = {
 
 export const initialServerState: ServerState = {
   serverInstalledIce: [],
-  serverUnencounteredIce: [],
   serverSecurityLevel: 0,
+  serverUnencounteredIce: [],
 };
 
 export enum ServerActionTypes {
@@ -38,30 +38,30 @@ export type ServerAction =
 
 // server actions
 export const modifyServerSecurity = (amount: number): ServerAction => ({
-  type: ServerActionTypes.MODIFY_SERVER_SECURITY,
   payload: amount,
+  type: ServerActionTypes.MODIFY_SERVER_SECURITY,
 });
 
 export const addToIce = (ice: IcePlayingCard): ServerAction => ({
-  type: ServerActionTypes.ADD_TO_ICE,
   payload: { ice },
+  type: ServerActionTypes.ADD_TO_ICE,
 });
 
 export const addToUnencounteredIce = (ice: IcePlayingCard): ServerAction => ({
-  type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE,
   payload: { ice },
+  type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE,
 });
 
 export const removeFromIce = (ice: IcePlayingCard): ServerAction => ({
-  type: ServerActionTypes.REMOVE_FROM_ICE,
   payload: { ice },
+  type: ServerActionTypes.REMOVE_FROM_ICE,
 });
 
 export const removeFromUnencounteredIce = (
   ice: IcePlayingCard,
 ): ServerAction => ({
-  type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE,
   payload: { ice },
+  type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE,
 });
 
 export const serverReducer = (

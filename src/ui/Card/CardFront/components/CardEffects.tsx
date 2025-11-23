@@ -1,11 +1,11 @@
 import { Text } from "@mantine/core";
+import clsx from "clsx";
+import { IoMdReturnRight } from "react-icons/io";
 import {
   CardEffect,
   EffectCost,
   TriggerMoment,
 } from "../../../../cardDefinitions/card";
-import clsx from "clsx";
-import { IoMdReturnRight } from "react-icons/io";
 
 const renderEffectCosts = (costs: EffectCost[]) => {
   return costs.map((cost, index) => {
@@ -19,14 +19,14 @@ export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
   }
 
   const effects = cardEffects.map((effect, index) => {
-    const { costs, keyword, triggerMoment, getText } = effect;
+    const { costs, getText, keyword, triggerMoment } = effect;
 
     const isKeyword = Boolean(keyword);
 
     const isSubroutine = triggerMoment === TriggerMoment.ON_ENCOUNTER;
 
     return (
-      <Text key={index} fw="500" size="xs">
+      <Text fw="500" key={index} size="xs">
         {isSubroutine ? (
           <span className="inline">
             <IoMdReturnRight className="inline -mt-0.5" />{" "}

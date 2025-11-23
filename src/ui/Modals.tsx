@@ -1,20 +1,20 @@
 import { Flex, Modal } from "@mantine/core";
-import { CardFront } from "./Card/CardFront";
-import { CardGridModal } from "./CardGridModal";
 import { motion } from "framer-motion";
 import { useGameState } from "../context/useGameState";
+import { CardFront } from "./Card/CardFront";
+import { CardGridModal } from "./CardGridModal";
 
 export const Modals = ({
-  isCardDisplayModalOpen,
-  isDeckModalOpen,
-  isDiscardModalOpen,
-  isTrashModalOpen,
-  isScoreModalOpen,
   closeCardDisplayModal,
   closeDeckModal,
   closeDiscardModal,
-  closeTrashModal,
   closeScoreModal,
+  closeTrashModal,
+  isCardDisplayModalOpen,
+  isDeckModalOpen,
+  isDiscardModalOpen,
+  isScoreModalOpen,
+  isTrashModalOpen,
 }: {
   isCardDisplayModalOpen: boolean;
   isDeckModalOpen: boolean;
@@ -35,8 +35,8 @@ export const Modals = ({
     playerAccessedCards,
     playerDeck,
     playerDiscardPile,
-    playerTrashPile,
     playerScoreArea,
+    playerTrashPile,
   } = playerState;
 
   return (

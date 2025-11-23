@@ -10,7 +10,7 @@ export const GameStateContextProvider = ({
   const [gameState, dispatch] = useReducer(rootReducer, initialGameState);
 
   return (
-    <GameStateContext.Provider value={{ gameState, dispatch }}>
+    <GameStateContext.Provider value={{ dispatch, gameState }}>
       {children}
     </GameStateContext.Provider>
   );

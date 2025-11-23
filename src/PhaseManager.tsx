@@ -1,6 +1,8 @@
+import { delay } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
 import { useGameState } from "./context/useGameState";
 import { useThunk } from "./context/useThunk";
+import { TurnPhase, TurnSubPhase } from "./state/reducers/turnReducer";
 import {
   endPlayPhase,
   endDrawPhase,
@@ -17,14 +19,12 @@ import {
   processCorpPhase,
   endCorpPhase,
 } from "./state/thunks";
-import { TurnPhase, TurnSubPhase } from "./state/reducers/turnReducer";
-import { delay } from "framer-motion";
 
 export const PhaseManager = () => {
   const { gameState } = useGameState();
   const dispatchThunk = useThunk();
 
-  const { turnCurrentPhase, turnCurrentSubPhase, phaseChangeCounter } =
+  const { phaseChangeCounter, turnCurrentPhase, turnCurrentSubPhase } =
     gameState.turnState;
 
   const lastCounterRef = useRef<number>(-1);
@@ -37,33 +37,33 @@ export const PhaseManager = () => {
 
   const PHASE_HANDLERS: PhaseHandlers = useMemo(() => {
     return {
-      [TurnPhase.Draw]: {
-        [TurnSubPhase.Start]: () => dispatchThunk(startDrawPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processDrawPhase()),
-        [TurnSubPhase.End]: () => dispatchThunk(endDrawPhase()),
-      },
-      [TurnPhase.Play]: {
-        [TurnSubPhase.Process]: () => dispatchThunk(processPlayPhase()),
-        [TurnSubPhase.End]: () => dispatchThunk(endPlayPhase()),
-      },
-      [TurnPhase.Run]: {
-        [TurnSubPhase.Start]: () => dispatchThunk(startRunPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processRunPhase()),
-        [TurnSubPhase.End]: () => dispatchThunk(endRunPhase()),
-      },
-      [TurnPhase.End]: {
-        [TurnSubPhase.Start]: () => dispatchThunk(startEndPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processEndPhase()),
-        [TurnSubPhase.End]: () => dispatchThunk(endEndPhase()),
-      },
       [TurnPhase.Corp]: {
-        [TurnSubPhase.Start]: () => dispatchThunk(startCorpPhase()),
+        [TurnSubPhase.End]: () => dispatchThunk(endCorpPhase()),
         [TurnSubPhase.Process]: () => {
           return delay(() => {
             dispatchThunk(processCorpPhase());
           }, 1000);
         },
-        [TurnSubPhase.End]: () => dispatchThunk(endCorpPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startCorpPhase()),
+      },
+      [TurnPhase.Draw]: {
+        [TurnSubPhase.End]: () => dispatchThunk(endDrawPhase()),
+        [TurnSubPhase.Process]: () => dispatchThunk(processDrawPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startDrawPhase()),
+      },
+      [TurnPhase.End]: {
+        [TurnSubPhase.End]: () => dispatchThunk(endEndPhase()),
+        [TurnSubPhase.Process]: () => dispatchThunk(processEndPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startEndPhase()),
+      },
+      [TurnPhase.Play]: {
+        [TurnSubPhase.End]: () => dispatchThunk(endPlayPhase()),
+        [TurnSubPhase.Process]: () => dispatchThunk(processPlayPhase()),
+      },
+      [TurnPhase.Run]: {
+        [TurnSubPhase.End]: () => dispatchThunk(endRunPhase()),
+        [TurnSubPhase.Process]: () => dispatchThunk(processRunPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startRunPhase()),
       },
     };
   }, [dispatchThunk]);

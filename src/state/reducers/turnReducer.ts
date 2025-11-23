@@ -28,12 +28,12 @@ export type TurnState = {
 };
 
 export const initialTurnState: TurnState = {
-  turnNumber: 1,
-  turnRemainingClicks: 3,
+  phaseChangeCounter: 0,
   turnCurrentPhase: TurnPhase.Draw,
   turnCurrentSubPhase: TurnSubPhase.Start,
   turnNextPhase: null,
-  phaseChangeCounter: 0,
+  turnNumber: 1,
+  turnRemainingClicks: 3,
 };
 
 export enum TurnActionTypes {
@@ -54,28 +54,28 @@ export type TurnAction =
   | { type: TurnActionTypes.INCREMENT_TURN };
 
 export const setClicks = (clicks: number): TurnAction => ({
-  type: TurnActionTypes.SET_CLICKS,
   payload: clicks,
+  type: TurnActionTypes.SET_CLICKS,
 });
 
 export const modifyClicks = (amount: number): TurnAction => ({
-  type: TurnActionTypes.MODIFY_CLICKS,
   payload: amount,
+  type: TurnActionTypes.MODIFY_CLICKS,
 });
 
 export const setTurnCurrentPhase = (phase: TurnPhase): TurnAction => ({
-  type: TurnActionTypes.SET_TURN_CURRENT_PHASE,
   payload: phase,
+  type: TurnActionTypes.SET_TURN_CURRENT_PHASE,
 });
 
 export const setTurnCurrentSubPhase = (subPhase: TurnSubPhase): TurnAction => ({
-  type: TurnActionTypes.SET_TURN_CURRENT_SUB_PHASE,
   payload: subPhase,
+  type: TurnActionTypes.SET_TURN_CURRENT_SUB_PHASE,
 });
 
 export const setTurnNextPhase = (phase: null | TurnPhase): TurnAction => ({
-  type: TurnActionTypes.SET_TURN_NEXT_PHASE,
   payload: phase,
+  type: TurnActionTypes.SET_TURN_NEXT_PHASE,
 });
 
 export const incrementTurn = (): TurnAction => ({
@@ -108,8 +108,8 @@ export const turnReducer = (
     case TurnActionTypes.SET_TURN_CURRENT_SUB_PHASE:
       return {
         ...state,
-        turnCurrentSubPhase: action.payload,
         phaseChangeCounter: state.phaseChangeCounter + 1,
+        turnCurrentSubPhase: action.payload,
       };
 
     case TurnActionTypes.SET_TURN_NEXT_PHASE:

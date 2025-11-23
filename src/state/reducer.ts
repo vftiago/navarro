@@ -6,13 +6,6 @@ import {
   initialBoardState,
 } from "./reducers/boardReducer";
 import {
-  initialSettingsState,
-  SettingsAction,
-  SettingsActionTypes,
-  settingsReducer,
-  SettingsState,
-} from "./reducers/settingsReducer";
-import {
   initialPlayerState,
   PlayerAction,
   PlayerActionTypes,
@@ -26,6 +19,13 @@ import {
   serverReducer,
   ServerState,
 } from "./reducers/serverReducer";
+import {
+  initialSettingsState,
+  SettingsAction,
+  SettingsActionTypes,
+  settingsReducer,
+  SettingsState,
+} from "./reducers/settingsReducer";
 import {
   initialTurnState,
   TurnAction,
@@ -44,11 +44,11 @@ export type GameState = {
 };
 
 export const initialGameState: GameState = {
-  settingsState: initialSettingsState,
+  boardState: initialBoardState,
   playerState: initialPlayerState,
   serverState: initialServerState,
+  settingsState: initialSettingsState,
   turnState: initialTurnState,
-  boardState: initialBoardState,
 };
 
 export type GameAction =
@@ -93,20 +93,20 @@ export const rootReducer = (
   action: GameAction,
 ): GameState => {
   return {
-    settingsState: isSettingsAction(action)
-      ? settingsReducer(state.settingsState, action)
-      : state.settingsState,
+    boardState: isBoardAction(action)
+      ? boardReducer(state.boardState, action)
+      : state.boardState,
     playerState: isPlayerAction(action)
       ? playerReducer(state.playerState, action)
       : state.playerState,
     serverState: isServerAction(action)
       ? serverReducer(state.serverState, action)
       : state.serverState,
+    settingsState: isSettingsAction(action)
+      ? settingsReducer(state.settingsState, action)
+      : state.settingsState,
     turnState: isTurnAction(action)
       ? turnReducer(state.turnState, action)
       : state.turnState,
-    boardState: isBoardAction(action)
-      ? boardReducer(state.boardState, action)
-      : state.boardState,
   };
 };

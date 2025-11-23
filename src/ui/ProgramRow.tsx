@@ -14,9 +14,9 @@ export const ProgramRow = () => {
       {Array.from({ length: playerMemory }).map((_, index) => {
         return (
           <Stack
-            key={index}
             className="bg-neutral-900 p-2.5 rounded-xl h-[308px]"
             gap="xs"
+            key={index}
           >
             {playerInstalledPrograms[index] ? (
               <CardFront card={playerInstalledPrograms[index]} />

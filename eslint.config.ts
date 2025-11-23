@@ -1,18 +1,19 @@
-import { fixupConfigRules } from "@eslint/compat";
-import reactRefresh from "eslint-plugin-react-refresh";
-import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
+import { fixupConfigRules } from "@eslint/compat";
 import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import tsParser from "@typescript-eslint/parser";
+import perfectionist from "eslint-plugin-perfectionist";
+import reactRefresh from "eslint-plugin-react-refresh";
+import globals from "globals";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
+  allConfig: js.configs.all,
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
 });
 
 export default [
@@ -29,39 +30,62 @@ export default [
     ),
   ),
   {
-    plugins: {
-      "react-refresh": reactRefresh,
-    },
     languageOptions: {
+      ecmaVersion: "latest",
       globals: {
         ...globals.browser,
       },
       parser: tsParser,
-      ecmaVersion: "latest",
-      sourceType: "module",
-
       parserOptions: {
         project: "./tsconfig.json",
       },
+
+      sourceType: "module",
     },
     linterOptions: {
       reportUnusedInlineConfigs: "error",
     },
-    settings: {
-      react: {
-        version: "detect",
-      },
+    plugins: {
+      perfectionist,
+      "react-refresh": reactRefresh,
     },
     rules: {
-      "react/jsx-sort-props": [
+      "perfectionist/sort-imports": [
         "warn",
         {
-          callbacksLast: true,
-          shorthandFirst: true,
-          shorthandLast: false,
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            "parent",
+            "sibling",
+            "index",
+          ],
           ignoreCase: true,
-          noSortAlphabetically: false,
-          reservedFirst: true,
+          newlinesBetween: "never",
+          order: "asc",
+          type: "alphabetical",
+        },
+      ],
+      "perfectionist/sort-jsx-props": [
+        "warn",
+        {
+          customGroups: [
+            { groupName: "shorthand", modifiers: ["shorthand"] },
+            { elementNamePattern: "^on.+", groupName: "callback" },
+          ],
+          groups: ["shorthand", "unknown", "callback"],
+          ignoreCase: true,
+          order: "asc",
+          type: "alphabetical",
+        },
+      ],
+      "perfectionist/sort-objects": [
+        "warn",
+        {
+          ignoreCase: true,
+          order: "asc",
+          type: "alphabetical",
         },
       ],
       "react-refresh/only-export-components": [
@@ -70,6 +94,11 @@ export default [
           allowConstantExport: true,
         },
       ],
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
     },
   },
 ];

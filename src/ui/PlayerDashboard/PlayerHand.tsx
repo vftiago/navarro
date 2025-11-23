@@ -1,17 +1,23 @@
-import { CardFront } from "../Card/CardFront";
-import { Keyword, PlayingCard } from "../../cardDefinitions/card";
-import { AnimatePresence, motion, useAnimate } from "framer-motion";
-import { calculateCardRotations, calculateCardTopValues } from "./utils";
-import { EXIT_ANIMATION_DURATION } from "../constants";
-import { useGameState } from "../../context/useGameState";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Text } from "@mantine/core";
 import clsx from "clsx";
-import { TurnPhase } from "../../state/reducers/turnReducer";
+import { AnimatePresence, motion, useAnimate } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Keyword, PlayingCard } from "../../cardDefinitions/card";
+import { useGameState } from "../../context/useGameState";
 import { useThunk } from "../../context/useThunk";
+import { TurnPhase } from "../../state/reducers/turnReducer";
 import { startPlayPhase } from "../../state/thunks";
+import { CardFront } from "../Card/CardFront";
+import { EXIT_ANIMATION_DURATION } from "../constants";
+import { calculateCardRotations, calculateCardTopValues } from "./utils";
 
 const containerVariants = {
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
   hidden: {
     opacity: 0,
   },
@@ -21,21 +27,15 @@ const containerVariants = {
       staggerChildren: 0.05,
     },
   },
-  exit: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 100 },
-  show: { opacity: 1, y: 0 },
   exit: {
     opacity: 0,
     y: -100,
   },
+  hidden: { opacity: 0, y: 100 },
+  show: { opacity: 1, y: 0 },
 };
 
 export const PlayerHand = () => {
@@ -107,7 +107,7 @@ export const PlayerHand = () => {
 
       void animate(
         cardElement,
-        { opacity: 0, y: -100, rotate: 0 },
+        { opacity: 0, rotate: 0, y: -100 },
         {
           duration: EXIT_ANIMATION_DURATION / 1000,
         },
@@ -148,14 +148,14 @@ export const PlayerHand = () => {
   return (
     <AnimatePresence mode="wait">
       <motion.ol
-        key={animationKey}
         layout
         animate="show"
         className="flex ml-24 relative top-6"
         exit="exit"
         initial="hidden"
+        key={animationKey}
         transition={{
-          layout: { type: "spring", stiffness: 2400, damping: 100 },
+          layout: { damping: 100, stiffness: 2400, type: "spring" },
         }}
         variants={containerVariants}
       >
@@ -164,22 +164,22 @@ export const PlayerHand = () => {
 
           return (
             <motion.li
-              key={card.deckContextId}
-              ref={(el) => setCardRef(card.deckContextId, el)}
               layout
               className={clsx("-ml-24 list-none relative", {
                 "pointer-events-none": isExiting,
               })}
+              key={card.deckContextId}
+              ref={(el) => setCardRef(card.deckContextId, el)}
               style={{
-                top: isExiting ? topValues[index] - 40 : topValues[index],
                 rotate: isExiting ? 0 : rotationValues[index],
                 scale: isExiting ? 1.1 : 1,
+                top: isExiting ? topValues[index] - 40 : topValues[index],
               }}
               variants={itemVariants}
               whileHover={{
+                rotate: 0,
                 scale: 1.1,
                 top: -40,
-                rotate: 0,
                 zIndex: 1,
               }}
               onClick={() => {

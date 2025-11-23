@@ -13,16 +13,16 @@ type CardGridModalProps = {
 export const CardGridModal = ({
   cards,
   emptyMessage,
+  onClose,
   opened,
   title,
-  onClose,
 }: CardGridModalProps) => {
   return (
     <Modal fullScreen opened={opened} title={title} onClose={onClose}>
       <Container size="1360px">
         <Flex gap={32} wrap="wrap">
           {cards.length ? (
-            cards.map((card, index) => <CardFront key={index} card={card} />)
+            cards.map((card, index) => <CardFront card={card} key={index} />)
           ) : (
             <Stack align="center" h="400px" justify="center" w="100%">
               <Text>{emptyMessage}</Text>

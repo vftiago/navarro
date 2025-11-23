@@ -1,10 +1,10 @@
+import { createTheme, DEFAULT_THEME, MantineProvider } from "@mantine/core";
 import React from "react";
-import ReactDOM from "react-dom/client";
 import "@mantine/core/styles.css";
 import "./index.css";
-import { createTheme, DEFAULT_THEME, MantineProvider } from "@mantine/core";
-import { GameStateContextProvider } from "./context/GameStateContextProvider";
+import ReactDOM from "react-dom/client";
 import App from "./App";
+import { GameStateContextProvider } from "./context/GameStateContextProvider";
 
 const theme = createTheme({
   colors: {

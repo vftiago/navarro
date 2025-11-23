@@ -16,8 +16,8 @@ export type SettingsAction = {
 };
 
 export const setCardSize = (cardSize: "xs"): SettingsAction => ({
-  type: SettingsActionTypes.SET_CARD_SIZE,
   payload: cardSize,
+  type: SettingsActionTypes.SET_CARD_SIZE,
 });
 
 export const settingsReducer = (

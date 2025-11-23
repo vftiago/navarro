@@ -39,13 +39,13 @@ export type BoardAction =
 
 // board actions
 export const addPermanentEffect = (effect: PermanentEffectT): BoardAction => ({
-  type: BoardActionTypes.ADD_PERMANENT_EFFECT,
   payload: { effect },
+  type: BoardActionTypes.ADD_PERMANENT_EFFECT,
 });
 
 export const removePermanentEffect = (sourceId: string): BoardAction => ({
-  type: BoardActionTypes.REMOVE_PERMANENT_EFFECT,
   payload: { sourceId },
+  type: BoardActionTypes.REMOVE_PERMANENT_EFFECT,
 });
 
 export const boardReducer = (

@@ -6,9 +6,9 @@ export const ServerRow = () => {
       {["HQ", "R&D", "Archives", "Remote"].map((element: string) => {
         return (
           <Flex
-            key={element}
             className="bg-neutral-900 p-2.5 rounded-xl w-[192px]"
             gap="xs"
+            key={element}
           >
             {element}
           </Flex>

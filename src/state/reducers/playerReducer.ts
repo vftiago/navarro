@@ -4,7 +4,6 @@ import {
   ProgramPlayingCard,
 } from "../../cardDefinitions/card";
 import { playerStarterDeck } from "../../decks/playerStarterDeck";
-
 import {
   discardHand as discardHandUtil,
   drawCardsFromDeck,
@@ -33,22 +32,22 @@ export type PlayerState = {
 const shuffledDeck = shuffleCards([...playerStarterDeck]);
 
 export const initialPlayerState: PlayerState = {
-  playerDeck: shuffledDeck,
-  playerHand: [],
-  playerPlayedCards: [],
-  playerDiscardPile: [],
-  playerTrashPile: [],
-  playerInstalledPrograms: [],
   playerAccessedCards: [],
-  playerTags: 0,
-  playerNoise: 0,
-  playerSignal: 0,
-  playerVictoryPoints: 0,
-  playerMaxHandSize: 10,
   playerCardsPerTurn: 5,
   playerClicksPerTurn: 3,
+  playerDeck: shuffledDeck,
+  playerDiscardPile: [],
+  playerHand: [],
+  playerInstalledPrograms: [],
+  playerMaxHandSize: 10,
   playerMemory: 4,
+  playerNoise: 0,
+  playerPlayedCards: [],
   playerScoreArea: [],
+  playerSignal: 0,
+  playerTags: 0,
+  playerTrashPile: [],
+  playerVictoryPoints: 0,
 };
 
 export enum PlayerActionTypes {
@@ -99,8 +98,8 @@ export type PlayerAction =
 
 // player actions
 export const drawCards = (count: number): PlayerAction => ({
-  type: PlayerActionTypes.DRAW_CARDS,
   payload: { count },
+  type: PlayerActionTypes.DRAW_CARDS,
 });
 
 export const discardHand = (): PlayerAction => ({
@@ -108,28 +107,28 @@ export const discardHand = (): PlayerAction => ({
 });
 
 export const addToPrograms = (card: ProgramPlayingCard): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_PROGRAMS,
   payload: { card },
+  type: PlayerActionTypes.ADD_TO_PROGRAMS,
 });
 
 export const addToDiscard = (card: PlayingCard): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_DISCARD,
   payload: { card },
+  type: PlayerActionTypes.ADD_TO_DISCARD,
 });
 
 export const addToTrash = (card: PlayingCard): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_TRASH,
   payload: { card },
+  type: PlayerActionTypes.ADD_TO_TRASH,
 });
 
 export const addToScoreArea = (card: AgendaPlayingCard): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_SCORE_AREA,
   payload: { card },
+  type: PlayerActionTypes.ADD_TO_SCORE_AREA,
 });
 
 export const addToAccessedCards = (cards: PlayingCard[]): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS,
   payload: { cards },
+  type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS,
 });
 
 export const clearAccessedCards = (): PlayerAction => ({
@@ -141,13 +140,13 @@ export const clearPlayedCards = (): PlayerAction => ({
 });
 
 export const removeCardFromHand = (index: number): PlayerAction => ({
-  type: PlayerActionTypes.REMOVE_CARD_FROM_HAND,
   payload: index,
+  type: PlayerActionTypes.REMOVE_CARD_FROM_HAND,
 });
 
 export const addCardToPlayed = (card: PlayingCard): PlayerAction => ({
-  type: PlayerActionTypes.ADD_TO_PLAYED,
   payload: { card },
+  type: PlayerActionTypes.ADD_TO_PLAYED,
 });
 
 export const removeRandomCardFromHand = (): PlayerAction => ({
@@ -155,23 +154,23 @@ export const removeRandomCardFromHand = (): PlayerAction => ({
 });
 
 export const modifyPlayerTags = (tags: number): PlayerAction => ({
-  type: PlayerActionTypes.MODIFY_TAGS,
   payload: tags,
+  type: PlayerActionTypes.MODIFY_TAGS,
 });
 
 export const modifyPlayerNoise = (noise: number): PlayerAction => ({
-  type: PlayerActionTypes.MODIFY_NOISE,
   payload: noise,
+  type: PlayerActionTypes.MODIFY_NOISE,
 });
 
 export const modifyPlayerSignal = (signal: number): PlayerAction => ({
-  type: PlayerActionTypes.MODIFY_SIGNAL,
   payload: signal,
+  type: PlayerActionTypes.MODIFY_SIGNAL,
 });
 
 export const modifyPlayerVictoryPoints = (points: number): PlayerAction => ({
-  type: PlayerActionTypes.MODIFY_VICTORY_POINTS,
   payload: points,
+  type: PlayerActionTypes.MODIFY_VICTORY_POINTS,
 });
 
 export const playerReducer = (
@@ -182,32 +181,32 @@ export const playerReducer = (
     case PlayerActionTypes.DRAW_CARDS: {
       const { count } = action.payload;
 
-      const { newDeck, newHand, newDiscard } = drawCardsFromDeck({
-        deck: state.playerDeck,
-        hand: state.playerHand,
-        discard: state.playerDiscardPile,
+      const { newDeck, newDiscard, newHand } = drawCardsFromDeck({
         count,
+        deck: state.playerDeck,
+        discard: state.playerDiscardPile,
+        hand: state.playerHand,
       });
 
       return {
         ...state,
         playerDeck: newDeck,
-        playerHand: newHand,
         playerDiscardPile: newDiscard,
+        playerHand: newHand,
       };
     }
 
     case PlayerActionTypes.DISCARD_HAND: {
       const { newDiscard, newTrash } = discardHandUtil({
-        hand: state.playerHand,
         discard: state.playerDiscardPile,
+        hand: state.playerHand,
         trash: state.playerTrashPile,
       });
 
       return {
         ...state,
-        playerHand: [],
         playerDiscardPile: newDiscard,
+        playerHand: [],
         playerTrashPile: newTrash,
       };
     }

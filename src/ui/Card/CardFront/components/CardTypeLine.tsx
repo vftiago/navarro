@@ -4,8 +4,8 @@ import { CardRarity } from "../../../../cardDefinitions/card";
 
 export const CardTypeLine = ({
   rarity,
-  type,
   subtype,
+  type,
 }: {
   rarity: CardRarity;
   type: string;
@@ -14,9 +14,9 @@ export const CardTypeLine = ({
   return (
     <Flex
       className={clsx({
-        "bg-gray-900": rarity === CardRarity.BASIC,
-        "bg-gray-600": rarity === CardRarity.COMMON,
         "bg-cyan-600": rarity === CardRarity.UNCOMMON,
+        "bg-gray-600": rarity === CardRarity.COMMON,
+        "bg-gray-900": rarity === CardRarity.BASIC,
         "bg-indigo-500": rarity === CardRarity.RARE,
       })}
       px="xs"

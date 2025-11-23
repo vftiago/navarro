@@ -1,6 +1,6 @@
 import { Card, Image } from "@mantine/core";
-import { getCardSize } from "../../state/selectors";
 import { useGameState } from "../../context/useGameState";
+import { getCardSize } from "../../state/selectors";
 
 const GREY_CARD_BACK = "_787cb567-ce4a-463a-b131-08522b7b43c1.jpeg";
 

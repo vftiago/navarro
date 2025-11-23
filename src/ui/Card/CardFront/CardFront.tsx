@@ -1,10 +1,9 @@
-import { CardType } from "../../../cardDefinitions/card";
-
-import { CardFrontIce } from "./CardFrontIce";
-import { CardFrontDefault } from "./CardFrontDefault";
-import { CardFrontAgenda } from "./CardFrontAgenda";
-import { CardFrontProgram } from "./CardFrontProgram";
 import { ComponentProps } from "react";
+import { CardType } from "../../../cardDefinitions/card";
+import { CardFrontAgenda } from "./CardFrontAgenda";
+import { CardFrontDefault } from "./CardFrontDefault";
+import { CardFrontIce } from "./CardFrontIce";
+import { CardFrontProgram } from "./CardFrontProgram";
 
 export const CardFront = (
   props: Omit<

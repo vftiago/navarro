@@ -24,10 +24,10 @@ export const shuffleCards = <T>(cards: T[]): T[] => {
 };
 
 export const drawCardsFromDeck = ({
-  deck,
-  hand,
-  discard,
   count,
+  deck,
+  discard,
+  hand,
 }: {
   deck: PlayingCard[];
   hand: PlayingCard[];
@@ -62,14 +62,14 @@ export const drawCardsFromDeck = ({
 
   return {
     newDeck: remainingDeck,
-    newHand: drawnCards,
     newDiscard: remainingDiscard,
+    newHand: drawnCards,
   };
 };
 
 export const discardHand = ({
-  hand,
   discard,
+  hand,
   trash,
 }: {
   hand: PlayingCard[];

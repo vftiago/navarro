@@ -1,8 +1,8 @@
 import { Flex } from "@mantine/core";
-import { CardFront } from "./Card/CardFront";
-import { useGameState } from "../context/useGameState";
 import { IcePlayingCard } from "../cardDefinitions/card";
+import { useGameState } from "../context/useGameState";
 import { CardBack } from "./Card/CardBack";
+import { CardFront } from "./Card/CardFront";
 
 export const IceRow = () => {
   const { gameState } = useGameState();
@@ -15,7 +15,7 @@ export const IceRow = () => {
       {gameState.serverState.serverInstalledIce.map(
         (card: IcePlayingCard, index: number) => {
           return card.isRezzed ? (
-            <CardFront key={index} card={card} />
+            <CardFront card={card} key={index} />
           ) : (
             <CardBack key={index} />
           );

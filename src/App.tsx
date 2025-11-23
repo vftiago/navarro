@@ -1,20 +1,19 @@
 import { Container, Stack } from "@mantine/core";
-import { useCallback, useEffect } from "react";
-import { IceRow } from "./ui/IceRow";
 import { useDisclosure } from "@mantine/hooks";
-import { StatusRow } from "./ui/StatusRow";
-import { Modals } from "./ui/Modals";
-
-import { PlayerDashboard } from "./ui/PlayerDashboard";
+import { useCallback, useEffect } from "react";
 import { useGameState } from "./context/useGameState";
-import { ProgramRow } from "./ui/ProgramRow";
-import { CorpTurn } from "./ui/CorpTurn";
-import { TurnPhase } from "./state/reducers/turnReducer";
-import { PhaseManager } from "./PhaseManager";
 import { useThunk } from "./context/useThunk";
-import { endRunPhase } from "./state/thunks";
+import { PhaseManager } from "./PhaseManager";
+import { TurnPhase } from "./state/reducers/turnReducer";
 import { getPlayerAccessedCards, getTurnCurrentPhase } from "./state/selectors";
+import { endRunPhase } from "./state/thunks";
+import { CorpTurn } from "./ui/CorpTurn";
+import { IceRow } from "./ui/IceRow";
+import { Modals } from "./ui/Modals";
+import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { PlayerSettings } from "./ui/PlayerSettings";
+import { ProgramRow } from "./ui/ProgramRow";
+import { StatusRow } from "./ui/StatusRow";
 
 export const App = () => {
   const { gameState } = useGameState();
@@ -23,23 +22,23 @@ export const App = () => {
   const turnCurrentPhase = getTurnCurrentPhase(gameState);
   const playerAccessedCards = getPlayerAccessedCards(gameState);
 
-  const [isDeckModalOpen, { open: openDeckModal, close: closeDeckModal }] =
+  const [isDeckModalOpen, { close: closeDeckModal, open: openDeckModal }] =
     useDisclosure(false);
 
   const [
     isDiscardModalOpen,
-    { open: openDiscardModal, close: closeDiscardModal },
+    { close: closeDiscardModal, open: openDiscardModal },
   ] = useDisclosure(false);
 
   const [
     isCardDisplayModalOpen,
-    { open: openCardDisplayModal, close: closeCardDisplayModal },
+    { close: closeCardDisplayModal, open: openCardDisplayModal },
   ] = useDisclosure(false);
 
-  const [isTrashModalOpen, { open: openTrashModal, close: closeTrashModal }] =
+  const [isTrashModalOpen, { close: closeTrashModal, open: openTrashModal }] =
     useDisclosure(false);
 
-  const [isScoreModalOpen, { open: openScoreModal, close: closeScoreModal }] =
+  const [isScoreModalOpen, { close: closeScoreModal, open: openScoreModal }] =
     useDisclosure(false);
 
   useEffect(() => {

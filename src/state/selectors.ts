@@ -115,7 +115,7 @@ export const getIceStrength = (
     (effect) => effect.targetSelector === "getIceStrength",
   );
 
-  const modifier = relevantEffects.reduce((acc, { sourceId, getModifier }) => {
+  const modifier = relevantEffects.reduce((acc, { getModifier, sourceId }) => {
     const modifier = getModifier({
       gameState: state,
       sourceId,

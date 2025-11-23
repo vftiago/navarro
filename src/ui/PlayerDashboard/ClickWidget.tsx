@@ -12,17 +12,17 @@ export const ClickWidget = ({
         <AnimatePresence>
           {Array.from({ length: remainingClicks }).map((_, index) => (
             <motion.li
-              key={index}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{
                 opacity: 0,
-                y: -20,
                 scale: 2,
                 transition: {
                   ease: "backIn",
                 },
+                y: -20,
               }}
               initial={{ opacity: 0, scale: 0.5, y: 20 }}
+              key={index}
               whileHover={{
                 scale: 1.1,
               }}

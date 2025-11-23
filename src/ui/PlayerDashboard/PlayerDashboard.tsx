@@ -1,18 +1,18 @@
 import { Button, Container, Flex, Stack } from "@mantine/core";
-import { ClickWidget } from "./ClickWidget";
-import { TagWidget } from "./TagWidget";
-import { PlayerHand } from "./PlayerHand";
-import { useGameState } from "../../context/useGameState";
 import { useCallback } from "react";
-import { TurnPhase } from "../../state/reducers/turnReducer";
+import { useGameState } from "../../context/useGameState";
 import { useThunk } from "../../context/useThunk";
+import { TurnPhase } from "../../state/reducers/turnReducer";
 import { startEndPhase } from "../../state/thunks";
+import { ClickWidget } from "./ClickWidget";
+import { PlayerHand } from "./PlayerHand";
+import { TagWidget } from "./TagWidget";
 
 export const PlayerDashboard = ({
   openDeckModal,
   openDiscardModal,
-  openTrashModal,
   openScoreModal,
+  openTrashModal,
 }: {
   openDeckModal: () => void;
   openDiscardModal: () => void;
@@ -27,12 +27,12 @@ export const PlayerDashboard = ({
 
   const {
     playerDeck,
-    playerTags,
     playerDiscardPile,
+    playerTags,
     playerTrashPile,
     playerVictoryPoints,
   } = playerState;
-  const { turnRemainingClicks, turnCurrentPhase, turnNumber } = turnState;
+  const { turnCurrentPhase, turnNumber, turnRemainingClicks } = turnState;
 
   const onClickEndTurn = useCallback(() => {
     if (turnCurrentPhase !== TurnPhase.Main) {

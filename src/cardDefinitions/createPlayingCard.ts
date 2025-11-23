@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
-import { serverCards } from "./serverCards";
 import { playerCards } from "./playerCards";
+import { serverCards } from "./serverCards";
 import { iceCards } from "./serverCards/ice";
 
 export const createServerPlayingCard = (name: string) => {

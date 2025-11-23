@@ -1,9 +1,9 @@
-import { useDisclosure } from "@mantine/hooks";
 import { Drawer, Button, Flex } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IoMdSettings } from "react-icons/io";
 
 export const PlayerSettings = () => {
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, { close, open }] = useDisclosure(false);
 
   return (
     <Flex className="justify-end">

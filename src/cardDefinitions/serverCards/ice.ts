@@ -1,12 +1,4 @@
 import {
-  CardRarity,
-  CardType,
-  TriggerMoment,
-  IceSubtype,
-  IceCardDefinitions,
-} from "../card";
-import { modifyClicks } from "../../state/reducers/turnReducer";
-import {
   addPermanentEffect,
   PermanentEffectT,
 } from "../../state/reducers/boardReducer";
@@ -14,39 +6,38 @@ import {
   modifyPlayerTags,
   removeRandomCardFromHand,
 } from "../../state/reducers/playerReducer";
+import { modifyClicks } from "../../state/reducers/turnReducer";
 import { getServerSecurityLevel } from "../../state/selectors";
+import {
+  CardRarity,
+  CardType,
+  TriggerMoment,
+  IceSubtype,
+  IceCardDefinitions,
+} from "../card";
 
 export const iceCards: IceCardDefinitions[] = [
   {
-    name: "Ice Wall",
-    image: "_2f5d81f7-6ad8-4b93-b932-95202eaa6f44.jpeg",
-    rarity: CardRarity.COMMON,
-    type: CardType.ICE,
-    subtype: IceSubtype.BARRIER,
-    isRezzed: true,
-    damage: 0,
-    getStrength: () => 8,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_ENCOUNTER,
         getActions: () => [modifyClicks(-1)],
         getText: () => "Lose 1 click.",
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
       },
     ],
+    damage: 0,
     flavorText: `"It's gonna take forever to go around that."`,
+    getStrength: () => 8,
+    image: "_2f5d81f7-6ad8-4b93-b932-95202eaa6f44.jpeg",
+    isRezzed: true,
+    name: "Ice Wall",
+    rarity: CardRarity.COMMON,
+    subtype: IceSubtype.BARRIER,
+    type: CardType.ICE,
   },
   {
-    name: "Fire Wall",
-    image: "_4515fe90-c014-4035-9d3d-b9ea681a7b0e.jpeg",
-    rarity: CardRarity.COMMON,
-    type: CardType.ICE,
-    subtype: IceSubtype.BARRIER,
-    isRezzed: true,
-    damage: 0,
-    getStrength: (gameState) => gameState.serverState.serverSecurityLevel,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_PLAY,
         getActions: ({ gameState, sourceId, targetId }) => {
           if (!sourceId || !targetId) {
             throw new Error(
@@ -55,22 +46,22 @@ export const iceCards: IceCardDefinitions[] = [
           }
 
           const permanentEffect: PermanentEffectT = {
-            sourceId,
-            targetSelector: "getIceStrength",
             getModifier: ({ sourceId, targetId }) => {
               return sourceId === targetId
                 ? gameState.serverState.serverSecurityLevel
                 : 0;
             },
+            sourceId,
+            targetSelector: "getIceStrength",
           };
 
           return [addPermanentEffect(permanentEffect)];
         },
         getText: () =>
           "Fire Wall's strength is equal to the server security level.",
+        triggerMoment: TriggerMoment.ON_PLAY,
       },
       {
-        triggerMoment: TriggerMoment.ON_ENCOUNTER,
         getActions: ({ gameState }) => {
           const serverSecurityLevel = getServerSecurityLevel(gameState);
 
@@ -83,38 +74,38 @@ export const iceCards: IceCardDefinitions[] = [
           return actions;
         },
         getText: () => "Take 1 net damage per server security level.",
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
       },
     ],
+    damage: 0,
+    getStrength: (gameState) => gameState.serverState.serverSecurityLevel,
+    image: "_4515fe90-c014-4035-9d3d-b9ea681a7b0e.jpeg",
+    isRezzed: true,
+    name: "Fire Wall",
+    rarity: CardRarity.COMMON,
+    subtype: IceSubtype.BARRIER,
+    type: CardType.ICE,
   },
   {
-    name: "Biometric Authenticator",
-    image: "_61f45f4f-382f-4edd-a7ea-eaef9a2e1e6c.jpg",
-    rarity: CardRarity.COMMON,
-    type: CardType.ICE,
-    subtype: IceSubtype.CODE_GATE,
-    isRezzed: true,
-    damage: 0,
-    getStrength: () => 5,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_ENCOUNTER,
         getActions: () => [modifyPlayerTags(1)],
         getText: () => "Gain 1 tag.",
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
       },
     ],
+    damage: 0,
+    getStrength: () => 5,
+    image: "_61f45f4f-382f-4edd-a7ea-eaef9a2e1e6c.jpg",
+    isRezzed: true,
+    name: "Biometric Authenticator",
+    rarity: CardRarity.COMMON,
+    subtype: IceSubtype.CODE_GATE,
+    type: CardType.ICE,
   },
   {
-    name: "Bad Moon",
-    image: "_4653d721-be51-4949-b607-e801ff20d111.jpg",
-    rarity: CardRarity.COMMON,
-    type: CardType.ICE,
-    subtype: IceSubtype.SENTRY,
-    isRezzed: true,
-    damage: 0,
-    getStrength: () => 4,
     cardEffects: [
       {
-        triggerMoment: TriggerMoment.ON_REZ,
         getActions: ({ sourceId }) => {
           if (!sourceId) {
             throw new Error(
@@ -123,17 +114,26 @@ export const iceCards: IceCardDefinitions[] = [
           }
 
           const permanentEffect: PermanentEffectT = {
-            sourceId,
-            targetSelector: "getIceStrength",
             getModifier: ({ sourceId, targetId }) => {
               return sourceId === targetId ? 0 : 1;
             },
+            sourceId,
+            targetSelector: "getIceStrength",
           };
 
           return [addPermanentEffect(permanentEffect)];
         },
         getText: () => "Other Ice gain 1 strength.",
+        triggerMoment: TriggerMoment.ON_REZ,
       },
     ],
+    damage: 0,
+    getStrength: () => 4,
+    image: "_4653d721-be51-4949-b607-e801ff20d111.jpg",
+    isRezzed: true,
+    name: "Bad Moon",
+    rarity: CardRarity.COMMON,
+    subtype: IceSubtype.SENTRY,
+    type: CardType.ICE,
   },
 ];

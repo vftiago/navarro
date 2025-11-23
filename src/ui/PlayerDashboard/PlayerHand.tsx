@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 import { EXIT_ANIMATION_DURATION } from "../constants";
 import { useGameState } from "../../context/useGameState";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Text } from "@mantine/core";
 import clsx from "clsx";
 import { TurnPhase } from "../../state/reducers/turnReducer";
@@ -44,18 +44,19 @@ export const PlayerHand = () => {
   } = useGameState();
 
   const dispatchThunk = useThunk();
+  const [, animate] = useAnimate();
 
   const { playerHand } = playerState;
   const { turnCurrentPhase } = turnState;
 
-  const [exitingCards, setExitingCards] = useState<string[]>([]);
+  const [exitingCards, setExitingCards] = useState<Set<string>>(new Set());
   const [showEmptyMessage, setShowEmptyMessage] = useState(
     playerHand.length === 0,
   );
 
   const [animationKey, setAnimationKey] = useState(0);
 
-  const [scope, animate] = useAnimate();
+  const cardRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
   useEffect(() => {
     if (turnCurrentPhase === TurnPhase.End || playerHand.length === 0) {
@@ -71,38 +72,70 @@ export const PlayerHand = () => {
     }
   }, [playerHand, turnCurrentPhase]);
 
+  useEffect(() => {
+    const currentCardIds = new Set(
+      playerHand.map((card) => card.deckContextId),
+    );
+
+    for (const [id] of cardRefs.current) {
+      if (!currentCardIds.has(id)) {
+        cardRefs.current.delete(id);
+      }
+    }
+  }, [playerHand]);
+
   const rotationValues = calculateCardRotations(playerHand.length);
   const topValues = calculateCardTopValues(playerHand.length);
 
-  const handleCardClick = (card: PlayingCard, index: number) => {
-    if (
-      card.cardEffects?.some((effect) => effect.keyword === Keyword.UNPLAYABLE)
-    ) {
-      return;
-    }
+  const handleCardClick = useCallback(
+    (card: PlayingCard, index: number) => {
+      if (
+        card.cardEffects?.some(
+          (effect) => effect.keyword === Keyword.UNPLAYABLE,
+        )
+      ) {
+        return;
+      }
 
-    const cardElement = document.getElementById(card.deckContextId);
+      const cardElement = cardRefs.current.get(card.deckContextId);
 
-    if (!cardElement) {
-      return;
-    }
+      if (!cardElement) {
+        return;
+      }
 
-    setExitingCards((prev) => [...prev, card.deckContextId]);
+      setExitingCards((prev) => new Set(prev).add(card.deckContextId));
 
-    void animate(
-      cardElement,
-      { opacity: 0, y: -100, rotate: 0 },
-      {
-        duration: EXIT_ANIMATION_DURATION / 1000,
-      },
-    );
+      void animate(
+        cardElement,
+        { opacity: 0, y: -100, rotate: 0 },
+        {
+          duration: EXIT_ANIMATION_DURATION / 1000,
+        },
+      );
 
-    setTimeout(() => {
-      setExitingCards((prev) => prev.filter((id) => id !== card.deckContextId));
+      setTimeout(() => {
+        setExitingCards((prev) => {
+          const next = new Set(prev);
+          next.delete(card.deckContextId);
+          return next;
+        });
 
-      dispatchThunk(startPlayPhase(card, index));
-    }, EXIT_ANIMATION_DURATION);
-  };
+        dispatchThunk(startPlayPhase(card, index));
+      }, EXIT_ANIMATION_DURATION);
+    },
+    [animate, dispatchThunk],
+  );
+
+  const setCardRef = useCallback(
+    (id: string, element: HTMLLIElement | null) => {
+      if (element) {
+        cardRefs.current.set(id, element);
+      } else {
+        cardRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   if (showEmptyMessage) {
     return (
@@ -116,7 +149,6 @@ export const PlayerHand = () => {
     <AnimatePresence mode="wait">
       <motion.ol
         key={animationKey}
-        ref={scope}
         layout
         animate="show"
         className="flex ml-24 relative top-6"
@@ -128,16 +160,16 @@ export const PlayerHand = () => {
         variants={containerVariants}
       >
         {playerHand.map((card, index) => {
-          const isExiting = exitingCards.includes(card.deckContextId);
+          const isExiting = exitingCards.has(card.deckContextId);
 
           return (
             <motion.li
               key={card.deckContextId}
+              ref={(el) => setCardRef(card.deckContextId, el)}
               layout
               className={clsx("-ml-24 list-none relative", {
                 "pointer-events-none": isExiting,
               })}
-              id={card.deckContextId}
               style={{
                 top: isExiting ? topValues[index] - 40 : topValues[index],
                 rotate: isExiting ? 0 : rotationValues[index],

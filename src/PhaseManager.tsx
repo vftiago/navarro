@@ -26,11 +26,11 @@ export const PhaseManager = () => {
 
   const { turnCurrentPhase, turnCurrentSubPhase } = gameState.turnState;
 
-  const lastProcessedPhaseRef = useRef<string>(null);
+  const lastProcessedPhaseRef = useRef<string | null>(null);
 
   type PhaseHandlers = {
     [P in TurnPhase]?: {
-      [S in TurnSubPhase]?: () => void;
+      [S in TurnSubPhase]?: () => void | (() => void);
     };
   };
 
@@ -58,7 +58,7 @@ export const PhaseManager = () => {
       [TurnPhase.Corp]: {
         [TurnSubPhase.Start]: () => dispatchThunk(startCorpPhase()),
         [TurnSubPhase.Process]: () => {
-          void delay(() => {
+          return delay(() => {
             dispatchThunk(processCorpPhase());
           }, 1000);
         },
@@ -82,7 +82,11 @@ export const PhaseManager = () => {
     const action = PHASE_HANDLERS[turnCurrentPhase]?.[turnCurrentSubPhase];
 
     if (action) {
-      action();
+      const cleanup = action();
+
+      if (typeof cleanup === "function") {
+        return cleanup;
+      }
     }
   }, [PHASE_HANDLERS, turnCurrentPhase, turnCurrentSubPhase]);
 

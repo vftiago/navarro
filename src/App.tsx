@@ -54,7 +54,7 @@ export const App = () => {
   }, [closeCardDisplayModal, dispatchThunk]);
 
   return (
-    <div className="overflow-hidden">
+    <>
       <PhaseManager />
       {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
       <Container fluid maw={1620} p="xs">
@@ -83,7 +83,7 @@ export const App = () => {
         openScoreModal={openScoreModal}
         openTrashModal={openTrashModal}
       />
-    </div>
+    </>
   );
 };
 

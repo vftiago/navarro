@@ -167,7 +167,7 @@ export const PlayerHand = () => {
           return (
             <motion.li
               layout
-              className={clsx("-ml-24 list-none relative", {
+              className={clsx("-ml-24 list-none relative pointer-events-auto", {
                 "pointer-events-none": isExiting,
               })}
               key={card.deckContextId}

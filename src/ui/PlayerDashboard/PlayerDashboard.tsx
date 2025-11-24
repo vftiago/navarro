@@ -53,55 +53,58 @@ export const PlayerDashboard = ({
   }, [dispatchThunk, turnCurrentPhase]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10">
-      <Container fluid maw={1620} p="lg">
-        <Flex className="justify-between items-end">
-          <Stack className="flex-col-reverse" w="10rem">
-            <Button size="lg" variant="gradient" onClick={openDeckModal}>
-              Deck ({playerDeckLength})
-            </Button>
-            <ClickWidget remainingClicks={turnRemainingClicks} />
-            <TagWidget tagCount={playerTags} />
-          </Stack>
+    <Container
+      fluid
+      className="pointer-events-none fixed bottom-0 left-0 right-0 z-10"
+      maw={1620}
+      p="xs"
+    >
+      <Flex className="justify-between items-end">
+        <Stack className="pointer-events-auto flex-col-reverse" w="10rem">
+          <Button size="lg" variant="gradient" onClick={openDeckModal}>
+            Deck ({playerDeckLength})
+          </Button>
+          <ClickWidget remainingClicks={turnRemainingClicks} />
+          <TagWidget tagCount={playerTags} />
+        </Stack>
 
-          <div className="flex-1 flex justify-center">
-            <PlayerHand />
-          </div>
+        <div className="flex-1 flex justify-center">
+          <PlayerHand />
+        </div>
 
-          <Stack className="flex-col-reverse" w="10rem">
-            <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
-              End turn ({turnNumber})
-            </Button>
-            <Button
-              className="self-end"
-              size="sm"
-              variant="gradient"
-              w="8rem"
-              onClick={openDiscardModal}
-            >
-              Discard ({playerDiscardPileLength})
-            </Button>
-            <Button
-              className="self-end"
-              size="sm"
-              variant="gradient"
-              w="8rem"
-              onClick={openTrashModal}
-            >
-              Trash ({playerTrashPileLength})
-            </Button>
-            <Button
-              className="self-end"
-              color="yellow"
-              size="sm"
-              w="8rem"
-              onClick={openScoreModal}
-            >
-              Score ({playerVictoryPoints})
-            </Button>
-          </Stack>
-        </Flex>
-      </Container>
-    </div>
+        <Stack className="pointer-events-auto flex-col-reverse" w="10rem">
+          <Button size="lg" variant="gradient" onClick={onClickEndTurn}>
+            End turn ({turnNumber})
+          </Button>
+          <Button
+            className="self-end"
+            size="sm"
+            variant="gradient"
+            w="8rem"
+            onClick={openDiscardModal}
+          >
+            Discard ({playerDiscardPileLength})
+          </Button>
+          <Button
+            className="self-end"
+            size="sm"
+            variant="gradient"
+            w="8rem"
+            onClick={openTrashModal}
+          >
+            Trash ({playerTrashPileLength})
+          </Button>
+          <Button
+            className="self-end"
+            color="yellow"
+            size="sm"
+            w="8rem"
+            onClick={openScoreModal}
+          >
+            Score ({playerVictoryPoints})
+          </Button>
+        </Stack>
+      </Flex>
+    </Container>
   );
 };

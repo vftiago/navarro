@@ -19,7 +19,7 @@ export const CardGridModal = ({
 }: CardGridModalProps) => {
   return (
     <Modal fullScreen opened={opened} title={title} onClose={onClose}>
-      <Container size="1360px">
+      <Container className="pt-8" size="1360px">
         <Flex gap={32} wrap="wrap">
           {cards.length ? (
             cards.map((card, index) => <CardFront card={card} key={index} />)

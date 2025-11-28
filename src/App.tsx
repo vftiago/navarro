@@ -1,5 +1,6 @@
 import { Container, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { AnimatePresence } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { useThunk } from "./context/useThunk";
 import { PhaseManager } from "./PhaseManager";
@@ -56,7 +57,9 @@ export const App = () => {
   return (
     <>
       <PhaseManager />
-      {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
+      <AnimatePresence>
+        {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
+      </AnimatePresence>
       <Container fluid maw={1620} p="xs">
         <Modals
           closeCardDisplayModal={onCloseDisplayCardModal}

@@ -1,3 +1,4 @@
+import { drawCards } from "../../state/player";
 import { modifyServerSecurity } from "../../state/server";
 import { modifyClicks, setTurnNextPhase, TurnPhase } from "../../state/turn";
 import { CardRarity, CardDefinitions, CardType, TriggerMoment } from "../card";
@@ -33,13 +34,13 @@ export const scriptCards: CardDefinitions[] = [
   {
     cardEffects: [
       {
-        getActions: () => [modifyClicks(3)],
+        getActions: () => [drawCards(3)],
         getText: () => "Draw 3 cards.",
         triggerMoment: TriggerMoment.ON_PLAY,
       },
       KEYWORD_EFFECTS.Trash,
     ],
-    image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",
+    image: "_c8475f82-83d8-4a3d-8c5a-6fb3ff714234.jpeg",
     name: "Piece of Cake",
     rarity: CardRarity.RARE,
     type: CardType.SCRIPT,

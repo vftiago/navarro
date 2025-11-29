@@ -9,6 +9,7 @@ const deckList = [
   "Run",
   "Crack",
   "Boost",
+  "Piece of Cake",
   "Sledgehammer",
   "Sledgehammer",
   "Deep Thoughts",

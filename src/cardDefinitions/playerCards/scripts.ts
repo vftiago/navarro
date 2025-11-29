@@ -1,9 +1,5 @@
-import { modifyServerSecurity } from "../../state/reducers/serverReducer";
-import {
-  modifyClicks,
-  setTurnNextPhase,
-  TurnPhase,
-} from "../../state/reducers/turnReducer";
+import { modifyServerSecurity } from "../../state/server";
+import { modifyClicks, setTurnNextPhase, TurnPhase } from "../../state/turn";
 import { CardRarity, CardDefinitions, CardType, TriggerMoment } from "../card";
 import { KEYWORD_EFFECTS } from "../keywords";
 

@@ -1,9 +1,17 @@
 import clsx from "clsx";
 import { IcePlayingCard } from "../../../cardDefinitions/card";
-import { getGameState, useGameStore } from "../../../store/gameStore";
+import { getGameState, useGameStore } from "../../../state/store";
 import { CardFrontLayout } from "./CardFrontLayout";
 
-export const CardFrontIce = ({ card }: { card: IcePlayingCard }) => {
+export const CardFrontIce = ({
+  card,
+  isBeingEncountered,
+  onClick,
+}: {
+  card: IcePlayingCard;
+  isBeingEncountered?: boolean;
+  onClick?: () => void;
+}) => {
   const boardState = useGameStore((state) => state.boardState);
 
   const { cardEffects, flavorText, image, name, rarity, subtype, type } = card;
@@ -47,11 +55,13 @@ export const CardFrontIce = ({ card }: { card: IcePlayingCard }) => {
       cardEffects={cardEffects}
       flavorText={flavorText}
       image={image}
+      isBeingEncountered={isBeingEncountered}
       name={name}
       overlay={strengthOverlay}
       rarity={rarity}
       subtype={subtype}
       type={type}
+      onClick={onClick}
     />
   );
 };

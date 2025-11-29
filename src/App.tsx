@@ -2,11 +2,11 @@ import { Container, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { AnimatePresence } from "framer-motion";
 import { useCallback, useEffect } from "react";
-import { useThunk } from "./context/useThunk";
 import { PhaseManager } from "./PhaseManager";
-import { TurnPhase } from "./state/reducers/turnReducer";
-import { endRunPhase } from "./state/thunks";
-import { useGameStore } from "./store/gameStore";
+import { useThunk } from "./state/hooks";
+import { endAccessPhase, finalizeAccessedCards } from "./state/phases";
+import { useGameStore } from "./state/store";
+import { TurnPhase } from "./state/turn";
 import { CorpTurn } from "./ui/CorpTurn";
 import { IceRow } from "./ui/IceRow";
 import { Modals } from "./ui/Modals";
@@ -51,7 +51,8 @@ export const App = () => {
 
   const onCloseDisplayCardModal = useCallback(() => {
     closeCardDisplayModal();
-    dispatchThunk(endRunPhase());
+    dispatchThunk(finalizeAccessedCards());
+    dispatchThunk(endAccessPhase());
   }, [closeCardDisplayModal, dispatchThunk]);
 
   return (

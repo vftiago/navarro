@@ -1,10 +1,10 @@
 import { Button, Container, Flex, Stack } from "@mantine/core";
 import { useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useThunk } from "../../context/useThunk";
-import { TurnPhase } from "../../state/reducers/turnReducer";
-import { startEndPhase } from "../../state/thunks";
-import { useGameStore } from "../../store/gameStore";
+import { useThunk } from "../../state/hooks";
+import { startEndPhase } from "../../state/phases";
+import { useGameStore } from "../../state/store";
+import { TurnPhase } from "../../state/turn";
 import { ClickWidget } from "./ClickWidget";
 import { PlayerHand } from "./PlayerHand";
 import { TagWidget } from "./TagWidget";

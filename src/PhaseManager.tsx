@@ -1,25 +1,29 @@
 import { delay } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useThunk } from "./context/useThunk";
-import { TurnPhase, TurnSubPhase } from "./state/reducers/turnReducer";
+import { useThunk } from "./state/hooks";
 import {
   endCorpPhase,
   endDrawPhase,
   endEndPhase,
   endPlayPhase,
   endRunPhase,
+  processAccessPhase,
   processCorpPhase,
   processDrawPhase,
+  processEncounterPhase,
   processEndPhase,
   processPlayPhase,
   processRunPhase,
+  startAccessPhase,
   startCorpPhase,
   startDrawPhase,
+  startEncounterPhase,
   startEndPhase,
   startRunPhase,
-} from "./state/thunks";
-import { useGameStore } from "./store/gameStore";
+} from "./state/phases";
+import { useGameStore } from "./state/store";
+import { TurnPhase, TurnSubPhase } from "./state/turn";
 
 export const PhaseManager = () => {
   const { phaseChangeCounter, turnCurrentPhase, turnCurrentSubPhase } =
@@ -43,6 +47,13 @@ export const PhaseManager = () => {
 
   const PHASE_HANDLERS: PhaseHandlers = useMemo(() => {
     return {
+      [TurnPhase.Access]: {
+        [TurnSubPhase.End]: () => {
+          // End is triggered by user click/modal dismiss, not auto-run
+        },
+        [TurnSubPhase.Process]: () => dispatchThunk(processAccessPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startAccessPhase()),
+      },
       [TurnPhase.Corp]: {
         [TurnSubPhase.End]: () => dispatchThunk(endCorpPhase()),
         [TurnSubPhase.Process]: () => {
@@ -56,6 +67,13 @@ export const PhaseManager = () => {
         [TurnSubPhase.End]: () => dispatchThunk(endDrawPhase()),
         [TurnSubPhase.Process]: () => dispatchThunk(processDrawPhase()),
         [TurnSubPhase.Start]: () => dispatchThunk(startDrawPhase()),
+      },
+      [TurnPhase.Encounter]: {
+        [TurnSubPhase.End]: () => {
+          // End is triggered by user click, not auto-run
+        },
+        [TurnSubPhase.Process]: () => dispatchThunk(processEncounterPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startEncounterPhase()),
       },
       [TurnPhase.End]: {
         [TurnSubPhase.End]: () => dispatchThunk(endEndPhase()),

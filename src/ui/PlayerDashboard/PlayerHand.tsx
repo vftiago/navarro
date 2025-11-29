@@ -4,10 +4,10 @@ import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Keyword, PlayingCard } from "../../cardDefinitions/card";
-import { useThunk } from "../../context/useThunk";
-import { TurnPhase } from "../../state/reducers/turnReducer";
-import { startPlayPhase } from "../../state/thunks";
-import { useGameStore } from "../../store/gameStore";
+import { useThunk } from "../../state/hooks";
+import { startPlayPhase } from "../../state/phases";
+import { useGameStore } from "../../state/store";
+import { TurnPhase } from "../../state/turn";
 import { CardFront } from "../Card/CardFront";
 import { calculateCardRotations, calculateCardTopValues } from "./utils";
 

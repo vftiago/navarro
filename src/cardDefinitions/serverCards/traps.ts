@@ -1,8 +1,4 @@
-import {
-  modifyClicks,
-  setTurnCurrentPhase,
-  TurnPhase,
-} from "../../state/reducers/turnReducer";
+import { modifyClicks, setTurnCurrentPhase, TurnPhase } from "../../state/turn";
 import {
   CardRarity,
   CardType,

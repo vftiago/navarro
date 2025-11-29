@@ -1,6 +1,6 @@
 import { Card } from "@mantine/core";
-import { getCardSize } from "../../state/selectors";
-import { getGameState } from "../../store/gameStore";
+import { getCardSize } from "../../state/settings";
+import { getGameState } from "../../state/store";
 
 export const CardBack = ({
   orientation = "vertical",

@@ -1,7 +1,7 @@
 import {
   modifyPlayerTags,
   modifyPlayerVictoryPoints,
-} from "../../state/reducers/playerReducer";
+} from "../../state/player";
 import {
   CardRarity,
   CardType,

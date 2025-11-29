@@ -7,8 +7,8 @@ import {
   IceSubtype,
   ProgramSubtype,
 } from "../../../cardDefinitions/card";
-import { getCardSize } from "../../../state/selectors";
-import { getGameState } from "../../../store/gameStore";
+import { getCardSize } from "../../../state/settings";
+import { getGameState } from "../../../state/store";
 import { CardHoverEffect } from "../CardHoverEffect";
 import { CardEffects } from "./components/CardEffects";
 import { CardTitle } from "./components/CardTitle";
@@ -18,7 +18,9 @@ type CardFrontLayoutProps = {
   cardEffects: CardEffect[];
   flavorText?: string;
   image: string;
+  isBeingEncountered?: boolean;
   name: string;
+  onClick?: () => void;
   overlay?: ReactNode;
   rarity: CardRarity;
   subtype?: IceSubtype | ProgramSubtype;
@@ -30,7 +32,9 @@ export const CardFrontLayout = ({
   cardEffects,
   flavorText,
   image,
+  isBeingEncountered,
   name,
+  onClick,
   overlay,
   rarity,
   subtype,
@@ -40,7 +44,11 @@ export const CardFrontLayout = ({
   const cardSize = getCardSize(getGameState());
 
   return (
-    <CardHoverEffect type={type}>
+    <CardHoverEffect
+      isBeingEncountered={isBeingEncountered}
+      type={type}
+      onClick={onClick}
+    >
       <Card
         withBorder
         className="select-none hover:cursor-pointer rounded-md"

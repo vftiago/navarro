@@ -1,7 +1,7 @@
 import { Flex, Tooltip } from "@mantine/core";
 import { TbCloudLock } from "react-icons/tb";
 import { useShallow } from "zustand/react/shallow";
-import { useGameStore } from "../store/gameStore";
+import { useGameStore } from "../state/store";
 
 export const StatusRow = () => {
   const { serverSecurityLevel, turnCurrentPhase, turnCurrentSubPhase } =

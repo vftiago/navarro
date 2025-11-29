@@ -1,7 +1,7 @@
 import { Flex, Modal } from "@mantine/core";
 import { motion } from "framer-motion";
 import { useShallow } from "zustand/react/shallow";
-import { useGameStore } from "../store/gameStore";
+import { useGameStore } from "../state/store";
 import { CardFront } from "./Card/CardFront";
 import { CardGridModal } from "./CardGridModal";
 

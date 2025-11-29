@@ -1,11 +1,6 @@
 import { useCallback } from "react";
-import { GameAction, GameState } from "../state/reducer";
-import { getGameState, useGameStore } from "../store/gameStore";
-
-export type ThunkAction = (
-  dispatch: (action: GameAction) => void,
-  getState: () => GameState,
-) => void;
+import { getGameState, useGameStore } from "./store";
+import { ThunkAction } from "./types";
 
 export const useThunk = () => {
   const dispatch = useGameStore((state) => state.dispatch);

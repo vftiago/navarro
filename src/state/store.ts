@@ -5,7 +5,7 @@ import {
   GameState,
   initialGameState,
   rootReducer,
-} from "../state/reducer";
+} from "./reducer";
 
 type GameStore = GameState & {
   dispatch: (action: GameAction) => void;

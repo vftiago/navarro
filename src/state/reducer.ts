@@ -2,46 +2,38 @@ import {
   BoardAction,
   BoardActionTypes,
   boardReducer,
-  BoardState,
   initialBoardState,
-} from "./reducers/boardReducer";
+} from "./board";
 import {
   initialPlayerState,
   PlayerAction,
   PlayerActionTypes,
   playerReducer,
-  PlayerState,
-} from "./reducers/playerReducer";
+} from "./player";
 import {
   initialServerState,
   ServerAction,
   ServerActionTypes,
   serverReducer,
-  ServerState,
-} from "./reducers/serverReducer";
+} from "./server";
 import {
   initialSettingsState,
   SettingsAction,
   SettingsActionTypes,
   settingsReducer,
-  SettingsState,
-} from "./reducers/settingsReducer";
+} from "./settings";
 import {
   initialTurnState,
   TurnAction,
   TurnActionTypes,
   turnReducer,
-  TurnState,
-} from "./reducers/turnReducer";
+} from "./turn";
+import {
+  GameAction,
+  GameState,
+} from "./types";
 
-// TODO: create folders per reducer domain, to group actions, reducer, selectors, and types
-export type GameState = {
-  settingsState: SettingsState;
-  playerState: PlayerState;
-  serverState: ServerState;
-  turnState: TurnState;
-  boardState: BoardState;
-};
+export type { GameAction, GameState } from "./types";
 
 export const initialGameState: GameState = {
   boardState: initialBoardState,
@@ -50,13 +42,6 @@ export const initialGameState: GameState = {
   settingsState: initialSettingsState,
   turnState: initialTurnState,
 };
-
-export type GameAction =
-  | PlayerAction
-  | ServerAction
-  | TurnAction
-  | BoardAction
-  | SettingsAction;
 
 const isSettingsAction = (action: GameAction): action is SettingsAction => {
   return Object.values(SettingsActionTypes).includes(

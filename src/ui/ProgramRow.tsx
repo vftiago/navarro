@@ -1,6 +1,6 @@
 import { Flex, Stack } from "@mantine/core";
 import { useShallow } from "zustand/react/shallow";
-import { useGameStore } from "../store/gameStore";
+import { useGameStore } from "../state/store";
 import { CardFront } from "./Card/CardFront";
 import { MemoryUnitSlot } from "./MemoryUnitSlot";
 

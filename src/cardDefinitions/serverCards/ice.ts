@@ -1,13 +1,7 @@
-import {
-  addPermanentEffect,
-  PermanentEffectT,
-} from "../../state/reducers/boardReducer";
-import {
-  modifyPlayerTags,
-  removeRandomCardFromHand,
-} from "../../state/reducers/playerReducer";
-import { modifyClicks } from "../../state/reducers/turnReducer";
-import { getServerSecurityLevel } from "../../state/selectors";
+import { addPermanentEffect, PermanentEffectT } from "../../state/board";
+import { modifyPlayerTags, removeRandomCardFromHand } from "../../state/player";
+import { getServerSecurityLevel } from "../../state/server";
+import { modifyClicks } from "../../state/turn";
 import {
   CardRarity,
   CardType,

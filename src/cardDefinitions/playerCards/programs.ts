@@ -1,4 +1,4 @@
-import { addPermanentEffect } from "../../state/reducers/boardReducer";
+import { addPermanentEffect } from "../../state/board";
 import {
   CardRarity,
   CardType,
@@ -14,7 +14,7 @@ export const programCards: ProgramCardDefinitions[] = [
       {
         costs: [EffectCost.TRASH],
         getActions: () => [],
-        getText: () => "Destroy target Barrier. Gain 5 noise.",
+        getText: () => "Break Barrier subroutine.",
         triggerMoment: TriggerMoment.ON_CLICK,
       },
     ],

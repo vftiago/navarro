@@ -1,7 +1,7 @@
 import {
   CardType,
   Keyword,
-  PlayingCard,
+  type PlayingCard,
   TriggerMoment,
 } from "../../cardDefinitions/card";
 import {
@@ -23,8 +23,12 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
-import { getCardEffectsByTrigger, hasKeyword } from "../utils";
+import type { ThunkAction } from "../types";
+import {
+  executeCardEffects,
+  getCardEffectsByTrigger,
+  hasKeyword,
+} from "../utils";
 
 export const startPlayPhase = (
   card: PlayingCard,
@@ -46,12 +50,9 @@ export const processPlayPhase = (): ThunkAction => {
     playerPlayedCards.forEach((card) => {
       const playEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_PLAY);
 
-      playEffects.forEach((effect) => {
-        const actions = effect.getActions({
-          gameState: getState(),
-          sourceId: card.deckContextId,
-        });
-        actions.forEach(dispatch);
+      executeCardEffects(playEffects, dispatch, getState, {
+        gameState: getState(),
+        sourceId: card.deckContextId,
       });
     });
 

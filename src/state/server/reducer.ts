@@ -1,4 +1,5 @@
-import { ServerAction, ServerActionTypes, ServerState } from "./types";
+import type { ServerAction, ServerState } from "./types";
+import { ServerActionTypes } from "./types";
 
 export const initialServerState: ServerState = {
   serverCurrentEncounteredIce: null,

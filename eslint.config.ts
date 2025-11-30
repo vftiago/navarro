@@ -50,6 +50,13 @@ export default [
       "react-refresh": reactRefresh,
     },
     rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          fixStyle: "separate-type-imports",
+          prefer: "type-imports",
+        },
+      ],
       "perfectionist/sort-imports": [
         "warn",
         {

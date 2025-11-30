@@ -1,4 +1,5 @@
-import { CardEffect, Keyword, TriggerMoment } from "./card";
+import type { CardEffect } from "./card";
+import { Keyword, TriggerMoment } from "./card";
 
 export const KEYWORD_EFFECTS: Record<Keyword, CardEffect> = {
   [Keyword.CRASH]: {

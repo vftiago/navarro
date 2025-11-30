@@ -1,13 +1,15 @@
-import { addPermanentEffect, PermanentEffectT } from "../../state/board";
-import { modifyPlayerTags, removeRandomCardFromHand } from "../../state/player";
+import type { PermanentEffectT } from "../../state/board";
+import { addPermanentEffect } from "../../state/board";
+import { modifyPlayerTags } from "../../state/player";
 import { getServerSecurityLevel } from "../../state/server";
 import { modifyClicks } from "../../state/turn";
+import { dealNetDamage } from "../../state/utils";
 import {
   CardRarity,
   CardType,
   TriggerMoment,
   IceSubtype,
-  IceCardDefinitions,
+  type IceCardDefinitions,
 } from "../card";
 
 export const iceCards: IceCardDefinitions[] = [
@@ -56,18 +58,11 @@ export const iceCards: IceCardDefinitions[] = [
         triggerMoment: TriggerMoment.ON_PLAY,
       },
       {
-        getActions: ({ gameState }) => {
-          const serverSecurityLevel = getServerSecurityLevel(gameState);
-
-          const actions = [];
-
-          for (let i = 0; i < serverSecurityLevel; i++) {
-            actions.push(removeRandomCardFromHand());
-          }
-
-          return actions;
-        },
         getText: () => "Take 1 net damage per server security level.",
+        getThunk: ({ gameState }) => {
+          const serverSecurityLevel = getServerSecurityLevel(gameState);
+          return dealNetDamage(serverSecurityLevel);
+        },
         triggerMoment: TriggerMoment.ON_ENCOUNTER,
       },
     ],

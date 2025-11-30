@@ -1,4 +1,5 @@
-import { SettingsAction, SettingsActionTypes, SettingsState } from "./types";
+import type { SettingsAction, SettingsState } from "./types";
+import { SettingsActionTypes } from "./types";
 
 export const initialSettingsState: SettingsState = {
   cardSize: "xs",

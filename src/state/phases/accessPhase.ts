@@ -12,8 +12,12 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
-import { getCardEffectsByTrigger, getRandomServerCard } from "../utils";
+import type { ThunkAction } from "../types";
+import {
+  executeCardEffects,
+  getCardEffectsByTrigger,
+  getRandomServerCard,
+} from "../utils";
 
 export const startAccessPhase = (): ThunkAction => {
   return (dispatch) => {
@@ -41,12 +45,9 @@ export const finalizeAccessedCards = (): ThunkAction => {
     playerAccessedCards.forEach((card) => {
       const playEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_FETCH);
 
-      playEffects.forEach((effect) => {
-        const actions = effect.getActions({
-          gameState: getState(),
-          sourceId: card.deckContextId,
-        });
-        actions.forEach(dispatch);
+      executeCardEffects(playEffects, dispatch, getState, {
+        gameState: getState(),
+        sourceId: card.deckContextId,
       });
 
       // Move cards to appropriate zones

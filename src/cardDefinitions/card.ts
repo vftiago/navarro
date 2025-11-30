@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { GameAction, GameState } from "../state/reducer";
+import type { ReactNode } from "react";
+import type { GameAction, GameState, ThunkAction } from "../state/types";
 
 export enum CardRarity {
   BASIC = "Basic",
@@ -75,7 +75,7 @@ export type CardEffect = {
   costs?: EffectCost[];
   keyword?: Keyword;
   triggerMoment: TriggerMoment;
-  getActions: ({
+  getActions?: ({
     gameState,
     sourceId,
     targetId,
@@ -84,6 +84,15 @@ export type CardEffect = {
     sourceId?: string;
     targetId?: string;
   }) => GameAction[];
+  getThunk?: ({
+    gameState,
+    sourceId,
+    targetId,
+  }: {
+    gameState: GameState;
+    sourceId?: string;
+    targetId?: string;
+  }) => ThunkAction;
   getText: () => ReactNode;
 };
 

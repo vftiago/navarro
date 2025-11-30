@@ -1,4 +1,5 @@
-import { Keyword, PlayingCard } from "../../cardDefinitions/card";
+import type { PlayingCard } from "../../cardDefinitions/card";
+import { Keyword } from "../../cardDefinitions/card";
 import { hasKeyword } from "./cardUtils";
 
 export const shuffleCards = <T>(cards: T[]): T[] => {

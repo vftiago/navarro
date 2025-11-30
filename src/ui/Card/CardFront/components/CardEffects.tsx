@@ -2,8 +2,8 @@ import { Text } from "@mantine/core";
 import clsx from "clsx";
 import { IoMdReturnRight } from "react-icons/io";
 import {
-  CardEffect,
-  EffectCost,
+  type CardEffect,
+  type EffectCost,
   TriggerMoment,
 } from "../../../../cardDefinitions/card";
 

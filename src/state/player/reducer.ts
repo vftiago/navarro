@@ -4,7 +4,8 @@ import {
   drawCardsFromDeck,
   shuffleCards,
 } from "../utils";
-import { PlayerAction, PlayerActionTypes, PlayerState } from "./types";
+import type { PlayerAction, PlayerState } from "./types";
+import { PlayerActionTypes } from "./types";
 
 const shuffledDeck = shuffleCards([...playerStarterDeck]);
 

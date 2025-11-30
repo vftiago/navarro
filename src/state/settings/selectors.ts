@@ -1,4 +1,4 @@
-import { GameState } from "../reducer";
+import type { GameState } from "../types";
 
 const CARD_SIZES = {
   xs: {

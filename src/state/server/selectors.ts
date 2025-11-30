@@ -1,5 +1,5 @@
-import { IcePlayingCard } from "../../cardDefinitions/card";
-import { GameState } from "../reducer";
+import type { IcePlayingCard } from "../../cardDefinitions/card";
+import type { GameState } from "../types";
 
 export const getServerSecurityLevel = (state: GameState): number =>
   state.serverState.serverSecurityLevel;

@@ -1,7 +1,8 @@
 import { drawCards } from "../../state/player";
 import { modifyServerSecurity } from "../../state/server";
 import { modifyClicks, setTurnNextPhase, TurnPhase } from "../../state/turn";
-import { CardRarity, CardDefinitions, CardType, TriggerMoment } from "../card";
+import type { CardDefinitions } from "../card";
+import { CardRarity, CardType, TriggerMoment } from "../card";
 import { KEYWORD_EFFECTS } from "../keywords";
 
 export const scriptCards: CardDefinitions[] = [

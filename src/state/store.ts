@@ -1,11 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import {
-  GameAction,
-  GameState,
-  initialGameState,
-  rootReducer,
-} from "./reducer";
+import { initialGameState, rootReducer } from "./reducer";
+import type { GameAction, GameState } from "./types";
 
 type GameStore = GameState & {
   dispatch: (action: GameAction) => void;

@@ -10,8 +10,8 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
-import { getCardEffectsByTrigger } from "../utils";
+import type { ThunkAction } from "../types";
+import { executeCardEffects, getCardEffectsByTrigger } from "../utils";
 
 export const startEncounterPhase = (): ThunkAction => {
   return (dispatch, getState) => {
@@ -44,19 +44,15 @@ export const triggerEncounterEffects = (): ThunkAction => {
 
     if (currentEncounteredIce) {
       // Trigger ON_ENCOUNTER effects
-      const playEffects = getCardEffectsByTrigger(
+      const encounterEffects = getCardEffectsByTrigger(
         currentEncounteredIce,
         TriggerMoment.ON_ENCOUNTER,
       );
 
-      const actions = playEffects.flatMap((effect) =>
-        effect.getActions({
-          gameState,
-          sourceId: currentEncounteredIce.deckContextId,
-        }),
-      );
-
-      actions.forEach(dispatch);
+      executeCardEffects(encounterEffects, dispatch, getState, {
+        gameState,
+        sourceId: currentEncounteredIce.deckContextId,
+      });
     }
   };
 };

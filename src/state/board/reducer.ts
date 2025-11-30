@@ -1,4 +1,5 @@
-import { BoardAction, BoardActionTypes, BoardState } from "./types";
+import type { BoardAction, BoardState } from "./types";
+import { BoardActionTypes } from "./types";
 
 export const initialBoardState: BoardState = {
   permanentEffects: [],

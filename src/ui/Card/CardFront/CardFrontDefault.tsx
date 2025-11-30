@@ -1,6 +1,6 @@
 import {
-  ProgramCardDefinitions,
-  ServerCardDefinitions,
+  type ProgramCardDefinitions,
+  type ServerCardDefinitions,
 } from "../../../cardDefinitions/card";
 import { CardFrontLayout } from "./CardFrontLayout";
 

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { IcePlayingCard } from "../../../cardDefinitions/card";
+import type { IcePlayingCard } from "../../../cardDefinitions/card";
 import { getGameState, useGameStore } from "../../../state/store";
 import { CardFrontLayout } from "./CardFrontLayout";
 

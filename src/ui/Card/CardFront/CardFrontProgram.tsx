@@ -1,4 +1,4 @@
-import { ProgramCardDefinitions } from "../../../cardDefinitions/card";
+import type { ProgramCardDefinitions } from "../../../cardDefinitions/card";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 export const CardFrontProgram = ({

@@ -3,7 +3,7 @@ import {
   CardRarity,
   CardType,
   TriggerMoment,
-  ServerCardDefinitions,
+  type ServerCardDefinitions,
 } from "../card";
 import { KEYWORD_EFFECTS } from "../keywords";
 

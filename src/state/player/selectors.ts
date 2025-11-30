@@ -1,5 +1,5 @@
-import { PlayingCard } from "../../cardDefinitions/card";
-import { GameState } from "../reducer";
+import type { PlayingCard } from "../../cardDefinitions/card";
+import type { GameState } from "../types";
 
 export const getPlayerHand = (state: GameState): PlayingCard[] =>
   state.playerState.playerHand;

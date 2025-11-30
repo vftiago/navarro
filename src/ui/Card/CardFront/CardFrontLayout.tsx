@@ -1,11 +1,11 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
-  CardEffect,
-  CardRarity,
-  CardType,
-  IceSubtype,
-  ProgramSubtype,
+  type CardEffect,
+  type CardRarity,
+  type CardType,
+  type IceSubtype,
+  type ProgramSubtype,
 } from "../../../cardDefinitions/card";
 import { getCardSize } from "../../../state/settings";
 import { getGameState } from "../../../state/store";

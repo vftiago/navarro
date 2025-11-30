@@ -6,7 +6,7 @@ import {
   CardRarity,
   CardType,
   TriggerMoment,
-  AgendaCardDefinitions,
+  type AgendaCardDefinitions,
 } from "../card";
 
 export const agendaCards: AgendaCardDefinitions[] = [

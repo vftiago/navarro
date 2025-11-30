@@ -1,5 +1,6 @@
-import { IcePlayingCard } from "../../cardDefinitions/card";
-import { ServerAction, ServerActionTypes } from "./types";
+import type { IcePlayingCard } from "../../cardDefinitions/card";
+import type { ServerAction } from "./types";
+import { ServerActionTypes } from "./types";
 
 export const modifyServerSecurity = (amount: number): ServerAction => ({
   payload: amount,

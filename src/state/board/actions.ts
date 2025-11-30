@@ -1,4 +1,5 @@
-import { BoardAction, BoardActionTypes, PermanentEffectT } from "./types";
+import type { BoardAction, PermanentEffectT } from "./types";
+import { BoardActionTypes } from "./types";
 
 export const addPermanentEffect = (effect: PermanentEffectT): BoardAction => ({
   payload: { effect },

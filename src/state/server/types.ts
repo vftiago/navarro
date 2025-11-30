@@ -1,4 +1,4 @@
-import { IcePlayingCard } from "../../cardDefinitions/card";
+import type { IcePlayingCard } from "../../cardDefinitions/card";
 
 export type ServerState = {
   serverInstalledIce: IcePlayingCard[];

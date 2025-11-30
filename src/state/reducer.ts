@@ -1,39 +1,34 @@
 import {
-  BoardAction,
+  type BoardAction,
   BoardActionTypes,
   boardReducer,
   initialBoardState,
 } from "./board";
 import {
   initialPlayerState,
-  PlayerAction,
+  type PlayerAction,
   PlayerActionTypes,
   playerReducer,
 } from "./player";
 import {
   initialServerState,
-  ServerAction,
+  type ServerAction,
   ServerActionTypes,
   serverReducer,
 } from "./server";
 import {
   initialSettingsState,
-  SettingsAction,
+  type SettingsAction,
   SettingsActionTypes,
   settingsReducer,
 } from "./settings";
 import {
   initialTurnState,
-  TurnAction,
+  type TurnAction,
   TurnActionTypes,
   turnReducer,
 } from "./turn";
-import {
-  GameAction,
-  GameState,
-} from "./types";
-
-export type { GameAction, GameState } from "./types";
+import type { GameAction, GameState } from "./types";
 
 export const initialGameState: GameState = {
   boardState: initialBoardState,

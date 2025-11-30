@@ -1,7 +1,7 @@
 import {
-  AgendaPlayingCard,
-  PlayingCard,
-  ProgramPlayingCard,
+  type AgendaPlayingCard,
+  type PlayingCard,
+  type ProgramPlayingCard,
 } from "../../cardDefinitions/card";
 
 export type PlayerState = {

@@ -1,9 +1,10 @@
 import {
-  AgendaPlayingCard,
-  PlayingCard,
-  ProgramPlayingCard,
+  type AgendaPlayingCard,
+  type PlayingCard,
+  type ProgramPlayingCard,
 } from "../../cardDefinitions/card";
-import { PlayerAction, PlayerActionTypes } from "./types";
+import type { PlayerAction } from "./types";
+import { PlayerActionTypes } from "./types";
 
 export const drawCards = (count: number): PlayerAction => ({
   payload: { count },

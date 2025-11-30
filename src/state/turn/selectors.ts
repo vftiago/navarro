@@ -1,5 +1,5 @@
-import { GameState } from "../reducer";
-import { TurnPhase, TurnSubPhase } from "./types";
+import type { GameState } from "../types";
+import type { TurnPhase, TurnSubPhase } from "./types";
 
 export const getTurnRemainingClicks = (state: GameState): number =>
   state.turnState.turnRemainingClicks;

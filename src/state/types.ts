@@ -1,23 +1,8 @@
-import {
-  BoardAction,
-  BoardState,
-} from "./board";
-import {
-  PlayerAction,
-  PlayerState,
-} from "./player";
-import {
-  ServerAction,
-  ServerState,
-} from "./server";
-import {
-  SettingsAction,
-  SettingsState,
-} from "./settings";
-import {
-  TurnAction,
-  TurnState,
-} from "./turn";
+import { type BoardAction, type BoardState } from "./board";
+import { type PlayerAction, type PlayerState } from "./player";
+import { type ServerAction, type ServerState } from "./server";
+import { type SettingsAction, type SettingsState } from "./settings";
+import { type TurnAction, type TurnState } from "./turn";
 
 export type GameState = {
   settingsState: SettingsState;

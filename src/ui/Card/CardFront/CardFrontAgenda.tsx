@@ -1,4 +1,4 @@
-import { AgendaCardDefinitions } from "../../../cardDefinitions/card";
+import type { AgendaCardDefinitions } from "../../../cardDefinitions/card";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 export const CardFrontAgenda = ({ card }: { card: AgendaCardDefinitions }) => {

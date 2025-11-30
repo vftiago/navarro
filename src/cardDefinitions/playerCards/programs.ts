@@ -4,7 +4,7 @@ import {
   CardType,
   TriggerMoment,
   ProgramSubtype,
-  ProgramCardDefinitions,
+  type ProgramCardDefinitions,
   EffectCost,
 } from "../card";
 
@@ -12,7 +12,7 @@ export const programCards: ProgramCardDefinitions[] = [
   {
     cardEffects: [
       {
-        costs: [EffectCost.TRASH],
+        costs: [EffectCost.CLICK],
         getActions: () => [],
         getText: () => "Break Barrier subroutine.",
         triggerMoment: TriggerMoment.ON_CLICK,

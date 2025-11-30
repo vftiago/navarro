@@ -6,8 +6,12 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
-import { getCardEffectsByTrigger, getRandomIceCard } from "../utils";
+import type { ThunkAction } from "../types";
+import {
+  executeCardEffects,
+  getCardEffectsByTrigger,
+  getRandomIceCard,
+} from "../utils";
 
 export const startCorpPhase = (): ThunkAction => {
   return (dispatch) => {
@@ -33,14 +37,10 @@ export const processCorpPhase = (): ThunkAction => {
         TriggerMoment.ON_REZ,
       );
 
-      const actions = rezEffects.flatMap((effect) =>
-        effect.getActions({
-          gameState,
-          sourceId: randomIceCard.deckContextId,
-        }),
-      );
-
-      actions.forEach(dispatch);
+      executeCardEffects(rezEffects, dispatch, getState, {
+        gameState,
+        sourceId: randomIceCard.deckContextId,
+      });
     }
 
     dispatch(setTurnCurrentSubPhase(TurnSubPhase.End));

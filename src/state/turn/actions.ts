@@ -1,4 +1,5 @@
-import { TurnAction, TurnActionTypes, TurnPhase, TurnSubPhase } from "./types";
+import type { TurnAction, TurnPhase, TurnSubPhase } from "./types";
+import { TurnActionTypes } from "./types";
 
 export const setClicks = (clicks: number): TurnAction => ({
   payload: clicks,

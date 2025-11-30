@@ -12,8 +12,8 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
-import { getCardEffectsByTrigger } from "../utils";
+import type { ThunkAction } from "../types";
+import { executeCardEffects, getCardEffectsByTrigger } from "../utils";
 
 export const startDrawPhase = (): ThunkAction => {
   return (dispatch, getState) => {
@@ -34,12 +34,9 @@ export const processDrawPhase = (): ThunkAction => {
     playerHand.forEach((card) => {
       const playEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_DRAW);
 
-      playEffects.forEach((effect) => {
-        const actions = effect.getActions({
-          gameState: getState(),
-          sourceId: card.deckContextId,
-        });
-        actions.forEach(dispatch);
+      executeCardEffects(playEffects, dispatch, getState, {
+        gameState: getState(),
+        sourceId: card.deckContextId,
       });
     });
 

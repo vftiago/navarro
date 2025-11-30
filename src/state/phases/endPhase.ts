@@ -5,7 +5,7 @@ import {
   TurnPhase,
   TurnSubPhase,
 } from "../turn";
-import { ThunkAction } from "../types";
+import type { ThunkAction } from "../types";
 
 export const startEndPhase = (): ThunkAction => {
   return (dispatch) => {

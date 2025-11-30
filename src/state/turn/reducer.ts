@@ -1,8 +1,8 @@
 import {
-  TurnAction,
+  type TurnAction,
   TurnActionTypes,
   TurnPhase,
-  TurnState,
+  type TurnState,
   TurnSubPhase,
 } from "./types";
 

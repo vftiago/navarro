@@ -30,7 +30,6 @@
     "@eslint/compat": "^1.2.7",
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.21.0",
-    "@types/eslint__eslintrc": "^2.1.2",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/uuid": "^10.0.0",
@@ -62,8 +61,8 @@
     ]
   },
   "engines": {
-    "node": "22",
-    "pnpm": "9"
+    "node": "24",
+    "pnpm": "10"
   },
-  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }

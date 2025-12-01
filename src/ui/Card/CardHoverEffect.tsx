@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { ReactNode} from "react";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { CardType } from "../../cardDefinitions/card";
 
@@ -12,7 +12,7 @@ export const CardHoverEffect = ({
   children: ReactNode;
   isBeingEncountered?: boolean;
   onClick?: () => void;
-  type: CardType;
+  type?: CardType;
 }) => {
   const [flashKey, setFlashKey] = useState(0);
 

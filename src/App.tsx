@@ -62,6 +62,18 @@ export const App = () => {
         {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
       </AnimatePresence>
       <Container fluid maw={1620} p="xs">
+        <Stack className="h-full" gap="xs">
+          <PlayerSettings />
+          <IceRow />
+          <StatusRow />
+          <ProgramRow />
+          <PlayerDashboard
+            openDeckModal={openDeckModal}
+            openDiscardModal={openDiscardModal}
+            openScoreModal={openScoreModal}
+            openTrashModal={openTrashModal}
+          />
+        </Stack>
         <Modals
           closeCardDisplayModal={onCloseDisplayCardModal}
           closeDeckModal={closeDeckModal}
@@ -74,19 +86,7 @@ export const App = () => {
           isScoreModalOpen={isScoreModalOpen}
           isTrashModalOpen={isTrashModalOpen}
         />
-        <Stack gap="xs">
-          <PlayerSettings />
-          <IceRow />
-          <StatusRow />
-          <ProgramRow />
-        </Stack>
       </Container>
-      <PlayerDashboard
-        openDeckModal={openDeckModal}
-        openDiscardModal={openDiscardModal}
-        openScoreModal={openScoreModal}
-        openTrashModal={openTrashModal}
-      />
     </>
   );
 };

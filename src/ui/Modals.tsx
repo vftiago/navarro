@@ -53,7 +53,7 @@ export const Modals = ({
         onClose={closeCardDisplayModal}
       >
         <Modal.Overlay />
-        <Modal.Content className="bg-transparent overflow-visible">
+        <Modal.Content className="overflow-visible bg-transparent">
           <Flex gap={32}>
             {playerAccessedCards?.map((card, index) => {
               return (

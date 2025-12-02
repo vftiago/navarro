@@ -29,7 +29,7 @@ export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
       <Text fw="500" key={index} size="xs">
         {isSubroutine ? (
           <span className="inline">
-            <IoMdReturnRight className="inline -mt-0.5" />{" "}
+            <IoMdReturnRight className="-mt-0.5 inline" />{" "}
           </span>
         ) : null}
 

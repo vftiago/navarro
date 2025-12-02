@@ -142,7 +142,7 @@ export const PlayerHand = () => {
 
   if (showEmptyMessage) {
     return (
-      <div className="flex items-center justify-center h-24">
+      <div className="flex h-24 items-center justify-center">
         <Text>Your hand is empty.</Text>
       </div>
     );
@@ -153,7 +153,7 @@ export const PlayerHand = () => {
       <motion.ol
         layout
         animate="show"
-        className="flex ml-24 relative top-6"
+        className="relative top-6 ml-24 flex"
         exit="exit"
         initial="hidden"
         key={animationKey}
@@ -168,7 +168,7 @@ export const PlayerHand = () => {
           return (
             <motion.li
               layout
-              className={clsx("-ml-24 list-none relative pointer-events-auto", {
+              className={clsx("pointer-events-auto relative -ml-24 list-none", {
                 "pointer-events-none": isExiting,
               })}
               key={card.deckContextId}

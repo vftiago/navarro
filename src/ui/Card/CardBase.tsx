@@ -28,7 +28,7 @@ export const CardBase = ({
     >
       <Card
         withBorder
-        className="select-none hover:cursor-pointer rounded-md"
+        className="rounded-md select-none hover:cursor-pointer"
         padding="0"
         {...cardSize}
       >

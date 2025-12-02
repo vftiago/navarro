@@ -55,11 +55,11 @@ export const PlayerDashboard = ({
   return (
     <Container
       fluid
-      className="pointer-events-none fixed bottom-0 left-0 right-0 z-10"
+      className="pointer-events-none fixed right-0 bottom-0 left-0 z-10"
       maw={1620}
       p="xs"
     >
-      <Flex className="justify-between items-end">
+      <Flex className="items-end justify-between">
         <Stack className="pointer-events-auto flex-col-reverse" w="10rem">
           <Button size="lg" variant="gradient" onClick={openDeckModal}>
             Deck ({playerDeckLength})
@@ -68,7 +68,7 @@ export const PlayerDashboard = ({
           <TagWidget tagCount={playerTags} />
         </Stack>
 
-        <div className="flex-1 flex justify-center">
+        <div className="flex flex-1 justify-center">
           <PlayerHand />
         </div>
 

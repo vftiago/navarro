@@ -14,7 +14,7 @@ export const StatusRow = () => {
     );
 
   return (
-    <Flex className="bg-neutral-900 p-2.5 rounded-xl" justify="space-between">
+    <Flex className="rounded-md bg-neutral-900 p-2.5" justify="space-between">
       <Flex align="center" gap="sm">
         Current Phase: {turnCurrentPhase}/{turnCurrentSubPhase}
       </Flex>

@@ -16,11 +16,7 @@ export const ProgramRow = () => {
     <Flex gap="xs">
       {Array.from({ length: playerMemory }).map((_, index) => {
         return (
-          <Stack
-            className="bg-neutral-900 p-2.5 rounded-xl"
-            gap="xs"
-            key={index}
-          >
+          <Stack className="rounded-md bg-neutral-900" gap="xs" key={index}>
             {playerInstalledPrograms[index] ? (
               <CardFront card={playerInstalledPrograms[index]} />
             ) : (

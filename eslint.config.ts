@@ -57,6 +57,14 @@ export default [
           prefer: "type-imports",
         },
       ],
+      "perfectionist/sort-classes": [
+        "warn",
+        {
+          ignoreCase: true,
+          order: "asc",
+          type: "alphabetical",
+        },
+      ],
       "perfectionist/sort-imports": [
         "warn",
         {

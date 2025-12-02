@@ -5,7 +5,7 @@ export const CorpTurn = () => {
   return (
     <motion.div
       animate={{ opacity: 1 }}
-      className="fixed inset-0 flex items-center justify-center bg-black/30 z-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
       exit={{ opacity: 0 }}
       initial={{ opacity: 0 }}
       transition={{
@@ -24,7 +24,7 @@ export const CorpTurn = () => {
           type: "tween",
         }}
       >
-        <Text className="text-8xl font-bold italic uppercase font-orbitron">
+        <Text className="font-orbitron text-8xl font-bold uppercase italic">
           Corp Turn
         </Text>
       </motion.div>

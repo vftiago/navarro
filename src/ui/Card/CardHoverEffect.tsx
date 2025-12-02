@@ -58,7 +58,7 @@ export const CardHoverEffect = ({
             opacity: [0, 0.8, 0],
             x: ["-100%", "100%"],
           }}
-          className="hover:border-cyan-200 absolute inset-0 pointer-events-none scale-200"
+          className="pointer-events-none absolute inset-0 scale-200 hover:border-cyan-200"
           initial={{ opacity: 0, x: "-100%" }}
           key={flashKey}
           style={{

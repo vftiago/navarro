@@ -44,10 +44,7 @@ export const IceRow = () => {
 
   return (
     <Flex className="flex-row-reverse" gap="xs">
-      <Stack
-        className="bg-neutral-900 p-2.5 rounded-xl flex-col-reverse"
-        gap="xs"
-      >
+      <Stack className="flex-col-reverse rounded-md bg-neutral-900" gap="xs">
         <CardBack />
       </Stack>
       {Array.from({ length: serverMaxIceSlots }).map((_, index) => {
@@ -58,7 +55,7 @@ export const IceRow = () => {
 
         return (
           <Stack
-            className="bg-neutral-900 p-2.5 rounded-xl flex-col-reverse"
+            className="flex-col-reverse rounded-md bg-neutral-900"
             gap="xs"
             key={index}
           >

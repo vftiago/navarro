@@ -28,7 +28,7 @@ export const CardFrontIce = ({
   const strengthOverlay = (
     <div
       className={clsx(
-        "absolute flex items-center font-bold justify-center border-1 border-gray-500 rounded-md size-6 right-0 m-1 bottom-0",
+        "absolute right-0 bottom-0 m-1 flex size-6 items-center justify-center rounded-md border-1 border-gray-500 font-bold",
         {
           "text-green-300": currentStrength > baseStrength,
           "text-red-300": currentStrength < baseStrength,

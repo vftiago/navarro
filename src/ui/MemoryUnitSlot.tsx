@@ -7,7 +7,7 @@ export const MemoryUnitSlot = ({ index }: { index: number }) => {
 
   return (
     <Stack
-      className="items-center justify-center h-full font-orbitron font-bold"
+      className="font-orbitron h-full items-center justify-center font-bold"
       {...cardSize}
     >
       MU {index + 1}{" "}

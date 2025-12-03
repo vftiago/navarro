@@ -133,6 +133,14 @@ export const playerReducer = (
       };
     }
 
+    case PlayerActionTypes.ADD_TO_DECK: {
+      const { card } = action.payload;
+      return {
+        ...state,
+        playerDeck: [...state.playerDeck, card],
+      };
+    }
+
     case PlayerActionTypes.CLEAR_ACCESSED_CARDS: {
       return {
         ...state,

@@ -40,6 +40,11 @@ export const addToAccessedCards = (cards: PlayingCard[]): PlayerAction => ({
   type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS,
 });
 
+export const addToDeck = (card: PlayingCard): PlayerAction => ({
+  payload: { card },
+  type: PlayerActionTypes.ADD_TO_DECK,
+});
+
 export const clearAccessedCards = (): PlayerAction => ({
   type: PlayerActionTypes.CLEAR_ACCESSED_CARDS,
 });

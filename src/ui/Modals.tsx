@@ -1,6 +1,8 @@
 import { Flex, Modal } from "@mantine/core";
 import { motion } from "framer-motion";
 import { useShallow } from "zustand/react/shallow";
+import { useThunk } from "../state/hooks";
+import { endAccessPhase, selectAccessedCard } from "../state/phases";
 import { useGameStore } from "../state/store";
 import { CardFront } from "./Card/CardFront";
 import { CardGridModal } from "./CardGridModal";
@@ -44,6 +46,14 @@ export const Modals = ({
     })),
   );
 
+  const dispatchThunk = useThunk();
+
+  const handleCardClick = (card: (typeof playerAccessedCards)[0]) => {
+    dispatchThunk(selectAccessedCard(card));
+    closeCardDisplayModal();
+    dispatchThunk(endAccessPhase());
+  };
+
   return (
     <>
       <Modal.Root
@@ -57,7 +67,12 @@ export const Modals = ({
           <Flex gap={32}>
             {playerAccessedCards?.map((card, index) => {
               return (
-                <motion.div key={index} whileHover={{ scale: 1.1 }}>
+                <motion.div
+                  key={index}
+                  style={{ cursor: "pointer" }}
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => handleCardClick(card)}
+                >
                   <CardFront card={card} />
                 </motion.div>
               );

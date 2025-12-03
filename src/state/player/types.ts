@@ -32,6 +32,7 @@ export enum PlayerActionTypes {
   ADD_TO_TRASH = "ADD_TO_TRASH",
   ADD_TO_SCORE_AREA = "ADD_TO_SCORE_AREA",
   ADD_TO_ACCESSED_CARDS = "ADD_TO_ACCESSED_CARDS",
+  ADD_TO_DECK = "ADD_TO_DECK",
   CLEAR_ACCESSED_CARDS = "CLEAR_ACCESSED_CARDS",
   CLEAR_PLAYED_CARDS = "CLEAR_PLAYED_CARDS",
   REMOVE_CARD_FROM_HAND = "REMOVE_CARD_FROM_HAND",
@@ -60,6 +61,7 @@ export type PlayerAction =
       type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS;
       payload: { cards: PlayingCard[] };
     }
+  | { type: PlayerActionTypes.ADD_TO_DECK; payload: { card: PlayingCard } }
   | { type: PlayerActionTypes.CLEAR_ACCESSED_CARDS }
   | { type: PlayerActionTypes.CLEAR_PLAYED_CARDS }
   | { type: PlayerActionTypes.REMOVE_CARD_FROM_HAND; payload: number }

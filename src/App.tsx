@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { useCallback, useEffect } from "react";
 import { PhaseManager } from "./PhaseManager";
 import { useThunk } from "./state/hooks";
-import { endAccessPhase, finalizeAccessedCards } from "./state/phases";
+import { endAccessPhase } from "./state/phases";
 import { useGameStore } from "./state/store";
 import { TurnPhase } from "./state/turn";
 import { CorpTurn } from "./ui/CorpTurn";
@@ -51,7 +51,6 @@ export const App = () => {
 
   const onCloseDisplayCardModal = useCallback(() => {
     closeCardDisplayModal();
-    dispatchThunk(finalizeAccessedCards());
     dispatchThunk(endAccessPhase());
   }, [closeCardDisplayModal, dispatchThunk]);
 

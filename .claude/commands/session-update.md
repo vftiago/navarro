@@ -15,7 +15,7 @@ Update the current development session by:
    - Solutions implemented
    - Code changes made
 
-Keep updates concise but comprehensive for future reference.
+Keep updates concise.
 
 Example format:
 

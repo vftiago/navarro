@@ -4,12 +4,6 @@ End the current development session by:
 2. If no active session, inform user there's nothing to end
 3. If session exists, append a comprehensive summary including:
 
-   - Session duration
-   - Git summary:
-     - Total files changed (added/modified/deleted)
-     - List all changed files with change type
-     - Number of commits made (if any)
-     - Final git status
    - Todo summary:
      - Total tasks completed/remaining
      - List all completed tasks
@@ -20,12 +14,10 @@ End the current development session by:
    - Breaking changes or important findings
    - Dependencies added/removed
    - Configuration changes
-   - Deployment steps taken
    - Lessons learned
    - What wasn't completed
-   - Tips for future developers
 
 4. Empty the `.claude/sessions/.current-session` file (don't remove it, just clear its contents)
 5. Inform user the session has been documented
 
-The summary should be thorough enough that another developer (or AI) can understand everything that happened without reading the entire session.
+The summary should be concise and provide a clear overview of the session.

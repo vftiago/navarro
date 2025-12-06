@@ -65,3 +65,23 @@ export const executeCardEffects = (
     }
   });
 };
+
+/**
+ * Helper to execute trigger effects for a specific card and trigger moment
+ * @param card - The card whose effects to execute
+ * @param triggerMoment - The trigger moment to filter by
+ * @param dispatch - Dispatch function
+ * @param getState - Function to get current game state
+ */
+export const executeCardTriggers = (
+  card: PlayingCard,
+  triggerMoment: TriggerMoment,
+  dispatch: (action: GameAction) => void,
+  getState: () => GameState,
+): void => {
+  const effects = getCardEffectsByTrigger(card, triggerMoment);
+  executeCardEffects(effects, dispatch, getState, {
+    gameState: getState(),
+    sourceId: card.deckContextId,
+  });
+};

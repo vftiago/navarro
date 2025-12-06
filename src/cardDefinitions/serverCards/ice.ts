@@ -36,9 +36,7 @@ export const iceCards: IceCardDefinitions[] = [
       {
         getActions: ({ gameState, sourceId, targetId }) => {
           if (!sourceId || !targetId) {
-            throw new Error(
-              "Source ID and Target ID are required for Bad Moon.",
-            );
+            throw new Error("Source and Target IDs required.");
           }
 
           const permanentEffect: PermanentEffectT = {
@@ -97,9 +95,7 @@ export const iceCards: IceCardDefinitions[] = [
       {
         getActions: ({ sourceId }) => {
           if (!sourceId) {
-            throw new Error(
-              "Source ID and Target ID are required for Bad Moon.",
-            );
+            throw new Error("Source and Target IDs required.");
           }
 
           const permanentEffect: PermanentEffectT = {

@@ -42,21 +42,23 @@ export enum ProgramSubtype {
   FRACTER = "Fracter",
   KILLER = "Killer",
   AI = "AI",
+  RESOURCE = "Resource",
 }
 
 export enum TriggerMoment {
   ON_ACCESS = "onAccess",
   ON_CLICK = "onClick",
-  ON_DRAW = "onDraw",
-  ON_TURN_START = "onTurnStart",
-  ON_ENCOUNTER = "onEncounter",
-  ON_REVEAL = "onReveal",
-  ON_FETCH = "onFetch",
-  ON_PLAY = "onPlay",
   ON_DISCARD = "onDiscard",
-  ON_TRASH = "onTrash",
+  ON_DRAW = "onDraw",
+  ON_ENCOUNTER = "onEncounter",
+  ON_FETCH = "onFetch",
   ON_INSTALL = "onInstall",
+  ON_PLAY = "onPlay",
   ON_REZ = "onRez",
+  ON_RUN_END = "onRunEnd",
+  ON_RUN_START = "onRunStart",
+  ON_TRASH = "onTrash",
+  ON_TURN_START = "onTurnStart",
 }
 
 export enum EffectCost {

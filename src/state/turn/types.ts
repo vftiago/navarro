@@ -1,15 +1,12 @@
 export enum TurnPhase {
-  Start = "Start",
+  Access = "Access",
+  Corp = "Corp",
   Draw = "Draw",
+  Encounter = "Encounter",
+  End = "End",
   Main = "Main",
   Play = "Play",
   Run = "Run",
-  Encounter = "Encounter",
-  Access = "Access",
-  Fetch = "Fetch",
-  Discard = "Discard",
-  End = "End",
-  Corp = "Corp",
 }
 
 export enum TurnSubPhase {

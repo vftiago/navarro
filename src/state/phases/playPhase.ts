@@ -26,6 +26,7 @@ import {
 import type { ThunkAction } from "../types";
 import {
   executeCardEffects,
+  executeCardTriggers,
   getCardEffectsByTrigger,
   hasKeyword,
 } from "../utils";
@@ -66,10 +67,13 @@ export const endPlayPhase = (): ThunkAction => {
 
     playerPlayedCards.forEach((card) => {
       if (card.type === CardType.PROGRAM) {
+        executeCardTriggers(card, TriggerMoment.ON_INSTALL, dispatch, getState);
         dispatch(addToPrograms(card));
       } else if (hasKeyword(card, Keyword.TRASH)) {
+        executeCardTriggers(card, TriggerMoment.ON_TRASH, dispatch, getState);
         dispatch(addToTrash(card));
       } else {
+        executeCardTriggers(card, TriggerMoment.ON_DISCARD, dispatch, getState);
         dispatch(addToDiscard(card));
       }
     });
@@ -80,6 +84,7 @@ export const endPlayPhase = (): ThunkAction => {
 
     if (turnNextPhase) {
       dispatch(setTurnCurrentPhase(turnNextPhase));
+      dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
       dispatch(setTurnNextPhase(null));
     } else {
       const turnRemainingClicks = getTurnRemainingClicks(getState());
@@ -88,9 +93,8 @@ export const endPlayPhase = (): ThunkAction => {
         dispatch(setTurnCurrentPhase(TurnPhase.Main));
       } else {
         dispatch(setTurnCurrentPhase(TurnPhase.End));
+        dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
       }
     }
-
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
   };
 };

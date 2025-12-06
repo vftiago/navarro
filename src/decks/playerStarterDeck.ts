@@ -7,12 +7,12 @@ const deckList = [
   "Run",
   "Run",
   "Run",
+  "Running Sneakers",
   "Crack",
   "Boost",
   "Piece of Cake",
   "Sledgehammer",
-  "Sledgehammer",
-  "Deep Thoughts",
+  "Intrusive Thoughts",
 ];
 
 export const playerStarterDeck = deckList.map((card) =>

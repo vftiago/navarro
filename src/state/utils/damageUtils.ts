@@ -1,5 +1,7 @@
+import { TriggerMoment } from "../../cardDefinitions/card";
 import { addToDiscard, removeCardFromHand } from "../player";
 import type { ThunkAction } from "../types";
+import { executeCardTriggers } from "./cardUtils";
 
 /**
  * Deals net damage to the player by discarding random cards from hand
@@ -19,6 +21,14 @@ export const dealNetDamage = (count: number): ThunkAction => {
       const cardToDiscard = playerHand[randomIndex];
 
       dispatch(removeCardFromHand(randomIndex));
+
+      executeCardTriggers(
+        cardToDiscard,
+        TriggerMoment.ON_DISCARD,
+        dispatch,
+        getState,
+      );
+
       dispatch(addToDiscard(cardToDiscard));
     }
   };

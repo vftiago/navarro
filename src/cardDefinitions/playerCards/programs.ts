@@ -1,4 +1,6 @@
 import { addPermanentEffect } from "../../state/board";
+import { drawCards } from "../../state/player";
+import { modifyClicks } from "../../state/turn";
 import {
   CardRarity,
   CardType,
@@ -14,7 +16,7 @@ export const programCards: ProgramCardDefinitions[] = [
       {
         costs: [EffectCost.CLICK],
         getActions: () => [],
-        getText: () => "Break Barrier subroutine.",
+        getText: () => "Break barrier subroutine.",
         triggerMoment: TriggerMoment.ON_CLICK,
       },
     ],
@@ -49,23 +51,38 @@ export const programCards: ProgramCardDefinitions[] = [
     ],
     image: "_b47f337e-e71d-4ced-8e50-bfaae92f4a4e.jpeg",
     name: "Deep Thoughts",
-    rarity: CardRarity.UNCOMMON,
-    subtype: ProgramSubtype.AI,
+    rarity: CardRarity.RARE,
+    subtype: ProgramSubtype.RESOURCE,
     type: CardType.PROGRAM,
   },
   {
     cardEffects: [
       {
-        getActions: () => [],
-        getText: () =>
-          "You can see the rarity of the next server card you would access.",
-        triggerMoment: TriggerMoment.ON_PLAY,
+        getActions: () => [modifyClicks(1)],
+        getText: () => "When you complete a run, gain 1 click.",
+        triggerMoment: TriggerMoment.ON_RUN_END,
       },
     ],
-    image: "_b47f337e-e71d-4ced-8e50-bfaae92f4a4e.jpeg",
-    name: "Sixth Sense",
+    flavorText: "Gotta go fast.",
+    image: "_180289ee-9360-41f9-84b5-8555685ff210.jpg",
+    name: "Running Sneakers",
+    rarity: CardRarity.RARE,
+    subtype: ProgramSubtype.RESOURCE,
+    type: CardType.PROGRAM,
+  },
+  {
+    cardEffects: [
+      {
+        getActions: () => [drawCards(1), modifyClicks(-1)],
+        getText: () =>
+          "At the beginning of your turn, draw 1 card and lose 1 click.",
+        triggerMoment: TriggerMoment.ON_TURN_START,
+      },
+    ],
+    image: "_c70fe080-5f2d-474a-9431-5d9fd7e4ed9c.jpg",
+    name: "Intrusive Thoughts",
     rarity: CardRarity.UNCOMMON,
-    subtype: ProgramSubtype.AI,
+    subtype: ProgramSubtype.RESOURCE,
     type: CardType.PROGRAM,
   },
 ];

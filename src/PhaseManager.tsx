@@ -13,6 +13,7 @@ import {
   processDrawPhase,
   processEncounterPhase,
   processEndPhase,
+  processMainPhase,
   processPlayPhase,
   processRunPhase,
   startAccessPhase,
@@ -20,6 +21,7 @@ import {
   startDrawPhase,
   startEncounterPhase,
   startEndPhase,
+  startMainPhase,
   startRunPhase,
 } from "./state/phases";
 import { useGameStore } from "./state/store";
@@ -79,6 +81,11 @@ export const PhaseManager = () => {
         [TurnSubPhase.End]: () => dispatchThunk(endEndPhase()),
         [TurnSubPhase.Process]: () => dispatchThunk(processEndPhase()),
         [TurnSubPhase.Start]: () => dispatchThunk(startEndPhase()),
+      },
+      [TurnPhase.Main]: {
+        [TurnSubPhase.Process]: () => dispatchThunk(processMainPhase()),
+        [TurnSubPhase.Start]: () => dispatchThunk(startMainPhase()),
+        // No Process/End handlers - Main phase waits for user input
       },
       [TurnPhase.Play]: {
         [TurnSubPhase.End]: () => dispatchThunk(endPlayPhase()),

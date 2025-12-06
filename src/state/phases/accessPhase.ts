@@ -16,6 +16,7 @@ import {
 import type { ThunkAction } from "../types";
 import {
   executeCardEffects,
+  executeCardTriggers,
   getCardEffectsByTrigger,
   getRandomServerCard,
 } from "../utils";
@@ -66,6 +67,7 @@ export const selectAccessedCard = (card: PlayingCard): ThunkAction => {
     if (card.type === CardType.AGENDA) {
       dispatch(addToScoreArea(card));
     } else {
+      executeCardTriggers(card, TriggerMoment.ON_DISCARD, dispatch, getState);
       dispatch(addToDiscard(card));
     }
 

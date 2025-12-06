@@ -21,12 +21,12 @@ export const trapCards: ServerCardDefinitions[] = [
         getActions: ({ gameState }) => {
           const serverSecurityLevel = gameState.serverState.serverSecurityLevel;
           return serverSecurityLevel >= 3
-            ? [setTurnCurrentPhase(TurnPhase.Discard)]
+            ? [setTurnCurrentPhase(TurnPhase.End)]
             : [];
         },
         getText: () =>
-          "On Reveal, if the server security level is 3 or more, end the run.",
-        triggerMoment: TriggerMoment.ON_REVEAL,
+          "On Access, if the server security level is 3 or more, end the run.",
+        triggerMoment: TriggerMoment.ON_ACCESS,
       },
     ],
     image: "_3785e7cf-fe8c-4e05-905f-44f3a467aff3.jpeg",

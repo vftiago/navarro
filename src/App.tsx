@@ -1,12 +1,16 @@
 import { Container, Stack } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { AnimatePresence } from "framer-motion";
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { PhaseManager } from "./PhaseManager";
-import { useThunk } from "./state/hooks";
-import { endAccessPhase } from "./state/phases";
-import { useGameStore } from "./state/store";
-import { TurnPhase } from "./state/turn";
+import {
+  createEventBus,
+  createEventHandler,
+  EventBusContext,
+} from "./state/events";
+import { getGameState, useGameStore } from "./state/store";
+import { RunProgressState, TurnPhase } from "./state/turn";
 import { CorpTurn } from "./ui/CorpTurn";
 import { IceRow } from "./ui/IceRow";
 import { Modals } from "./ui/Modals";
@@ -16,13 +20,36 @@ import { ProgramRow } from "./ui/ProgramRow";
 import { StatusRow } from "./ui/StatusRow";
 
 export const App = () => {
-  const turnCurrentPhase = useGameStore(
-    (state) => state.turnState.turnCurrentPhase,
+  const { dispatch, playerAccessedCards, runProgressState, turnCurrentPhase } =
+    useGameStore(
+      useShallow((state) => ({
+        dispatch: state.dispatch,
+        playerAccessedCards: state.playerState.playerAccessedCards,
+        runProgressState: state.turnState.runProgressState,
+        turnCurrentPhase: state.turnState.turnCurrentPhase,
+      })),
+    );
+
+  // Create event bus (only once)
+  const eventBus = useMemo(() => createEventBus(), []);
+
+  // Create event handler (only once - it uses getGameState internally to get fresh state)
+  const eventHandler = useMemo(
+    () => createEventHandler(dispatch, getGameState),
+    [dispatch],
   );
-  const playerAccessedCards = useGameStore(
-    (state) => state.playerState.playerAccessedCards,
-  );
-  const dispatchThunk = useThunk();
+
+  // Subscribe event handler to event bus
+  useEffect(() => {
+    const unsubscribe = eventBus.subscribe(eventHandler);
+
+    // Log event bus creation in dev mode
+    if (import.meta.env.DEV) {
+      console.log("[EventBus] Initialized and subscribed to event handler");
+    }
+
+    return unsubscribe;
+  }, [eventBus, eventHandler]);
 
   const [isDeckModalOpen, { close: closeDeckModal, open: openDeckModal }] =
     useDisclosure(false);
@@ -44,18 +71,22 @@ export const App = () => {
     useDisclosure(false);
 
   useEffect(() => {
-    if (playerAccessedCards.length > 0) {
+    if (
+      turnCurrentPhase === TurnPhase.Run &&
+      runProgressState === RunProgressState.ACCESSING_CARDS &&
+      playerAccessedCards.length > 0
+    ) {
       openCardDisplayModal();
     }
-  }, [playerAccessedCards, openCardDisplayModal]);
-
-  const onCloseDisplayCardModal = useCallback(() => {
-    closeCardDisplayModal();
-    dispatchThunk(endAccessPhase());
-  }, [closeCardDisplayModal, dispatchThunk]);
+  }, [
+    turnCurrentPhase,
+    runProgressState,
+    playerAccessedCards,
+    openCardDisplayModal,
+  ]);
 
   return (
-    <>
+    <EventBusContext.Provider value={eventBus}>
       <PhaseManager />
       <AnimatePresence>
         {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
@@ -74,7 +105,7 @@ export const App = () => {
           />
         </Stack>
         <Modals
-          closeCardDisplayModal={onCloseDisplayCardModal}
+          closeCardDisplayModal={closeCardDisplayModal}
           closeDeckModal={closeDeckModal}
           closeDiscardModal={closeDiscardModal}
           closeScoreModal={closeScoreModal}
@@ -86,7 +117,7 @@ export const App = () => {
           isTrashModalOpen={isTrashModalOpen}
         />
       </Container>
-    </>
+    </EventBusContext.Provider>
   );
 };
 

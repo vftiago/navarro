@@ -1,8 +1,7 @@
 import { Button, Container, Flex, Stack } from "@mantine/core";
 import { useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useThunk } from "../../state/hooks";
-import { startEndPhase } from "../../state/phases";
+import { GameEventType, useEventBus } from "../../state/events";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
 import { ClickWidget } from "./ClickWidget";
@@ -42,15 +41,20 @@ export const PlayerDashboard = ({
     })),
   );
 
-  const dispatchThunk = useThunk();
+  const eventBus = useEventBus();
 
   const onClickEndTurn = useCallback(() => {
     if (turnCurrentPhase !== TurnPhase.Main) {
       return;
     }
 
-    dispatchThunk(startEndPhase());
-  }, [dispatchThunk, turnCurrentPhase]);
+    // Emit event to end turn
+    // Event handler will validate and transition to End phase
+    eventBus.emit({
+      payload: {},
+      type: GameEventType.PLAYER_END_TURN,
+    });
+  }, [eventBus, turnCurrentPhase]);
 
   return (
     <Container

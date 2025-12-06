@@ -1,9 +1,5 @@
-import {
-  CardType,
-  Keyword,
-  type PlayingCard,
-  TriggerMoment,
-} from "../../cardDefinitions/card";
+import { CardType, Keyword, TriggerMoment } from "../../cardDefinitions/card";
+import { clearPendingAction, getPendingAction } from "../pending";
 import {
   addCardToPlayed,
   addToDiscard,
@@ -13,17 +9,16 @@ import {
   getPlayerPlayedCards,
   removeCardFromHand,
 } from "../player";
+import { batchDispatch } from "../store";
 import {
   getTurnNextPhase,
   getTurnRemainingClicks,
   modifyClicks,
   setTurnCurrentPhase,
-  setTurnCurrentSubPhase,
   setTurnNextPhase,
   TurnPhase,
-  TurnSubPhase,
 } from "../turn";
-import type { ThunkAction } from "../types";
+import type { GameAction, ThunkAction } from "../types";
 import {
   executeCardEffects,
   executeCardTriggers,
@@ -31,69 +26,103 @@ import {
   hasKeyword,
 } from "../utils";
 
-export const startPlayPhase = (
-  card: PlayingCard,
-  index: number,
-): ThunkAction => {
-  return (dispatch) => {
-    dispatch(setTurnCurrentPhase(TurnPhase.Play));
-    dispatch(modifyClicks(-1));
-    dispatch(removeCardFromHand(index));
-    dispatch(addCardToPlayed(card));
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Process));
-  };
-};
-
-export const processPlayPhase = (): ThunkAction => {
+/**
+ * Play Phase - Consolidated single handler (no subphases)
+ * Reads card from pending state, plays it, triggers effects, and moves to appropriate zone.
+ * Uses batching to minimize re-renders.
+ */
+export const playPhase = (): ThunkAction => {
   return (dispatch, getState) => {
+    const state = getState();
+    const pendingAction = getPendingAction(state);
+
+    // Validate pending action exists and is correct type
+    if (!pendingAction || pendingAction.type !== "PLAY_CARD") {
+      console.error("playPhase: No pending PLAY_CARD action found");
+      return;
+    }
+
+    // Get the card from hand using pending action data
+    const card = state.playerState.playerHand[pendingAction.handIndex];
+
+    // Validate card exists and matches
+    if (!card || card.deckContextId !== pendingAction.cardId) {
+      console.error("playPhase: Card mismatch in pending action");
+      return;
+    }
+
+    // Batch the initial play actions (4 actions → 1 update)
+    batchDispatch([
+      modifyClicks(-1),
+      removeCardFromHand(pendingAction.handIndex),
+      addCardToPlayed(card),
+      clearPendingAction(),
+    ]);
+
+    // Trigger ON_PLAY effects (may dispatch additional actions)
     const playerPlayedCards = getPlayerPlayedCards(getState());
-
-    playerPlayedCards.forEach((card) => {
-      const playEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_PLAY);
-
+    playerPlayedCards.forEach((playedCard) => {
+      const playEffects = getCardEffectsByTrigger(
+        playedCard,
+        TriggerMoment.ON_PLAY,
+      );
       executeCardEffects(playEffects, dispatch, getState, {
         gameState: getState(),
-        sourceId: card.deckContextId,
+        sourceId: playedCard.deckContextId,
       });
     });
 
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.End));
-  };
-};
+    // Collect zone movement actions
+    const zoneActions: GameAction[] = [];
 
-export const endPlayPhase = (): ThunkAction => {
-  return (dispatch, getState) => {
-    const playerPlayedCards = getPlayerPlayedCards(getState());
-
-    playerPlayedCards.forEach((card) => {
-      if (card.type === CardType.PROGRAM) {
-        executeCardTriggers(card, TriggerMoment.ON_INSTALL, dispatch, getState);
-        dispatch(addToPrograms(card));
-      } else if (hasKeyword(card, Keyword.TRASH)) {
-        executeCardTriggers(card, TriggerMoment.ON_TRASH, dispatch, getState);
-        dispatch(addToTrash(card));
+    playerPlayedCards.forEach((playedCard) => {
+      if (playedCard.type === CardType.PROGRAM) {
+        executeCardTriggers(
+          playedCard,
+          TriggerMoment.ON_INSTALL,
+          dispatch,
+          getState,
+        );
+        zoneActions.push(addToPrograms(playedCard));
+      } else if (hasKeyword(playedCard, Keyword.TRASH)) {
+        executeCardTriggers(
+          playedCard,
+          TriggerMoment.ON_TRASH,
+          dispatch,
+          getState,
+        );
+        zoneActions.push(addToTrash(playedCard));
       } else {
-        executeCardTriggers(card, TriggerMoment.ON_DISCARD, dispatch, getState);
-        dispatch(addToDiscard(card));
+        executeCardTriggers(
+          playedCard,
+          TriggerMoment.ON_DISCARD,
+          dispatch,
+          getState,
+        );
+        zoneActions.push(addToDiscard(playedCard));
       }
     });
 
-    dispatch(clearPlayedCards());
+    // Batch zone movements and cleanup
+    zoneActions.push(clearPlayedCards());
+    batchDispatch(zoneActions);
 
+    // Determine next phase
     const turnNextPhase = getTurnNextPhase(getState());
 
     if (turnNextPhase) {
-      dispatch(setTurnCurrentPhase(turnNextPhase));
-      dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
-      dispatch(setTurnNextPhase(null));
+      // Card set a specific next phase (e.g., Run card → Run phase)
+      batchDispatch([
+        setTurnCurrentPhase(turnNextPhase),
+        setTurnNextPhase(null),
+      ]);
     } else {
+      // Return to Main or End based on clicks
       const turnRemainingClicks = getTurnRemainingClicks(getState());
-
       if (turnRemainingClicks > 0) {
         dispatch(setTurnCurrentPhase(TurnPhase.Main));
       } else {
         dispatch(setTurnCurrentPhase(TurnPhase.End));
-        dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
       }
     }
   };

@@ -1,11 +1,6 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
 import { addToIce, modifyServerSecurity } from "../server";
-import {
-  setTurnCurrentPhase,
-  setTurnCurrentSubPhase,
-  TurnPhase,
-  TurnSubPhase,
-} from "../turn";
+import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";
 import {
   executeCardEffects,
@@ -13,18 +8,18 @@ import {
   getRandomIceCard,
 } from "../utils";
 
-export const startCorpPhase = (): ThunkAction => {
-  return (dispatch) => {
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Process));
-  };
-};
-
-export const processCorpPhase = (): ThunkAction => {
+/**
+ * Corp Phase - Consolidated single handler (no subphases)
+ * Executes at the beginning of each turn (before player's Draw phase).
+ */
+export const corpPhase = (): ThunkAction => {
   return (dispatch, getState) => {
     const gameState = getState();
 
+    // Increase server security level
     dispatch(modifyServerSecurity(1));
 
+    // Install random ice if slots available
     const { serverInstalledIce, serverMaxIceSlots } = gameState.serverState;
 
     if (serverInstalledIce.length < serverMaxIceSlots) {
@@ -32,6 +27,7 @@ export const processCorpPhase = (): ThunkAction => {
 
       dispatch(addToIce(randomIceCard));
 
+      // Trigger ON_REZ effects on newly installed ice
       const rezEffects = getCardEffectsByTrigger(
         randomIceCard,
         TriggerMoment.ON_REZ,
@@ -43,13 +39,7 @@ export const processCorpPhase = (): ThunkAction => {
       });
     }
 
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.End));
-  };
-};
-
-export const endCorpPhase = (): ThunkAction => {
-  return (dispatch) => {
+    // Transition to Draw phase
     dispatch(setTurnCurrentPhase(TurnPhase.Draw));
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
   };
 };

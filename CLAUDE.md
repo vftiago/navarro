@@ -60,7 +60,8 @@ Thunk actions for multi-step game phase flows:
 
 - **Access state**: `useGameStore((state) => state.playerState)` or use specific selectors
 - **Dispatch actions**: `const dispatch = useGameStore((state) => state.dispatch); dispatch(actionCreator())`
-- **Dispatch thunks**: `const dispatchThunk = useThunk(); dispatchThunk(thunkAction)`
+- **Emit user events** (UI layer): `const eventBus = useEventBus(); eventBus.emit({ type: GameEventType.PLAYER_PLAY_CARD, payload: {...} })`
+- **Dispatch thunks** (phase logic only): `const dispatchThunk = useThunk(); dispatchThunk(thunkAction)`
 - **Granular subscriptions**: Use targeted selectors to prevent unnecessary re-renders
 
 ### Component Structure
@@ -75,29 +76,67 @@ Thunk actions for multi-step game phase flows:
 - `src/cardDefinitions/createPlayingCard.ts` - Factory for creating card instances with unique IDs
 - `src/decks/` - Deck definitions
 
+### Event System (User Action Decoupling)
+
+The game uses an event-driven architecture to decouple UI from game logic:
+
+**Event Bus** (`src/state/events/`):
+
+- `eventBus.ts` - Core event bus with emit, subscribe, and history tracking
+- `eventHandler.ts` - Translates game events into state updates with validation
+- `useEventBus.ts` - React context and hook for accessing event bus
+
+**Pending Actions** (`src/state/pending/`):
+
+- Stores runtime data for user-triggered phases (which card, from which index, etc.)
+- Used by phase handlers to read user selections from state
+
+**Flow**:
+```
+UI Component → eventBus.emit(event) → Event Handler validates →
+  Sets pending action + transitions phase → PhaseManager executes phase handler →
+  Phase handler reads pending action → Executes logic → Clears pending action
+```
+
+**Event Types**:
+- `PLAYER_PLAY_CARD` - User plays a card from hand
+- `PLAYER_INITIATE_RUN` - User clicks "Run" button
+- `PLAYER_CLICK_ICE` - User clicks ice during encounter
+- `PLAYER_SELECT_ACCESSED_CARD` - User selects accessed card in modal
+- `PLAYER_END_TURN` - User clicks "End Turn" button
+- `CARD_ACTIVATE_ABILITY` - User activates card ability (future)
+
+**Benefits**:
+- UI components never import phase thunks directly
+- Centralized validation of all user actions
+- Event history for debugging (`eventBus.getHistory()`)
+- Testable game logic without UI rendering
+
 ### Game Flow
 
 - `src/PhaseManager.tsx` - Coordinates turn progression by dispatching phase thunks
-- Turn phases defined in `src/state/turn/types.ts` (Draw, Play, Run, Encounter, Access, End, Corp)
-- Phase logic implemented in `src/state/phases/` (start/process/end functions for each phase)
+- Turn phases defined in `src/state/turn/types.ts` (Corp, Draw, Upkeep, Main, Play, Run, End)
+- Phase logic implemented in `src/state/phases/` (single-handler pattern for each phase)
 - Modal state managed via Mantine's `useDisclosure()` in App.tsx
+- User actions handled via event bus (see Event System above)
 
 ## Turn Structure & Phase Flow
 
 ### Phase Architecture
 
-Each turn follows a structured phase progression. Phases are managed by `PhaseManager.tsx` which watches `phaseChangeCounter` and dispatches the appropriate thunk based on the current phase/subphase combination.
+Each turn follows a structured phase progression. Phases are managed by `PhaseManager.tsx` which watches `phaseCounter` and dispatches the appropriate phase handler based on the current phase.
 
-**Subphase Pattern**: Most phases follow a three-part subphase structure:
+**Single-Handler Pattern**: Each phase has a single handler that executes all phase logic atomically:
 
-- **Start**: Initialize phase state, set up conditions
-- **Process**: Execute main phase logic, trigger card effects
-- **End**: Clean up, determine next phase transition
+- Phase handlers are pure functions that return thunks
+- PhaseManager increments `phaseCounter` on every phase transition
+- When `phaseCounter` changes, PhaseManager executes the handler for `turnCurrentPhase`
+- Run phase uses internal `runProgressState` for sub-states (NOT_IN_RUN, ENCOUNTERING_ICE, ACCESSING_CARDS)
 
 ### Complete Turn Cycle
 
 ```
-Corp Phase (Turn End) → Draw Phase → Main Phase → Play/Run/Access Phases → End Phase → Corp Phase (loop)
+Corp Phase (Turn End) → Draw Phase → Upkeep Phase → Main Phase → Play/Run Phases → End Phase → Corp Phase (loop)
 ```
 
 **Detailed Phase Breakdown**:
@@ -113,113 +152,79 @@ Corp Phase (Turn End) → Draw Phase → Main Phase → Play/Run/Access Phases �
 
 #### 2. Draw Phase
 
-- **Start**:
-  - Reset player clicks to `playerClicksPerTurn`
-  - Draw `playerCardsPerTurn` cards
-- **Process**:
-  - Execute `ON_DRAW` trigger effects for all cards in hand
-- **End**:
-  - If clicks > 0: transition to **Main** phase
+- Reset player clicks to `playerClicksPerTurn`
+- Draw `playerCardsPerTurn` cards
+- Execute `ON_DRAW` trigger effects for all cards in hand
+- Transition:
+  - If clicks > 0: transition to **Upkeep** phase
   - If clicks = 0: transition to End phase
 
-#### 3. Main Phase
+#### 3. Upkeep Phase
 
-- **Start**:
-  - Execute `ON_TURN_START` trigger effects on all installed programs
-  - Enter waiting state for player input
-- **No Process/End**: Main phase persists until player takes action:
+- Execute `ON_UPKEEP` trigger effects on all installed programs
+- This phase runs exactly once per turn after Draw and before Main
+- Example: "Intrusive Thoughts" draws 1 card and loses 1 click during Upkeep
+- Automatically transitions to Main phase after upkeep effects complete
+
+#### 4. Main Phase
+
+- Pure waiting state for player input (no effects triggered)
+- Main phase persists until player takes action:
   - Play cards from hand (transitions to Play phase)
   - Initiate runs (transitions to Run phase)
   - End turn manually (transitions to End phase)
+- Can be re-entered multiple times per turn (after Play/Run phases)
+- UI components check for `TurnPhase.Main` to enable/disable player actions
 
-UI components check for `TurnPhase.Main` to enable/disable player actions (see src/ui/PlayerDashboard/PlayerDashboard.tsx:48)
+#### 5. Play Phase
 
-#### 4. Play Phase
-
-- **Start**: MISSING in PhaseManager (no handler defined)
-  - Triggered manually by `startPlayPhase(card, index)` thunk
-  - Deducts 1 click
-  - Removes card from hand, adds to played cards area
-- **Process**:
-  - Execute `ON_PLAY` trigger effects for all played cards
-- **End**:
-  - Move cards to appropriate zones (with trigger execution):
-    - Programs → Execute `ON_INSTALL` triggers, then add to `playerPrograms`
-    - Cards with `Trash` keyword → Execute `ON_TRASH` triggers, then add to `playerTrash`
-    - Others → Execute `ON_DISCARD` triggers, then add to `playerDiscard`
-  - Clear played cards area
+- Deducts 1 click
+- Removes card from hand, adds to played cards area
+- Execute `ON_PLAY` trigger effects for all played cards
+- Move cards to appropriate zones (with trigger execution):
+  - Programs → Execute `ON_INSTALL` triggers, then add to `playerPrograms`
+  - Cards with `Trash` keyword → Execute `ON_TRASH` triggers, then add to `playerTrash`
+  - Others → Execute `ON_DISCARD` triggers, then add to `playerDiscard`
+- Clear played cards area
+- Transition:
   - If `turnNextPhase` is set: go to that phase (e.g., Run)
   - Else if clicks > 0: return to Main phase
   - Else: go to End phase
 
-#### 5. Run Phase
+#### 6. Run Phase
 
-- **Start**:
-  - Execute `ON_RUN_START` trigger effects on all installed programs
-  - Initialize `serverUnencounteredIce` with all installed Ice (innermost to outermost)
-- **Process**:
-  - If unencountered Ice exists: transition to Encounter phase
-  - If no Ice: transition to Access phase
-- **End**:
-  - Execute `ON_RUN_END` trigger effects on all installed programs
-  - Reset subphase and transition to next phase
+- Execute `ON_RUN_START` trigger effects on all installed programs
+- Initialize `serverUnencounteredIce` with all installed Ice (innermost to outermost)
+- Uses `runProgressState` internal state machine:
+  - **NOT_IN_RUN**: Initialize run
+  - **ENCOUNTERING_ICE**: Process ice clicks (user-driven), trigger `ON_ENCOUNTER` effects, loop through ice
+  - **ACCESSING_CARDS**: Process card selection (user-driven), trigger `ON_ACCESS` and `ON_FETCH` effects
+- Execute `ON_RUN_END` trigger effects on all installed programs
+- Transition:
+  - If clicks > 0: return to Main phase
+  - Else: go to End phase
 
-#### 6. Encounter Phase
+#### 7. End Phase
 
-- **Start**:
-  - Set first unencountered Ice as `serverCurrentEncounteredIce`
-- **Process**:
-  - Wait for user interaction (UI-driven)
-  - User clicks Ice card → triggers `triggerEncounterEffects()` thunk
-  - Executes `ON_ENCOUNTER` effects on the encountered Ice
-- **End**: Empty handler in PhaseManager (triggered by user click)
-  - Manually called via `endEncounterPhase()` thunk:
-    - Remove encountered Ice from unencountered list
-    - Clear `serverCurrentEncounteredIce`
-    - If more Ice exists: loop back to Encounter phase Start
-    - If no more Ice: transition to Access phase
-
-#### 7. Access Phase
-
-- **Start**:
-  - Generate 3 random server cards
-  - Add to `playerAccessedCards`
-- **Process**:
-  - Execute `ON_ACCESS` trigger effects for all accessed cards
-- **End**: Empty handler in PhaseManager (triggered by modal dismiss in App.tsx:54)
-  - Manually called via `endAccessPhase()` thunk:
-    - Player selects one card via `selectAccessedCard(card)`:
-      - Triggers `ON_FETCH` effects
-      - Agendas → `playerScoreArea`
-      - Others → `playerDiscard`
-    - Clear accessed cards
-    - If clicks > 0: return to Main phase
-    - Else: go to End phase
-
-#### 8. End Phase
-
-- **Start**: Set phase to End
-- **Process**:
-  - Discard entire hand
-- **End**:
-  - Transition to Corp phase (starts next turn cycle)
+- Discard entire hand
+- Transition to Corp phase (starts next turn cycle)
 
 ### Phase Transition Triggers
 
 **Automatic Transitions** (handled by PhaseManager):
 
-- Corp → Draw → Main (based on clicks)
-- Draw/Play/Access → Main or End (based on remaining clicks)
+- Corp → Draw (turn cycle begins)
+- Draw → Upkeep or End (based on clicks)
+- Upkeep → Main (always)
+- Play/Run → Main or End (based on remaining clicks)
 - End → Corp (turn cycle)
-- Run → Encounter or Access (based on Ice presence)
-- Encounter → Encounter (loop) or Access (when Ice exhausted)
 
 **Manual Transitions** (UI-driven):
 
 - Main → Play (player plays card)
 - Main → Run (player clicks Run button)
-- Encounter progression (player clicks Ice card)
-- Access completion (player selects card in modal)
+- Main → End (player ends turn)
+- Run internal: Ice clicks, card selection (via `runProgressState`)
 
 **Card-Driven Transitions**:
 
@@ -233,11 +238,12 @@ Card effects trigger at specific moments during gameplay. Each `CardEffect` has 
 
 These triggers are actively executed in phase implementations:
 
-#### `ON_TURN_START`
+#### `ON_UPKEEP`
 
-**When**: Main phase Start subphase (src/state/phases/mainPhase.ts:24)
+**When**: Upkeep phase (src/state/phases/upkeepPhase.ts)
 **Executed on**: All installed programs in `playerInstalledPrograms`
-**Example**: "Intrusive Thoughts" - draws 1 card and loses 1 click at turn start
+**Runs**: Exactly once per turn after Draw and before Main
+**Example**: "Intrusive Thoughts" - draws 1 card and loses 1 click during upkeep
 
 #### `ON_DRAW`
 
@@ -339,42 +345,32 @@ Effects can return either:
 
 #### Active Issues
 
-1. **Subphase Pattern Violations**
-
-   - Play phase: No Start handler in PhaseManager (line 83-86), started manually via thunk
-   - Access/Encounter: Empty End handlers (user-triggered instead of automatic)
-   - Inconsistent with other phases that follow Start → Process → End pattern
-   - **Impact**: Confusing control flow, harder to maintain
-
-2. **Modal-Phase Coupling** (App.tsx:52-55)
-
-   - Card display modal closing directly calls `endAccessPhase()`
-   - Tight coupling between UI state and game state
-   - **Impact**: Difficult to test, breaks separation of concerns
-
-3. **Copy-Paste Error** (cardDefinitions/serverCards/ice.ts:100)
+1. **Copy-Paste Error** (cardDefinitions/serverCards/ice.ts:100)
    - Fire Wall error message says "Bad Moon"
    - **Impact**: Confusing error messages for developers
 
 ### Redundancies
 
-_All redundancies have been cleaned up. Unused TurnPhase enum values (Start, Fetch, Discard) have been removed._
+_All redundancies have been cleaned up. Unused TurnPhase enum values and subphase system have been removed._
 
 ## Points for Improvement
 
 ### High Priority
 
-1. **Standardize Subphase Pattern**
+1. ~~**Eliminate Subphase System**~~ ✅ **COMPLETED (2025-12-06)**
 
-   - Document which phases use automatic vs manual transitions
-   - Consider creating base phase classes/utilities for common patterns
-   - Add runtime validation for phase/subphase combinations
+   - ✅ Migrated all phases to single-handler pattern
+   - ✅ Removed TurnSubPhase enum and subphase state
+   - ✅ Run phase uses internal `runProgressState` instead of separate phases
+   - ✅ Main phase is now a pure waiting state (no ON_TURN_START bug)
+   - ✅ New Upkeep phase for once-per-turn effects (ON_UPKEEP trigger)
 
-2. **Decouple UI from Phase Logic**
+2. ~~**Decouple UI from Phase Logic**~~ ✅ **COMPLETED (2025-12-06)**
 
-   - Move modal-triggered phase transitions to dedicated handlers
-   - Use events/callbacks instead of direct thunk calls from components
-   - Makes game logic testable independent of UI
+   - ✅ Implemented event bus system for all user actions
+   - ✅ UI components emit events instead of calling thunks
+   - ✅ Event handler validates and coordinates state updates
+   - ✅ Game logic fully testable independent of UI
 
 3. **Add Phase Validation**
 
@@ -385,7 +381,7 @@ _All redundancies have been cleaned up. Unused TurnPhase enum values (Start, Fet
 4. **Consolidate Phase Transition Logic**
    - Many phases have identical "check clicks → Main or End" logic
    - Extract to shared utility function
-   - Reduces duplication in drawPhase.ts:47, playPhase.ts:63, accessPhase.ts:94
+   - Reduces duplication across phase files
 
 ### Medium Priority
 
@@ -404,32 +400,122 @@ _All redundancies have been cleaned up. Unused TurnPhase enum values (Start, Fet
    - Create state machine diagram for phase transitions
    - Document which phases are automatic vs user-driven
 
-## Recently Completed (Session 2025-12-05)
+## Recently Completed
 
-### Critical Fixes
+### Session 2025-12-06 (Part 2): Upkeep Phase & Subphase Elimination
+
+**Major Achievement:** Complete elimination of subphase system, introduction of Upkeep phase
+
+**Problem Solved:** After subphase elimination, `mainPhase()` was firing ON_TURN_START effects every time the game returned to Main phase (after Play/Run), causing cards like "Intrusive Thoughts" to trigger multiple times per turn instead of once. This created a perceived performance issue (stutter) that was actually unexpected state changes.
+
+**Solution:** Introduced a new Upkeep phase that runs exactly once per turn after Draw and before Main, replacing ON_TURN_START with ON_UPKEEP trigger moment. Main phase is now a pure waiting state that can be safely re-entered multiple times.
+
+**Changes Made:**
+
+1. **New Upkeep Phase**
+   - Added `TurnPhase.Upkeep` to enum
+   - Created `src/state/phases/upkeepPhase.ts` with ON_UPKEEP trigger execution
+   - Runs once per turn: Draw → Upkeep → Main
+
+2. **Trigger Moment Migration**
+   - Added `TriggerMoment.ON_UPKEEP` to replace `ON_TURN_START`
+   - Updated "Intrusive Thoughts" card to use ON_UPKEEP
+   - Main phase now has no trigger effects (pure waiting state)
+
+3. **Phase Transitions Updated**
+   - `drawPhase()`: Now transitions to Upkeep (or End) instead of Main
+   - `upkeepPhase()`: Executes ON_UPKEEP effects, then transitions to Main
+   - `mainPhase()`: Removed all ON_TURN_START logic (empty handler)
+
+4. **PhaseManager Updated**
+   - Added Upkeep handler to PHASE_HANDLERS
+   - Turn cycle now: Corp → Draw → Upkeep → Main → Play/Run → End → Corp
+
+**Files Created:**
+- `src/state/phases/upkeepPhase.ts` - New upkeep phase handler
+
+**Files Modified:**
+- `src/state/turn/types.ts` - Added Upkeep to TurnPhase enum
+- `src/cardDefinitions/card.ts` - Added ON_UPKEEP to TriggerMoment enum
+- `src/cardDefinitions/playerCards/programs.ts` - Updated Intrusive Thoughts to use ON_UPKEEP
+- `src/state/phases/drawPhase.ts` - Transitions to Upkeep instead of Main
+- `src/state/phases/mainPhase.ts` - Removed ON_TURN_START logic (now pure waiting state)
+- `src/PhaseManager.tsx` - Added Upkeep phase handler
+- `src/state/phases/index.ts` - Exported upkeepPhase
+- `CLAUDE.md` - Updated all documentation to reflect new architecture
+
+**Benefits Achieved:**
+- ✅ Main phase can be re-entered multiple times without side effects
+- ✅ Once-per-turn effects (ON_UPKEEP) guaranteed to run exactly once
+- ✅ No more "stutter" from unexpected state changes
+- ✅ Clean separation: Upkeep = effects, Main = waiting
+- ✅ Maintains single-handler pattern without needing subphases
+
+### Session 2025-12-06 (Part 1): Event System Migration
+
+**Major Achievement:** Full event-driven architecture for user actions
+
+1. **Event Bus Infrastructure**
+   - Created event bus with emit, subscribe, and history tracking
+   - Implemented event handler with centralized validation
+   - Added React context provider for event bus access
+
+2. **Pending Actions System**
+   - New state module to store runtime data for user-triggered phases
+   - Used by phase handlers to read user selections from state
+   - Enables PhaseManager to handle all phases uniformly
+
+3. **Phase Migrations**
+   - **Play Phase**: Reads card/index from pending state, triggered by PLAYER_PLAY_CARD event
+   - **Encounter Phase**: Reads ice ID from pending state, triggered by PLAYER_CLICK_ICE event
+   - **Access Phase**: Reads selected card from pending state, triggered by PLAYER_SELECT_ACCESSED_CARD event
+   - **End Turn**: Triggered by PLAYER_END_TURN event
+
+4. **UI Component Cleanup**
+   - Removed all direct thunk imports from UI components
+   - Removed all `useThunk()` usage from UI layer
+   - All UI now exclusively uses `useEventBus()` for user actions
+
+**Files Created:**
+- `src/state/events/` - Event bus system (eventBus.ts, eventHandler.ts, useEventBus.ts, index.ts)
+- `src/state/pending/` - Pending actions module (types.ts, actions.ts, reducer.ts, selectors.ts, index.ts)
+
+**Files Modified:**
+- `src/state/phases/playPhase.ts` - Now reads from pending state
+- `src/state/phases/encounterPhase.ts` - Now reads from pending state, triggers effects in End
+- `src/state/phases/accessPhase.ts` - Now reads from pending state, processes selection in End
+- `src/ui/PlayerDashboard/PlayerHand.tsx` - Emits PLAYER_PLAY_CARD event
+- `src/ui/IceRow.tsx` - Emits PLAYER_CLICK_ICE event
+- `src/ui/Modals.tsx` - Emits PLAYER_SELECT_ACCESSED_CARD event
+- `src/ui/PlayerDashboard/PlayerDashboard.tsx` - Emits PLAYER_END_TURN event
+- `src/App.tsx` - Initializes event bus and wires event handler
+
+**Benefits Achieved:**
+- ✅ Complete UI/logic separation - UI never imports phase thunks
+- ✅ Centralized validation - All user actions validated before execution
+- ✅ Event logging - Every user action logged in dev mode console
+- ✅ Testability - Game logic can be tested without UI rendering
+- ✅ Debuggability - Event history available via `eventBus.getHistory()`
+
+### Session 2025-12-05: Phase System & Trigger Moments
+
+**Critical Fixes:**
 
 1. **Main Phase Handler** - Added explicit handler with `ON_TURN_START` trigger execution
 2. **Trigger Moment System** - Implemented all 6 missing trigger moments (ON_RUN_START, ON_RUN_END, ON_INSTALL, ON_DISCARD, ON_TRASH; removed ON_REVEAL)
 3. **Server Lockdown Card** - Fixed to use ON_ACCESS and TurnPhase.End
 4. **Unused Enum Cleanup** - Removed unused TurnPhase values (Start, Fetch, Discard)
 
-### Cards Fixed
-
+**Cards Fixed:**
 - **Running Sneakers** - Now properly gains 1 click on run completion
 - **Intrusive Thoughts** - Now draws card and loses click at turn start
 - **Server Lockdown** - Now works with ON_ACCESS trigger
 - **Ethereal/Trash keywords** - Now properly execute trigger effects
 
-### Files Created
-
+**Files Created:**
 - `src/state/phases/mainPhase.ts` - Main phase handler
 
-### Files Modified
-
-- `src/state/turn/types.ts` - Removed unused TurnPhase enum values, alphabetized remaining values
-
-### Utilities Added
-
+**Utilities Added:**
 - `executeCardTriggers()` in cardUtils.ts - Standardized trigger execution helper
 
 ## Styling

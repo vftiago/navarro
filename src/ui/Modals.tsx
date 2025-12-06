@@ -1,8 +1,7 @@
 import { Flex, Modal } from "@mantine/core";
 import { motion } from "framer-motion";
 import { useShallow } from "zustand/react/shallow";
-import { useThunk } from "../state/hooks";
-import { endAccessPhase, selectAccessedCard } from "../state/phases";
+import { GameEventType, useEventBus } from "../state/events";
 import { useGameStore } from "../state/store";
 import { CardFront } from "./Card/CardFront";
 import { CardGridModal } from "./CardGridModal";
@@ -46,12 +45,18 @@ export const Modals = ({
     })),
   );
 
-  const dispatchThunk = useThunk();
+  const eventBus = useEventBus();
 
   const handleCardClick = (card: (typeof playerAccessedCards)[0]) => {
-    dispatchThunk(selectAccessedCard(card));
+    // Emit event to select accessed card
+    // Event handler will validate and transition to End subphase
+    eventBus.emit({
+      payload: { cardId: card.deckContextId },
+      type: GameEventType.PLAYER_SELECT_ACCESSED_CARD,
+    });
+
+    // Close modal after selection
     closeCardDisplayModal();
-    dispatchThunk(endAccessPhase());
   };
 
   return (

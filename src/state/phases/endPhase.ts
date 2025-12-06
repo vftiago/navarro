@@ -1,29 +1,17 @@
 import { discardHand } from "../player";
-import {
-  setTurnCurrentPhase,
-  setTurnCurrentSubPhase,
-  TurnPhase,
-  TurnSubPhase,
-} from "../turn";
+import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";
 
-export const startEndPhase = (): ThunkAction => {
+/**
+ * End Phase - Consolidated single handler (no subphases)
+ * Executes at the end of the player's turn.
+ */
+export const endPhase = (): ThunkAction => {
   return (dispatch) => {
-    dispatch(setTurnCurrentPhase(TurnPhase.End));
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Process));
-  };
-};
-
-export const processEndPhase = (): ThunkAction => {
-  return (dispatch) => {
+    // Discard entire hand
     dispatch(discardHand());
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.End));
-  };
-};
 
-export const endEndPhase = (): ThunkAction => {
-  return (dispatch) => {
+    // Transition to Corp phase (next turn begins)
     dispatch(setTurnCurrentPhase(TurnPhase.Corp));
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
   };
 };

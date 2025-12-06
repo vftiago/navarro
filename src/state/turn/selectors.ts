@@ -1,14 +1,11 @@
 import type { GameState } from "../types";
-import type { TurnPhase, TurnSubPhase } from "./types";
+import type { TurnPhase } from "./types";
 
 export const getTurnRemainingClicks = (state: GameState): number =>
   state.turnState.turnRemainingClicks;
 
 export const getTurnCurrentPhase = (state: GameState): TurnPhase =>
   state.turnState.turnCurrentPhase;
-
-export const getTurnCurrentSubPhase = (state: GameState): TurnSubPhase =>
-  state.turnState.turnCurrentSubPhase;
 
 export const getTurnNextPhase = (state: GameState): null | TurnPhase =>
   state.turnState.turnNextPhase;

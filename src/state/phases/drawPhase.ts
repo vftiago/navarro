@@ -8,52 +8,41 @@ import {
   getTurnRemainingClicks,
   setClicks,
   setTurnCurrentPhase,
-  setTurnCurrentSubPhase,
   TurnPhase,
-  TurnSubPhase,
 } from "../turn";
 import type { ThunkAction } from "../types";
 import { executeCardEffects, getCardEffectsByTrigger } from "../utils";
 
-export const startDrawPhase = (): ThunkAction => {
+/**
+ * Draw Phase - Consolidated single handler (no subphases)
+ * Resets clicks, draws cards, and triggers ON_DRAW effects.
+ */
+export const drawPhase = (): ThunkAction => {
   return (dispatch, getState) => {
+    // Reset clicks to clicks per turn
     const playerClicksPerTurn = getPlayerClicksPerTurn(getState());
-    const playerCardsPerTurn = getPlayerCardsPerTurn(getState());
-
     dispatch(setClicks(playerClicksPerTurn));
+
+    // Draw cards for turn
+    const playerCardsPerTurn = getPlayerCardsPerTurn(getState());
     dispatch(drawCards(playerCardsPerTurn));
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Process));
-  };
-};
 
-export const processDrawPhase = (): ThunkAction => {
-  return (dispatch, getState) => {
-    const { playerState } = getState();
-    const { playerHand } = playerState;
-
+    // Trigger ON_DRAW effects on all cards in hand
+    const { playerHand } = getState().playerState;
     playerHand.forEach((card) => {
-      const playEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_DRAW);
-
-      executeCardEffects(playEffects, dispatch, getState, {
+      const drawEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_DRAW);
+      executeCardEffects(drawEffects, dispatch, getState, {
         gameState: getState(),
         sourceId: card.deckContextId,
       });
     });
 
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.End));
-  };
-};
-
-export const endDrawPhase = (): ThunkAction => {
-  return (dispatch, getState) => {
+    // Transition to Upkeep or End based on remaining clicks
     const turnRemainingClicks = getTurnRemainingClicks(getState());
-
     if (turnRemainingClicks > 0) {
-      dispatch(setTurnCurrentPhase(TurnPhase.Main));
+      dispatch(setTurnCurrentPhase(TurnPhase.Upkeep));
     } else {
       dispatch(setTurnCurrentPhase(TurnPhase.End));
     }
-
-    dispatch(setTurnCurrentSubPhase(TurnSubPhase.Start));
   };
 };

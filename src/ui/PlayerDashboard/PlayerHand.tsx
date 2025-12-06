@@ -5,8 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { PlayingCard } from "../../cardDefinitions/card";
 import { Keyword } from "../../cardDefinitions/card";
-import { useThunk } from "../../state/hooks";
-import { startPlayPhase } from "../../state/phases";
+import { GameEventType, useEventBus } from "../../state/events";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
 import { CardFront } from "../Card/CardFront";
@@ -49,7 +48,7 @@ export const PlayerHand = () => {
     })),
   );
 
-  const dispatchThunk = useThunk();
+  const eventBus = useEventBus();
   const [, animate] = useAnimate();
 
   const [exitingCards, setExitingCards] = useState<Set<string>>(new Set());
@@ -123,10 +122,18 @@ export const PlayerHand = () => {
           return next;
         });
 
-        dispatchThunk(startPlayPhase(card, index));
+        // Emit event to play card
+        // Event handler will validate, set pending action, and transition phase
+        eventBus.emit({
+          payload: {
+            cardId: card.deckContextId,
+            handIndex: index,
+          },
+          type: GameEventType.PLAYER_PLAY_CARD,
+        });
       }, EXIT_ANIMATION_DURATION);
     },
-    [animate, dispatchThunk],
+    [animate, eventBus],
   );
 
   const setCardRef = useCallback(

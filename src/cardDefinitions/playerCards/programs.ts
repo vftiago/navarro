@@ -76,7 +76,7 @@ export const programCards: ProgramCardDefinitions[] = [
         getActions: () => [drawCards(1), modifyClicks(-1)],
         getText: () =>
           "At the beginning of your turn, draw 1 card and lose 1 click.",
-        triggerMoment: TriggerMoment.ON_TURN_START,
+        triggerMoment: TriggerMoment.ON_UPKEEP,
       },
     ],
     image: "_c70fe080-5f2d-474a-9431-5d9fd7e4ed9c.jpg",

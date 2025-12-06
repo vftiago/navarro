@@ -1,36 +1,36 @@
 export enum TurnPhase {
-  Access = "Access",
   Corp = "Corp",
   Draw = "Draw",
-  Encounter = "Encounter",
   End = "End",
   Main = "Main",
   Play = "Play",
   Run = "Run",
+  Upkeep = "Upkeep",
 }
 
-export enum TurnSubPhase {
-  Start = "Start",
-  Process = "Process",
-  End = "End",
+export enum RunProgressState {
+  NOT_IN_RUN = "NOT_IN_RUN",
+  ENCOUNTERING_ICE = "ENCOUNTERING_ICE",
+  ACCESSING_CARDS = "ACCESSING_CARDS",
 }
 
 export type TurnState = {
   turnNumber: number;
   turnRemainingClicks: number;
   turnCurrentPhase: TurnPhase;
-  turnCurrentSubPhase: TurnSubPhase;
   turnNextPhase: null | TurnPhase;
-  phaseChangeCounter: number;
+  phaseCounter: number;
+  runProgressState: RunProgressState;
 };
 
 export enum TurnActionTypes {
   SET_CLICKS = "SET_CLICKS",
   MODIFY_CLICKS = "MODIFY_CLICKS",
   SET_TURN_CURRENT_PHASE = "SET_TURN_CURRENT_PHASE",
-  SET_TURN_CURRENT_SUB_PHASE = "SET_TURN_CURRENT_SUB_PHASE",
   SET_TURN_NEXT_PHASE = "SET_TURN_NEXT_PHASE",
   INCREMENT_TURN = "INCREMENT_TURN",
+  INCREMENT_PHASE_COUNTER = "INCREMENT_PHASE_COUNTER",
+  SET_RUN_PROGRESS_STATE = "SET_RUN_PROGRESS_STATE",
 }
 
 export type TurnAction =
@@ -38,5 +38,6 @@ export type TurnAction =
   | { type: TurnActionTypes.MODIFY_CLICKS; payload: number }
   | { type: TurnActionTypes.SET_TURN_CURRENT_PHASE; payload: TurnPhase }
   | { type: TurnActionTypes.SET_TURN_NEXT_PHASE; payload: null | TurnPhase }
-  | { type: TurnActionTypes.SET_TURN_CURRENT_SUB_PHASE; payload: TurnSubPhase }
-  | { type: TurnActionTypes.INCREMENT_TURN };
+  | { type: TurnActionTypes.INCREMENT_TURN }
+  | { type: TurnActionTypes.INCREMENT_PHASE_COUNTER }
+  | { type: TurnActionTypes.SET_RUN_PROGRESS_STATE; payload: RunProgressState };

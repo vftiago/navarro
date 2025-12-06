@@ -1,15 +1,15 @@
 import {
+  RunProgressState,
   type TurnAction,
   TurnActionTypes,
   TurnPhase,
   type TurnState,
-  TurnSubPhase,
 } from "./types";
 
 export const initialTurnState: TurnState = {
-  phaseChangeCounter: 0,
+  phaseCounter: 0,
+  runProgressState: RunProgressState.NOT_IN_RUN,
   turnCurrentPhase: TurnPhase.Draw,
-  turnCurrentSubPhase: TurnSubPhase.Start,
   turnNextPhase: null,
   turnNumber: 1,
   turnRemainingClicks: 3,
@@ -35,14 +35,8 @@ export const turnReducer = (
     case TurnActionTypes.SET_TURN_CURRENT_PHASE:
       return {
         ...state,
+        phaseCounter: state.phaseCounter + 1,
         turnCurrentPhase: action.payload,
-      };
-
-    case TurnActionTypes.SET_TURN_CURRENT_SUB_PHASE:
-      return {
-        ...state,
-        phaseChangeCounter: state.phaseChangeCounter + 1,
-        turnCurrentSubPhase: action.payload,
       };
 
     case TurnActionTypes.SET_TURN_NEXT_PHASE:
@@ -55,6 +49,18 @@ export const turnReducer = (
       return {
         ...state,
         turnNumber: state.turnNumber + 1,
+      };
+
+    case TurnActionTypes.INCREMENT_PHASE_COUNTER:
+      return {
+        ...state,
+        phaseCounter: state.phaseCounter + 1,
+      };
+
+    case TurnActionTypes.SET_RUN_PROGRESS_STATE:
+      return {
+        ...state,
+        runProgressState: action.payload,
       };
 
     default:

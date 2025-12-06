@@ -58,7 +58,7 @@ export enum TriggerMoment {
   ON_RUN_END = "onRunEnd",
   ON_RUN_START = "onRunStart",
   ON_TRASH = "onTrash",
-  ON_TURN_START = "onTurnStart",
+  ON_UPKEEP = "onUpkeep",
 }
 
 export enum EffectCost {

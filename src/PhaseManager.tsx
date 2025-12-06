@@ -3,110 +3,57 @@ import { useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useThunk } from "./state/hooks";
 import {
-  endCorpPhase,
-  endDrawPhase,
-  endEndPhase,
-  endPlayPhase,
-  endRunPhase,
-  processAccessPhase,
-  processCorpPhase,
-  processDrawPhase,
-  processEncounterPhase,
-  processEndPhase,
-  processMainPhase,
-  processPlayPhase,
-  processRunPhase,
-  startAccessPhase,
-  startCorpPhase,
-  startDrawPhase,
-  startEncounterPhase,
-  startEndPhase,
-  startMainPhase,
-  startRunPhase,
+  corpPhase,
+  drawPhase,
+  endPhase,
+  mainPhase,
+  playPhase,
+  runPhase,
+  upkeepPhase,
 } from "./state/phases";
 import { useGameStore } from "./state/store";
-import { TurnPhase, TurnSubPhase } from "./state/turn";
+import { TurnPhase } from "./state/turn";
 
 export const PhaseManager = () => {
-  const { phaseChangeCounter, turnCurrentPhase, turnCurrentSubPhase } =
-    useGameStore(
-      useShallow((state) => ({
-        phaseChangeCounter: state.turnState.phaseChangeCounter,
-        turnCurrentPhase: state.turnState.turnCurrentPhase,
-        turnCurrentSubPhase: state.turnState.turnCurrentSubPhase,
-      })),
-    );
+  const { phaseCounter, turnCurrentPhase } = useGameStore(
+    useShallow((state) => ({
+      phaseCounter: state.turnState.phaseCounter,
+      turnCurrentPhase: state.turnState.turnCurrentPhase,
+    })),
+  );
 
   const dispatchThunk = useThunk();
 
-  const lastCounterRef = useRef<number>(-1);
+  const lastPhaseCounterRef = useRef<number>(-1);
 
   type PhaseHandlers = {
-    [P in TurnPhase]?: {
-      [S in TurnSubPhase]?: () => void | (() => void);
-    };
+    [P in TurnPhase]?: () => void | (() => void);
   };
 
   const PHASE_HANDLERS: PhaseHandlers = useMemo(() => {
     return {
-      [TurnPhase.Access]: {
-        [TurnSubPhase.End]: () => {
-          // End is triggered by user click/modal dismiss, not auto-run
-        },
-        [TurnSubPhase.Process]: () => dispatchThunk(processAccessPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startAccessPhase()),
+      [TurnPhase.Corp]: () => {
+        return delay(() => {
+          dispatchThunk(corpPhase());
+        }, 1000);
       },
-      [TurnPhase.Corp]: {
-        [TurnSubPhase.End]: () => dispatchThunk(endCorpPhase()),
-        [TurnSubPhase.Process]: () => {
-          return delay(() => {
-            dispatchThunk(processCorpPhase());
-          }, 1000);
-        },
-        [TurnSubPhase.Start]: () => dispatchThunk(startCorpPhase()),
-      },
-      [TurnPhase.Draw]: {
-        [TurnSubPhase.End]: () => dispatchThunk(endDrawPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processDrawPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startDrawPhase()),
-      },
-      [TurnPhase.Encounter]: {
-        [TurnSubPhase.End]: () => {
-          // End is triggered by user click, not auto-run
-        },
-        [TurnSubPhase.Process]: () => dispatchThunk(processEncounterPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startEncounterPhase()),
-      },
-      [TurnPhase.End]: {
-        [TurnSubPhase.End]: () => dispatchThunk(endEndPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processEndPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startEndPhase()),
-      },
-      [TurnPhase.Main]: {
-        [TurnSubPhase.Process]: () => dispatchThunk(processMainPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startMainPhase()),
-        // No Process/End handlers - Main phase waits for user input
-      },
-      [TurnPhase.Play]: {
-        [TurnSubPhase.End]: () => dispatchThunk(endPlayPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processPlayPhase()),
-      },
-      [TurnPhase.Run]: {
-        [TurnSubPhase.End]: () => dispatchThunk(endRunPhase()),
-        [TurnSubPhase.Process]: () => dispatchThunk(processRunPhase()),
-        [TurnSubPhase.Start]: () => dispatchThunk(startRunPhase()),
-      },
+      [TurnPhase.Draw]: () => dispatchThunk(drawPhase()),
+      [TurnPhase.End]: () => dispatchThunk(endPhase()),
+      [TurnPhase.Main]: () => dispatchThunk(mainPhase()),
+      [TurnPhase.Play]: () => dispatchThunk(playPhase()),
+      [TurnPhase.Run]: () => dispatchThunk(runPhase()),
+      [TurnPhase.Upkeep]: () => dispatchThunk(upkeepPhase()),
     };
   }, [dispatchThunk]);
 
   useEffect(() => {
-    if (phaseChangeCounter === lastCounterRef.current) {
+    if (phaseCounter === lastPhaseCounterRef.current) {
       return;
     }
 
-    lastCounterRef.current = phaseChangeCounter;
+    lastPhaseCounterRef.current = phaseCounter;
 
-    const action = PHASE_HANDLERS[turnCurrentPhase]?.[turnCurrentSubPhase];
+    const action = PHASE_HANDLERS[turnCurrentPhase];
 
     if (action) {
       const cleanup = action();
@@ -115,12 +62,7 @@ export const PhaseManager = () => {
         return cleanup;
       }
     }
-  }, [
-    PHASE_HANDLERS,
-    phaseChangeCounter,
-    turnCurrentPhase,
-    turnCurrentSubPhase,
-  ]);
+  }, [PHASE_HANDLERS, phaseCounter, turnCurrentPhase]);
 
   return null;
 };

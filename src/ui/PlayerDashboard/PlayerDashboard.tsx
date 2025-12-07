@@ -60,7 +60,7 @@ export const PlayerDashboard = ({
     <Container
       fluid
       className="pointer-events-none fixed right-0 bottom-0 left-0 z-10"
-      maw={1620}
+      maw={1480}
       p="xs"
     >
       <Flex className="items-end justify-between">

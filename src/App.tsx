@@ -91,7 +91,7 @@ export const App = () => {
       <AnimatePresence>
         {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
       </AnimatePresence>
-      <Container fluid maw={1620} p="xs">
+      <Container fluid maw={1480} p="xs">
         <Stack className="h-full" gap="xs">
           <PlayerSettings />
           <IceRow />

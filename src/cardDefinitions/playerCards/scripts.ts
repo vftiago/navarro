@@ -56,7 +56,7 @@ export const scriptCards: CardDefinitions[] = [
       KEYWORD_EFFECTS.Trash,
     ],
     image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",
-    name: "Boost",
+    name: "Boost Energy Ultra",
     rarity: CardRarity.RARE,
     type: CardType.SCRIPT,
   },

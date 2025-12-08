@@ -1,6 +1,7 @@
+import { initiateRun } from "../../state/phases/runPhase";
 import { drawCards } from "../../state/player";
 import { modifyServerSecurity } from "../../state/server";
-import { modifyClicks, setTurnNextPhase, TurnPhase } from "../../state/turn";
+import { modifyClicks } from "../../state/turn";
 import type { CardDefinitions } from "../card";
 import { CardRarity, CardType, TriggerMoment } from "../card";
 import { KEYWORD_EFFECTS } from "../keywords";
@@ -9,12 +10,12 @@ export const scriptCards: CardDefinitions[] = [
   {
     cardEffects: [
       {
-        getActions: () => [setTurnNextPhase(TurnPhase.Run)],
         getText: () => "Make a run.",
+        getThunk: () => initiateRun(),
         triggerMoment: TriggerMoment.ON_PLAY,
       },
     ],
-    image: "_f3938419-60f6-42a9-8294-f8a93e848cd7.jpeg",
+    image: "_cec483b7-55c5-4201-b001-d66cf9c187b0_crop_2.jpg",
     name: "Run",
     rarity: CardRarity.BASIC,
     type: CardType.SCRIPT,

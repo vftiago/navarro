@@ -1,11 +1,10 @@
-import { clearPendingAction, setPendingAction } from "../pending";
-import { batchDispatch } from "../store";
 import {
-  incrementPhaseCounter,
-  RunProgressState,
-  setTurnCurrentPhase,
-  TurnPhase,
-} from "../turn";
+  clickIce,
+  initiateRun,
+  playPhase,
+  selectAccessedCard,
+} from "../phases";
+import { RunProgressState, setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { GameAction, GameState } from "../types";
 import type { GameEvent } from "./eventBus";
 import { GameEventType } from "./eventBus";
@@ -16,14 +15,36 @@ import { GameEventType } from "./eventBus";
  *
  * Pattern:
  * 1. Validate the event is legal in current game state
- * 2. Store runtime data in pending state (if needed)
- * 3. Transition to appropriate phase/subphase
- * 4. PhaseManager will detect change and execute phase handlers
+ * 2. Invoke phase thunk directly with payload (no pending state)
+ * 3. Phase logic executes and handles all state transitions
  */
 export const createEventHandler = (
   dispatch: (action: GameAction) => void,
   getState: () => GameState,
 ) => {
+  // Helper to dispatch thunks with payload
+  const dispatchThunk = <T>(
+    thunkCreator: (
+      payload: T,
+    ) => (
+      dispatch: (action: GameAction) => void,
+      getState: () => GameState,
+    ) => void,
+    payload: T,
+  ) => {
+    thunkCreator(payload)(dispatch, getState);
+  };
+
+  // Helper to dispatch thunks without payload
+  const dispatchThunkNoPayload = (
+    thunkCreator: () => (
+      dispatch: (action: GameAction) => void,
+      getState: () => GameState,
+    ) => void,
+  ) => {
+    thunkCreator()(dispatch, getState);
+  };
+
   return (event: GameEvent) => {
     const state = getState();
 
@@ -42,15 +63,12 @@ export const createEventHandler = (
           return;
         }
 
-        // Batch pending action + phase transition (2 actions → 1 update)
-        batchDispatch([
-          setPendingAction({
-            cardId: event.payload.cardId,
-            handIndex: event.payload.handIndex,
-            type: "PLAY_CARD",
-          }),
-          setTurnCurrentPhase(TurnPhase.Play),
-        ]);
+        // Transition to Play phase and execute phase logic directly
+        dispatch(setTurnCurrentPhase(TurnPhase.Play));
+        dispatchThunk(playPhase, {
+          cardId: event.payload.cardId,
+          handIndex: event.payload.handIndex,
+        });
         break;
       }
 
@@ -67,11 +85,8 @@ export const createEventHandler = (
           return;
         }
 
-        // Batch pending action + phase transition (2 actions → 1 update)
-        batchDispatch([
-          setPendingAction({ type: "INITIATE_RUN" }),
-          setTurnCurrentPhase(TurnPhase.Run),
-        ]);
+        // initiateRun sets the phase to Run internally
+        dispatchThunkNoPayload(initiateRun);
         break;
       }
 
@@ -95,16 +110,8 @@ export const createEventHandler = (
           return;
         }
 
-        // Store pending action with ice ID
-        dispatch(
-          setPendingAction({
-            iceId: event.payload.iceId,
-            type: "CLICK_ICE",
-          }),
-        );
-
-        // Increment phase counter to trigger PhaseManager to re-run runPhase
-        dispatch(incrementPhaseCounter());
+        // Execute ice click logic directly
+        dispatchThunk(clickIce, { iceId: event.payload.iceId });
         break;
       }
 
@@ -128,16 +135,8 @@ export const createEventHandler = (
           return;
         }
 
-        // Store pending action with selected card ID
-        dispatch(
-          setPendingAction({
-            cardId: event.payload.cardId,
-            type: "SELECT_ACCESSED_CARD",
-          }),
-        );
-
-        // Increment phase counter to trigger PhaseManager to re-run runPhase
-        dispatch(incrementPhaseCounter());
+        // Execute card selection logic directly
+        dispatchThunk(selectAccessedCard, { cardId: event.payload.cardId });
         break;
       }
 
@@ -147,9 +146,6 @@ export const createEventHandler = (
           console.warn("Cannot end turn outside Main phase");
           return;
         }
-
-        // Clear any pending actions
-        dispatch(clearPendingAction());
 
         // Transition to End phase
         dispatch(setTurnCurrentPhase(TurnPhase.End));

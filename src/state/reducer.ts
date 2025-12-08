@@ -5,12 +5,6 @@ import {
   initialBoardState,
 } from "./board";
 import {
-  initialPendingState,
-  type PendingActionType,
-  PendingActionTypes,
-  pendingReducer,
-} from "./pending";
-import {
   initialPlayerState,
   type PlayerAction,
   PlayerActionTypes,
@@ -38,7 +32,6 @@ import type { GameAction, GameState } from "./types";
 
 export const initialGameState: GameState = {
   boardState: initialBoardState,
-  pendingState: initialPendingState,
   playerState: initialPlayerState,
   serverState: initialServerState,
   settingsState: initialSettingsState,
@@ -75,12 +68,6 @@ const isBoardAction = (action: GameAction): action is BoardAction => {
   );
 };
 
-const isPendingAction = (action: GameAction): action is PendingActionType => {
-  return Object.values(PendingActionTypes).includes(
-    action.type as PendingActionTypes,
-  );
-};
-
 export const rootReducer = (
   state: GameState = initialGameState,
   action: GameAction,
@@ -89,9 +76,6 @@ export const rootReducer = (
     boardState: isBoardAction(action)
       ? boardReducer(state.boardState, action)
       : state.boardState,
-    pendingState: isPendingAction(action)
-      ? pendingReducer(state.pendingState, action)
-      : state.pendingState,
     playerState: isPlayerAction(action)
       ? playerReducer(state.playerState, action)
       : state.playerState,

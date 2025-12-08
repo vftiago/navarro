@@ -14,7 +14,6 @@ export const useGameStore = create<GameStore>()(
       dispatch: (action: GameAction) => {
         const currentState: GameState = {
           boardState: get().boardState,
-          pendingState: get().pendingState,
           playerState: get().playerState,
           serverState: get().serverState,
           settingsState: get().settingsState,
@@ -33,7 +32,6 @@ export const getGameState = (): GameState => {
   const state = useGameStore.getState();
   return {
     boardState: state.boardState,
-    pendingState: state.pendingState,
     playerState: state.playerState,
     serverState: state.serverState,
     settingsState: state.settingsState,

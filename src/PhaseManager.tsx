@@ -7,13 +7,17 @@ import {
   drawPhase,
   endPhase,
   mainPhase,
-  playPhase,
-  runPhase,
   upkeepPhase,
 } from "./state/phases";
 import { useGameStore } from "./state/store";
 import { TurnPhase } from "./state/turn";
 
+/**
+ * PhaseManager handles automatic phase transitions only.
+ * User-driven phases (Play, Run) are handled directly by the code that triggers them:
+ * - Play: eventHandler calls playPhase() with payload
+ * - Run: eventHandler or playPhase calls initiateRun() directly
+ */
 export const PhaseManager = () => {
   const { phaseCounter, turnCurrentPhase } = useGameStore(
     useShallow((state) => ({
@@ -40,9 +44,8 @@ export const PhaseManager = () => {
       [TurnPhase.Draw]: () => dispatchThunk(drawPhase()),
       [TurnPhase.End]: () => dispatchThunk(endPhase()),
       [TurnPhase.Main]: () => dispatchThunk(mainPhase()),
-      [TurnPhase.Play]: () => dispatchThunk(playPhase()),
-      [TurnPhase.Run]: () => dispatchThunk(runPhase()),
       [TurnPhase.Upkeep]: () => dispatchThunk(upkeepPhase()),
+      // Play and Run are user-driven, handled directly by eventHandler/playPhase
     };
   }, [dispatchThunk]);
 

@@ -1,5 +1,4 @@
 import { CardType, Keyword, TriggerMoment } from "../../cardDefinitions/card";
-import { clearPendingAction, getPendingAction } from "../pending";
 import {
   addCardToPlayed,
   addToDiscard,
@@ -11,11 +10,9 @@ import {
 } from "../player";
 import { batchDispatch } from "../store";
 import {
-  getTurnNextPhase,
   getTurnRemainingClicks,
   modifyClicks,
   setTurnCurrentPhase,
-  setTurnNextPhase,
   TurnPhase,
 } from "../turn";
 import type { GameAction, ThunkAction } from "../types";
@@ -26,37 +23,34 @@ import {
   hasKeyword,
 } from "../utils";
 
+export type PlayPhasePayload = {
+  cardId: string;
+  handIndex: number;
+};
+
 /**
- * Play Phase - Consolidated single handler (no subphases)
- * Reads card from pending state, plays it, triggers effects, and moves to appropriate zone.
+ * Play Phase - Accepts payload directly from event handler.
+ * Plays card, triggers effects, and moves to appropriate zone.
  * Uses batching to minimize re-renders.
  */
-export const playPhase = (): ThunkAction => {
+export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
   return (dispatch, getState) => {
     const state = getState();
-    const pendingAction = getPendingAction(state);
 
-    // Validate pending action exists and is correct type
-    if (!pendingAction || pendingAction.type !== "PLAY_CARD") {
-      console.error("playPhase: No pending PLAY_CARD action found");
-      return;
-    }
-
-    // Get the card from hand using pending action data
-    const card = state.playerState.playerHand[pendingAction.handIndex];
+    // Get the card from hand using payload data
+    const card = state.playerState.playerHand[payload.handIndex];
 
     // Validate card exists and matches
-    if (!card || card.deckContextId !== pendingAction.cardId) {
-      console.error("playPhase: Card mismatch in pending action");
+    if (!card || card.deckContextId !== payload.cardId) {
+      console.error("playPhase: Card mismatch in payload");
       return;
     }
 
-    // Batch the initial play actions (4 actions → 1 update)
+    // Batch the initial play actions (3 actions → 1 update)
     batchDispatch([
       modifyClicks(-1),
-      removeCardFromHand(pendingAction.handIndex),
+      removeCardFromHand(payload.handIndex),
       addCardToPlayed(card),
-      clearPendingAction(),
     ]);
 
     // Trigger ON_PLAY effects (may dispatch additional actions)
@@ -107,23 +101,15 @@ export const playPhase = (): ThunkAction => {
     zoneActions.push(clearPlayedCards());
     batchDispatch(zoneActions);
 
-    // Determine next phase
-    const turnNextPhase = getTurnNextPhase(getState());
-
-    if (turnNextPhase) {
-      // Card set a specific next phase (e.g., Run card → Run phase)
-      batchDispatch([
-        setTurnCurrentPhase(turnNextPhase),
-        setTurnNextPhase(null),
-      ]);
-    } else {
-      // Return to Main or End based on clicks
-      const turnRemainingClicks = getTurnRemainingClicks(getState());
-      if (turnRemainingClicks > 0) {
-        dispatch(setTurnCurrentPhase(TurnPhase.Main));
-      } else {
-        dispatch(setTurnCurrentPhase(TurnPhase.End));
-      }
+    // Only transition if still in Play phase (card effects may have changed it)
+    if (getState().turnState.turnCurrentPhase === TurnPhase.Play) {
+      dispatch(
+        setTurnCurrentPhase(
+          getTurnRemainingClicks(getState()) > 0
+            ? TurnPhase.Main
+            : TurnPhase.End,
+        ),
+      );
     }
   };
 };

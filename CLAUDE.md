@@ -29,7 +29,7 @@ The state is organized into modular slices with a Redux-like architecture:
 **Core Store** (`src/state/`):
 
 - `store.ts` - Zustand store with devtools middleware; exports `useGameStore()` hook
-- `reducer.ts` - Root reducer that combines 5 sub-reducers using type guards
+- `reducer.ts` - Root reducer that combines sub-reducers using type guards
 - `types.ts` - `GameState` and `GameAction` union types
 - `hooks.ts` - `useThunk()` hook for dispatching thunk actions
 
@@ -47,9 +47,10 @@ Each module follows a consistent structure:
 
 Thunk actions for multi-step game phase flows:
 
-- `playPhase.ts`, `runPhase.ts`, `encounterPhase.ts`, etc.
-- Each exports thunk functions that coordinate multiple actions and state changes
-- Use via `useThunk()` hook or direct `dispatch` with `getGameState`
+- `playPhase.ts` - Play card logic (accepts payload from eventHandler)
+- `runPhase.ts` - Run logic split into `initiateRun()`, `clickIce()`, `selectAccessedCard()`
+- `corpPhase.ts`, `drawPhase.ts`, `upkeepPhase.ts`, `mainPhase.ts`, `endPhase.ts` - Automatic phases
+- Use via `useThunk()` hook for automatic phases, or invoke directly with payload for user-driven phases
 
 **Utilities** (`src/state/utils/`):
 
@@ -83,20 +84,23 @@ The game uses an event-driven architecture to decouple UI from game logic:
 **Event Bus** (`src/state/events/`):
 
 - `eventBus.ts` - Core event bus with emit, subscribe, and history tracking
-- `eventHandler.ts` - Translates game events into state updates with validation
+- `eventHandler.ts` - Validates events and invokes phase thunks directly with payloads
 - `useEventBus.ts` - React context and hook for accessing event bus
-
-**Pending Actions** (`src/state/pending/`):
-
-- Stores runtime data for user-triggered phases (which card, from which index, etc.)
-- Used by phase handlers to read user selections from state
 
 **Flow**:
 ```
 UI Component → eventBus.emit(event) → Event Handler validates →
-  Sets pending action + transitions phase → PhaseManager executes phase handler →
-  Phase handler reads pending action → Executes logic → Clears pending action
+  Invokes phase thunk directly with payload → Phase executes and transitions state
 ```
+
+**User-Driven Phases** (invoked directly by triggering code):
+- `playPhase({ cardId, handIndex })` - Called by eventHandler when user plays card
+- `initiateRun()` - Called by eventHandler (Run button) or playPhase (Run card)
+- `clickIce({ iceId })` - Called by eventHandler during ice encounter
+- `selectAccessedCard({ cardId })` - Called by eventHandler during card access
+
+**Automatic Phases** (handled by PhaseManager):
+- `corpPhase()`, `drawPhase()`, `upkeepPhase()`, `mainPhase()`, `endPhase()`
 
 **Event Types**:
 - `PLAYER_PLAY_CARD` - User plays a card from hand
@@ -114,7 +118,8 @@ UI Component → eventBus.emit(event) → Event Handler validates →
 
 ### Game Flow
 
-- `src/PhaseManager.tsx` - Coordinates turn progression by dispatching phase thunks
+- `src/PhaseManager.tsx` - Handles automatic phase transitions only (Corp, Draw, Upkeep, Main, End)
+- User-driven phases (Play, Run) are handled directly by the event handler
 - Turn phases defined in `src/state/turn/types.ts` (Corp, Draw, Upkeep, Main, Play, Run, End)
 - Phase logic implemented in `src/state/phases/` (single-handler pattern for each phase)
 - Modal state managed via Mantine's `useDisclosure()` in App.tsx

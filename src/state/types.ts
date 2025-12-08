@@ -1,5 +1,4 @@
 import { type BoardAction, type BoardState } from "./board";
-import { type PendingActionType, type PendingState } from "./pending";
 import { type PlayerAction, type PlayerState } from "./player";
 import { type ServerAction, type ServerState } from "./server";
 import { type SettingsAction, type SettingsState } from "./settings";
@@ -7,7 +6,6 @@ import { type TurnAction, type TurnState } from "./turn";
 
 export type GameState = {
   boardState: BoardState;
-  pendingState: PendingState;
   playerState: PlayerState;
   serverState: ServerState;
   settingsState: SettingsState;
@@ -16,7 +14,6 @@ export type GameState = {
 
 export type GameAction =
   | BoardAction
-  | PendingActionType
   | PlayerAction
   | ServerAction
   | SettingsAction

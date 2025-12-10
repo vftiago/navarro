@@ -40,6 +40,8 @@ const itemVariants = {
   show: { opacity: 1, y: 0 },
 };
 
+const RUN_OFFSET_Y = 120;
+
 export const PlayerHand = () => {
   const { playerHand, turnCurrentPhase } = useGameStore(
     useShallow((state) => ({
@@ -59,6 +61,9 @@ export const PlayerHand = () => {
   const [animationKey, setAnimationKey] = useState(0);
 
   const cardRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+
+  const isMainPhase = turnCurrentPhase === TurnPhase.Main;
+  const isRunPhase = turnCurrentPhase === TurnPhase.Run;
 
   useEffect(() => {
     if (turnCurrentPhase === TurnPhase.End || playerHand.length === 0) {
@@ -91,6 +96,11 @@ export const PlayerHand = () => {
 
   const handleCardClick = useCallback(
     (card: PlayingCard, index: number) => {
+      // Only allow card play during Main phase
+      if (!isMainPhase) {
+        return;
+      }
+
       if (
         card.cardEffects?.some(
           (effect) => effect.keyword === Keyword.UNPLAYABLE,
@@ -133,7 +143,7 @@ export const PlayerHand = () => {
         });
       }, EXIT_ANIMATION_DURATION);
     },
-    [animate, eventBus],
+    [animate, eventBus, isMainPhase],
   );
 
   const setCardRef = useCallback(
@@ -156,53 +166,64 @@ export const PlayerHand = () => {
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.ol
-        layout
-        animate="show"
-        className="relative top-6 ml-24 flex"
-        exit="exit"
-        initial="hidden"
-        key={animationKey}
-        transition={{
-          layout: { damping: 100, stiffness: 2400, type: "spring" },
-        }}
-        variants={containerVariants}
-      >
-        {playerHand.map((card, index) => {
-          const isExiting = exitingCards.has(card.deckContextId);
+    <motion.div
+      animate={{ y: isRunPhase ? RUN_OFFSET_Y : 0 }}
+      className={clsx({ "cursor-default": !isMainPhase })}
+      transition={{ damping: 20, stiffness: 300, type: "spring" }}
+      whileHover={{ y: 0 }}
+    >
+      <AnimatePresence mode="wait">
+        <motion.ol
+          layout
+          animate="show"
+          className="relative top-6 ml-24 flex"
+          exit="exit"
+          initial="hidden"
+          key={animationKey}
+          transition={{
+            layout: { damping: 100, stiffness: 2400, type: "spring" },
+          }}
+          variants={containerVariants}
+        >
+          {playerHand.map((card, index) => {
+            const isExiting = exitingCards.has(card.deckContextId);
 
-          return (
-            <motion.li
-              layout
-              className={clsx("pointer-events-auto relative -ml-24 list-none", {
-                "pointer-events-none": isExiting,
-              })}
-              key={card.deckContextId}
-              ref={(el) => setCardRef(card.deckContextId, el)}
-              style={{
-                rotate: isExiting ? 0 : rotationValues[index],
-                scale: isExiting ? 1.1 : 1,
-                top: isExiting ? topValues[index] - 40 : topValues[index],
-              }}
-              variants={itemVariants}
-              whileHover={{
-                rotate: 0,
-                scale: 1.1,
-                top: -40,
-                zIndex: 1,
-              }}
-              onClick={() => {
-                if (!isExiting) {
-                  handleCardClick(card, index);
-                }
-              }}
-            >
-              <CardFront card={card} />
-            </motion.li>
-          );
-        })}
-      </motion.ol>
-    </AnimatePresence>
+            return (
+              <motion.li
+                layout
+                className={clsx(
+                  "pointer-events-auto relative -ml-24 list-none",
+                  {
+                    "cursor-not-allowed": !isMainPhase,
+                    "pointer-events-none": isExiting,
+                  },
+                )}
+                key={card.deckContextId}
+                ref={(el) => setCardRef(card.deckContextId, el)}
+                style={{
+                  rotate: isExiting ? 0 : rotationValues[index],
+                  scale: isExiting ? 1.1 : 1,
+                  top: isExiting ? topValues[index] - 40 : topValues[index],
+                }}
+                variants={itemVariants}
+                whileHover={{
+                  rotate: 0,
+                  scale: 1.1,
+                  top: -40,
+                  zIndex: 1,
+                }}
+                onClick={() => {
+                  if (!isExiting) {
+                    handleCardClick(card, index);
+                  }
+                }}
+              >
+                <CardFront card={card} />
+              </motion.li>
+            );
+          })}
+        </motion.ol>
+      </AnimatePresence>
+    </motion.div>
   );
 };

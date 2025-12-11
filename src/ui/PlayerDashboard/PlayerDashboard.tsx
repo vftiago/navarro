@@ -4,20 +4,15 @@ import { useShallow } from "zustand/react/shallow";
 import { GameEventType, useEventBus } from "../../state/events";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
+import type { ModalType } from "../Modals";
 import { ClickWidget } from "./ClickWidget";
 import { PlayerHand } from "./PlayerHand";
 import { TagWidget } from "./TagWidget";
 
 export const PlayerDashboard = ({
-  openDeckModal,
-  openDiscardModal,
-  openScoreModal,
-  openTrashModal,
+  setOpenModal,
 }: {
-  openDeckModal: () => void;
-  openDiscardModal: () => void;
-  openScoreModal: () => void;
-  openTrashModal: () => void;
+  setOpenModal: (modal: ModalType) => void;
 }) => {
   const {
     playerDeckLength,
@@ -65,7 +60,7 @@ export const PlayerDashboard = ({
     >
       <Flex className="items-end justify-between">
         <Stack className="pointer-events-auto flex-col-reverse" w="10rem">
-          <Button size="lg" variant="gradient" onClick={openDeckModal}>
+          <Button size="lg" variant="gradient" onClick={() => setOpenModal("deck")}>
             Deck ({playerDeckLength})
           </Button>
           <ClickWidget remainingClicks={turnRemainingClicks} />
@@ -85,7 +80,7 @@ export const PlayerDashboard = ({
             size="sm"
             variant="gradient"
             w="8rem"
-            onClick={openDiscardModal}
+            onClick={() => setOpenModal("discard")}
           >
             Discard ({playerDiscardPileLength})
           </Button>
@@ -94,7 +89,7 @@ export const PlayerDashboard = ({
             size="sm"
             variant="gradient"
             w="8rem"
-            onClick={openTrashModal}
+            onClick={() => setOpenModal("trash")}
           >
             Trash ({playerTrashPileLength})
           </Button>
@@ -103,7 +98,7 @@ export const PlayerDashboard = ({
             color="yellow"
             size="sm"
             w="8rem"
-            onClick={openScoreModal}
+            onClick={() => setOpenModal("score")}
           >
             Score ({playerVictoryPoints})
           </Button>

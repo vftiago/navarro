@@ -1,7 +1,6 @@
 import { Container, Stack } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import { AnimatePresence } from "framer-motion";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { PhaseManager } from "./PhaseManager";
 import {
@@ -10,25 +9,23 @@ import {
   EventBusContext,
 } from "./state/events";
 import { getGameState, useGameStore } from "./state/store";
-import { RunProgressState, TurnPhase } from "./state/turn";
+import { TurnPhase } from "./state/turn";
+import { AccessedCardsOverlay } from "./ui/AccessedCardsOverlay";
 import { CorpTurn } from "./ui/CorpTurn";
 import { IceRow } from "./ui/IceRow";
-import { Modals } from "./ui/Modals";
+import { type ModalType, Modals } from "./ui/Modals";
 import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { PlayerSettings } from "./ui/PlayerSettings";
 import { ProgramRow } from "./ui/ProgramRow";
 import { StatusRow } from "./ui/StatusRow";
 
 export const App = () => {
-  const { dispatch, playerAccessedCards, runProgressState, turnCurrentPhase } =
-    useGameStore(
-      useShallow((state) => ({
-        dispatch: state.dispatch,
-        playerAccessedCards: state.playerState.playerAccessedCards,
-        runProgressState: state.turnState.runProgressState,
-        turnCurrentPhase: state.turnState.turnCurrentPhase,
-      })),
-    );
+  const { dispatch, turnCurrentPhase } = useGameStore(
+    useShallow((state) => ({
+      dispatch: state.dispatch,
+      turnCurrentPhase: state.turnState.turnCurrentPhase,
+    })),
+  );
 
   // Create event bus (only once)
   const eventBus = useMemo(() => createEventBus(), []);
@@ -51,39 +48,8 @@ export const App = () => {
     return unsubscribe;
   }, [eventBus, eventHandler]);
 
-  const [isDeckModalOpen, { close: closeDeckModal, open: openDeckModal }] =
-    useDisclosure(false);
-
-  const [
-    isDiscardModalOpen,
-    { close: closeDiscardModal, open: openDiscardModal },
-  ] = useDisclosure(false);
-
-  const [
-    isCardDisplayModalOpen,
-    { close: closeCardDisplayModal, open: openCardDisplayModal },
-  ] = useDisclosure(false);
-
-  const [isTrashModalOpen, { close: closeTrashModal, open: openTrashModal }] =
-    useDisclosure(false);
-
-  const [isScoreModalOpen, { close: closeScoreModal, open: openScoreModal }] =
-    useDisclosure(false);
-
-  useEffect(() => {
-    if (
-      turnCurrentPhase === TurnPhase.Run &&
-      runProgressState === RunProgressState.ACCESSING_CARDS &&
-      playerAccessedCards.length > 0
-    ) {
-      openCardDisplayModal();
-    }
-  }, [
-    turnCurrentPhase,
-    runProgressState,
-    playerAccessedCards,
-    openCardDisplayModal,
-  ]);
+  const [openModal, setOpenModal] = useState<ModalType>(null);
+  const closeModal = useCallback(() => setOpenModal(null), []);
 
   return (
     <EventBusContext.Provider value={eventBus}>
@@ -97,26 +63,11 @@ export const App = () => {
           <IceRow />
           <StatusRow />
           <ProgramRow />
-          <PlayerDashboard
-            openDeckModal={openDeckModal}
-            openDiscardModal={openDiscardModal}
-            openScoreModal={openScoreModal}
-            openTrashModal={openTrashModal}
-          />
+          <PlayerDashboard setOpenModal={setOpenModal} />
         </Stack>
-        <Modals
-          closeCardDisplayModal={closeCardDisplayModal}
-          closeDeckModal={closeDeckModal}
-          closeDiscardModal={closeDiscardModal}
-          closeScoreModal={closeScoreModal}
-          closeTrashModal={closeTrashModal}
-          isCardDisplayModalOpen={isCardDisplayModalOpen}
-          isDeckModalOpen={isDeckModalOpen}
-          isDiscardModalOpen={isDiscardModalOpen}
-          isScoreModalOpen={isScoreModalOpen}
-          isTrashModalOpen={isTrashModalOpen}
-        />
+        <Modals closeModal={closeModal} openModal={openModal} />
       </Container>
+      <AccessedCardsOverlay />
     </EventBusContext.Provider>
   );
 };

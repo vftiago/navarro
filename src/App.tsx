@@ -10,7 +10,8 @@ import {
   EventBusContext,
 } from "./state/events";
 import { getGameState, useGameStore } from "./state/store";
-import { RunProgressState, TurnPhase } from "./state/turn";
+import { TurnPhase } from "./state/turn";
+import { AccessedCardsOverlay } from "./ui/AccessedCardsOverlay";
 import { CorpTurn } from "./ui/CorpTurn";
 import { IceRow } from "./ui/IceRow";
 import { Modals } from "./ui/Modals";
@@ -20,15 +21,12 @@ import { ProgramRow } from "./ui/ProgramRow";
 import { StatusRow } from "./ui/StatusRow";
 
 export const App = () => {
-  const { dispatch, playerAccessedCards, runProgressState, turnCurrentPhase } =
-    useGameStore(
-      useShallow((state) => ({
-        dispatch: state.dispatch,
-        playerAccessedCards: state.playerState.playerAccessedCards,
-        runProgressState: state.turnState.runProgressState,
-        turnCurrentPhase: state.turnState.turnCurrentPhase,
-      })),
-    );
+  const { dispatch, turnCurrentPhase } = useGameStore(
+    useShallow((state) => ({
+      dispatch: state.dispatch,
+      turnCurrentPhase: state.turnState.turnCurrentPhase,
+    })),
+  );
 
   // Create event bus (only once)
   const eventBus = useMemo(() => createEventBus(), []);
@@ -59,31 +57,11 @@ export const App = () => {
     { close: closeDiscardModal, open: openDiscardModal },
   ] = useDisclosure(false);
 
-  const [
-    isCardDisplayModalOpen,
-    { close: closeCardDisplayModal, open: openCardDisplayModal },
-  ] = useDisclosure(false);
-
   const [isTrashModalOpen, { close: closeTrashModal, open: openTrashModal }] =
     useDisclosure(false);
 
   const [isScoreModalOpen, { close: closeScoreModal, open: openScoreModal }] =
     useDisclosure(false);
-
-  useEffect(() => {
-    if (
-      turnCurrentPhase === TurnPhase.Run &&
-      runProgressState === RunProgressState.ACCESSING_CARDS &&
-      playerAccessedCards.length > 0
-    ) {
-      openCardDisplayModal();
-    }
-  }, [
-    turnCurrentPhase,
-    runProgressState,
-    playerAccessedCards,
-    openCardDisplayModal,
-  ]);
 
   return (
     <EventBusContext.Provider value={eventBus}>
@@ -105,18 +83,17 @@ export const App = () => {
           />
         </Stack>
         <Modals
-          closeCardDisplayModal={closeCardDisplayModal}
           closeDeckModal={closeDeckModal}
           closeDiscardModal={closeDiscardModal}
           closeScoreModal={closeScoreModal}
           closeTrashModal={closeTrashModal}
-          isCardDisplayModalOpen={isCardDisplayModalOpen}
           isDeckModalOpen={isDeckModalOpen}
           isDiscardModalOpen={isDiscardModalOpen}
           isScoreModalOpen={isScoreModalOpen}
           isTrashModalOpen={isTrashModalOpen}
         />
       </Container>
+      <AccessedCardsOverlay />
     </EventBusContext.Provider>
   );
 };

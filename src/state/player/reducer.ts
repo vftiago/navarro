@@ -22,7 +22,7 @@ export const initialPlayerState: PlayerState = {
   playerNoise: 0,
   playerPlayedCards: [],
   playerScoreArea: [],
-  playerSignal: 0,
+  playerSignal: 10,
   playerTags: 0,
   playerTrashPile: [],
   playerVictoryPoints: 0,
@@ -159,6 +159,20 @@ export const playerReducer = (
       return {
         ...state,
         playerTags: Math.max(0, state.playerTags + action.payload),
+      };
+    }
+
+    case PlayerActionTypes.MODIFY_NOISE: {
+      return {
+        ...state,
+        playerNoise: Math.max(0, state.playerNoise + action.payload),
+      };
+    }
+
+    case PlayerActionTypes.MODIFY_SIGNAL: {
+      return {
+        ...state,
+        playerSignal: Math.max(0, state.playerSignal + action.payload),
       };
     }
 

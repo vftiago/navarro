@@ -1,5 +1,5 @@
 import { initiateRun } from "../../state/phases/runPhase";
-import { drawCards } from "../../state/player";
+import { drawCards, modifyPlayerSignal } from "../../state/player";
 import { modifyServerSecurity } from "../../state/server";
 import { modifyClicks } from "../../state/turn";
 import type { CardDefinitions } from "../card";
@@ -10,13 +10,26 @@ export const scriptCards: CardDefinitions[] = [
   {
     cardEffects: [
       {
-        getText: () => "Make a run.",
+        getText: () => "Initiate a run.",
         getThunk: () => initiateRun(),
         triggerMoment: TriggerMoment.ON_PLAY,
       },
     ],
     image: "_cec483b7-55c5-4201-b001-d66cf9c187b0_crop_2.jpg",
     name: "Run",
+    rarity: CardRarity.BASIC,
+    type: CardType.SCRIPT,
+  },
+  {
+    cardEffects: [
+      {
+        getActions: () => [modifyPlayerSignal(5)],
+        getText: () => "Gain 5 signal.",
+        triggerMoment: TriggerMoment.ON_PLAY,
+      },
+    ],
+    image: "_1bb06829-ffb8-4ad1-9ac3-7918015bd34b.jpg",
+    name: "Focus",
     rarity: CardRarity.BASIC,
     type: CardType.SCRIPT,
   },

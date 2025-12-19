@@ -15,9 +15,9 @@ import { CorpTurn } from "./ui/CorpTurn";
 import { IceRow } from "./ui/IceRow";
 import { type ModalType, Modals } from "./ui/Modals";
 import { PlayerDashboard } from "./ui/PlayerDashboard";
-import { PlayerSettings } from "./ui/PlayerSettings";
 import { ProgramRow } from "./ui/ProgramRow";
 import { StatusRow } from "./ui/StatusRow";
+import { TopNavbar } from "./ui/TopNavbar";
 
 export const App = () => {
   const { dispatch, turnCurrentPhase } = useGameStore(
@@ -57,9 +57,9 @@ export const App = () => {
       <AnimatePresence>
         {turnCurrentPhase === TurnPhase.Corp ? <CorpTurn /> : null}
       </AnimatePresence>
+      <TopNavbar />
       <Container fluid maw={1480} p="xs">
         <Stack className="h-full" gap="xs">
-          <PlayerSettings />
           <IceRow />
           <StatusRow />
           <ProgramRow />

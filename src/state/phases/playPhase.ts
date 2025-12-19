@@ -6,6 +6,7 @@ import {
   addToTrash,
   clearPlayedCards,
   getPlayerPlayedCards,
+  modifyPlayerNoise,
   removeCardFromHand,
 } from "../player";
 import { batchDispatch } from "../store";
@@ -46,9 +47,10 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
       return;
     }
 
-    // Batch the initial play actions (3 actions → 1 update)
+    // Batch the initial play actions (4 actions → 1 update)
     batchDispatch([
       modifyClicks(-1),
+      modifyPlayerNoise(1),
       removeCardFromHand(payload.handIndex),
       addCardToPlayed(card),
     ]);

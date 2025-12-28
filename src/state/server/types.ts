@@ -12,6 +12,7 @@ export enum ServerActionTypes {
   MODIFY_SERVER_SECURITY = "MODIFY_SERVER_SECURITY",
   ADD_TO_ICE = "ADD_TO_ICE",
   ADD_TO_UNENCOUNTERED_ICE = "ADD_TO_UNENCOUNTERED_ICE",
+  CLEAR_UNENCOUNTERED_ICE = "CLEAR_UNENCOUNTERED_ICE",
   REMOVE_FROM_ICE = "REMOVE_FROM_ICE",
   REMOVE_FROM_UNENCOUNTERED_ICE = "REMOVE_FROM_UNENCOUNTERED_ICE",
   SET_CURRENT_ENCOUNTERED_ICE = "SET_CURRENT_ENCOUNTERED_ICE",
@@ -24,6 +25,7 @@ export type ServerAction =
       type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE;
       payload: { ice: IcePlayingCard };
     }
+  | { type: ServerActionTypes.CLEAR_UNENCOUNTERED_ICE }
   | {
       type: ServerActionTypes.REMOVE_FROM_ICE;
       payload: { ice: IcePlayingCard };

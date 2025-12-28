@@ -17,6 +17,10 @@ export const addToUnencounteredIce = (ice: IcePlayingCard): ServerAction => ({
   type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE,
 });
 
+export const clearUnencounteredIce = (): ServerAction => ({
+  type: ServerActionTypes.CLEAR_UNENCOUNTERED_ICE,
+});
+
 export const removeFromIce = (ice: IcePlayingCard): ServerAction => ({
   payload: { ice },
   type: ServerActionTypes.REMOVE_FROM_ICE,

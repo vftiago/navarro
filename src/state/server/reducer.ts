@@ -38,6 +38,12 @@ export const serverReducer = (
         ],
       };
 
+    case ServerActionTypes.CLEAR_UNENCOUNTERED_ICE:
+      return {
+        ...state,
+        serverUnencounteredIce: [],
+      };
+
     case ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE:
       return {
         ...state,

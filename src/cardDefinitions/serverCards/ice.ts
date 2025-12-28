@@ -1,5 +1,6 @@
 import type { PermanentEffectT } from "../../state/board";
 import { addPermanentEffect } from "../../state/board";
+import { endRun } from "../../state/phases";
 import { modifyPlayerTags } from "../../state/player";
 import { getServerSecurityLevel } from "../../state/server";
 import { modifyClicks } from "../../state/turn";
@@ -119,6 +120,23 @@ export const iceCards: IceCardDefinitions[] = [
     name: "Bad Moon",
     rarity: CardRarity.COMMON,
     subtype: IceSubtype.SENTRY,
+    type: CardType.ICE,
+  },
+  {
+    cardEffects: [
+      {
+        getText: () => "End the run.",
+        getThunk: () => endRun(),
+        triggerMoment: TriggerMoment.ON_ENCOUNTER,
+      },
+    ],
+    damage: 0,
+    getStrength: () => 5,
+    image: "_dc9200b9-8646-4665-9558-cb356a865c7e.jpg",
+    isRezzed: true,
+    name: "Wall of Static",
+    rarity: CardRarity.COMMON,
+    subtype: IceSubtype.BARRIER,
     type: CardType.ICE,
   },
 ];

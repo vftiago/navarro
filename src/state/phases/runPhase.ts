@@ -8,6 +8,7 @@ import {
 } from "../player";
 import {
   addToUnencounteredIce,
+  clearUnencounteredIce,
   getServerUnencounteredIce,
   removeFromUnencounteredIce,
   setCurrentEncounteredIce,
@@ -211,4 +212,27 @@ const transitionToAccess = (
   });
 
   dispatch(setRunProgressState(RunProgressState.ACCESSING_CARDS));
+};
+
+/**
+ * Ends the run immediately - used by "End the run" subroutines.
+ * Clears run state and transitions back to Main or End phase.
+ */
+export const endRun = (): ThunkAction => {
+  return (dispatch, getState) => {
+    // Clear current ice and unencountered ice
+    dispatch(setCurrentEncounteredIce(null));
+    dispatch(clearUnencounteredIce());
+
+    // Reset run state
+    dispatch(setRunProgressState(RunProgressState.NOT_IN_RUN));
+
+    // Transition to Main or End based on clicks
+    const clicks = getState().turnState.turnRemainingClicks;
+    if (clicks > 0) {
+      dispatch(setTurnCurrentPhase(TurnPhase.Main));
+    } else {
+      dispatch(setTurnCurrentPhase(TurnPhase.End));
+    }
+  };
 };

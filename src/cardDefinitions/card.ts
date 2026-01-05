@@ -71,6 +71,7 @@ export enum Keyword {
   ETHEREAL = "Ethereal",
   CRASH = "Crash",
   TRASH = "Trash",
+  STEALTHY = "Stealthy",
 }
 
 export type CardEffect = {

@@ -22,6 +22,7 @@ export const scriptCards: CardDefinitions[] = [
   },
   {
     cardEffects: [
+      KEYWORD_EFFECTS.Stealthy,
       {
         getActions: () => [modifyPlayerSignal(5)],
         getText: () => "Gain 5 signal.",

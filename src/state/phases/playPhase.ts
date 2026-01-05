@@ -47,13 +47,19 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
       return;
     }
 
-    // Batch the initial play actions (4 actions → 1 update)
-    batchDispatch([
+    // Batch the initial play actions
+    const playActions: GameAction[] = [
       modifyClicks(-1),
-      modifyPlayerNoise(1),
       removeCardFromHand(payload.handIndex),
       addCardToPlayed(card),
-    ]);
+    ];
+
+    // Cards with Stealthy keyword do not add noise when played
+    if (!hasKeyword(card, Keyword.STEALTHY)) {
+      playActions.push(modifyPlayerNoise(1));
+    }
+
+    batchDispatch(playActions);
 
     // Trigger ON_PLAY effects (may dispatch additional actions)
     const playerPlayedCards = getPlayerPlayedCards(getState());

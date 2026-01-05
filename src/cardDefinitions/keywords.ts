@@ -14,6 +14,12 @@ export const KEYWORD_EFFECTS: Record<Keyword, CardEffect> = {
     keyword: Keyword.ETHEREAL,
     triggerMoment: TriggerMoment.ON_DISCARD,
   },
+  [Keyword.STEALTHY]: {
+    getActions: () => [],
+    getText: () => `${Keyword.STEALTHY}.`,
+    keyword: Keyword.STEALTHY,
+    triggerMoment: TriggerMoment.ON_PLAY,
+  },
   [Keyword.TRASH]: {
     getActions: () => [],
     getText: () => `${Keyword.TRASH}.`,

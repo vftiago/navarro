@@ -5,3 +5,8 @@ export const setCardSize = (cardSize: "xs"): SettingsAction => ({
   payload: cardSize,
   type: SettingsActionTypes.SET_CARD_SIZE,
 });
+
+export const setFullArt = (fullArt: boolean): SettingsAction => ({
+  payload: fullArt,
+  type: SettingsActionTypes.SET_FULL_ART,
+});

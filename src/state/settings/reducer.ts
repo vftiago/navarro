@@ -3,6 +3,7 @@ import { SettingsActionTypes } from "./types";
 
 export const initialSettingsState: SettingsState = {
   cardSize: "xs",
+  fullArt: false,
 };
 
 export const settingsReducer = (
@@ -14,6 +15,12 @@ export const settingsReducer = (
       return {
         ...state,
         cardSize: action.payload,
+      };
+
+    case SettingsActionTypes.SET_FULL_ART:
+      return {
+        ...state,
+        fullArt: action.payload,
       };
 
     default:

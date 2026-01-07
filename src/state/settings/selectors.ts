@@ -13,3 +13,6 @@ export const getCardSize = (
   h: string;
   w: string;
 } => CARD_SIZES[state.settingsState.cardSize];
+
+export const getFullArt = (state: GameState): boolean =>
+  state.settingsState.fullArt;

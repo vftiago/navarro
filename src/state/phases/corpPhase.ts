@@ -1,5 +1,5 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
-import { addToIce, modifyServerSecurity } from "../server";
+import { addToIce, modifyServerSecurity, ServerName } from "../server";
 import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";
 import {
@@ -7,6 +7,8 @@ import {
   getCardEffectsByTrigger,
   getRandomIceCard,
 } from "../utils";
+
+const ALL_SERVERS = [ServerName.HQ, ServerName.RD, ServerName.ARCHIVES];
 
 /**
  * Corp Phase - Consolidated single handler (no subphases)
@@ -19,13 +21,19 @@ export const corpPhase = (): ThunkAction => {
     // Increase server security level
     dispatch(modifyServerSecurity(1));
 
-    // Install random ice if slots available
-    const { serverInstalledIce, serverMaxIceSlots } = gameState.serverState;
+    // Find servers with available slots
+    const { serverMaxIceSlots, servers } = gameState.serverState;
+    const serversWithSlots = ALL_SERVERS.filter(
+      (server) => servers[server].installedIce.length < serverMaxIceSlots,
+    );
 
-    if (serverInstalledIce.length < serverMaxIceSlots) {
+    // Install random ice to a random server if any have slots available
+    if (serversWithSlots.length > 0) {
+      const randomServer =
+        serversWithSlots[Math.floor(Math.random() * serversWithSlots.length)];
       const randomIceCard = getRandomIceCard();
 
-      dispatch(addToIce(randomIceCard));
+      dispatch(addToIce(randomIceCard, randomServer));
 
       // Trigger ON_REZ effects on newly installed ice
       const rezEffects = getCardEffectsByTrigger(

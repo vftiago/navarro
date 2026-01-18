@@ -1,10 +1,15 @@
 import type { ServerAction, ServerState } from "./types";
-import { ServerActionTypes } from "./types";
+import { ServerActionTypes, ServerName } from "./types";
 
 export const initialServerState: ServerState = {
+  selectedServer: ServerName.HQ,
   serverCurrentEncounteredIce: null,
-  serverInstalledIce: [],
   serverMaxIceSlots: 3,
+  servers: {
+    [ServerName.ARCHIVES]: { installedIce: [] },
+    [ServerName.HQ]: { installedIce: [] },
+    [ServerName.RD]: { installedIce: [] },
+  },
   serverSecurityLevel: 0,
   serverUnencounteredIce: [],
 };
@@ -23,10 +28,40 @@ export const serverReducer = (
       };
     }
 
-    case ServerActionTypes.ADD_TO_ICE:
+    case ServerActionTypes.ADD_TO_ICE: {
+      const { ice, server } = action.payload;
       return {
         ...state,
-        serverInstalledIce: [...state.serverInstalledIce, action.payload.ice],
+        servers: {
+          ...state.servers,
+          [server]: {
+            ...state.servers[server],
+            installedIce: [...state.servers[server].installedIce, ice],
+          },
+        },
+      };
+    }
+
+    case ServerActionTypes.REMOVE_FROM_ICE: {
+      const { ice, server } = action.payload;
+      return {
+        ...state,
+        servers: {
+          ...state.servers,
+          [server]: {
+            ...state.servers[server],
+            installedIce: state.servers[server].installedIce.filter(
+              (i) => i.deckContextId !== ice.deckContextId,
+            ),
+          },
+        },
+      };
+    }
+
+    case ServerActionTypes.SET_SELECTED_SERVER:
+      return {
+        ...state,
+        selectedServer: action.payload.server,
       };
 
     case ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE:

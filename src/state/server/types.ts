@@ -1,7 +1,18 @@
 import type { IcePlayingCard } from "../../cardDefinitions/card";
 
+export enum ServerName {
+  HQ = "HQ",
+  RD = "R&D",
+  ARCHIVES = "Archives",
+}
+
+export type ServerData = {
+  installedIce: IcePlayingCard[];
+};
+
 export type ServerState = {
-  serverInstalledIce: IcePlayingCard[];
+  servers: Record<ServerName, ServerData>;
+  selectedServer: ServerName;
   serverUnencounteredIce: IcePlayingCard[];
   serverCurrentEncounteredIce: IcePlayingCard | null;
   serverSecurityLevel: number;
@@ -16,11 +27,15 @@ export enum ServerActionTypes {
   REMOVE_FROM_ICE = "REMOVE_FROM_ICE",
   REMOVE_FROM_UNENCOUNTERED_ICE = "REMOVE_FROM_UNENCOUNTERED_ICE",
   SET_CURRENT_ENCOUNTERED_ICE = "SET_CURRENT_ENCOUNTERED_ICE",
+  SET_SELECTED_SERVER = "SET_SELECTED_SERVER",
 }
 
 export type ServerAction =
   | { type: ServerActionTypes.MODIFY_SERVER_SECURITY; payload: number }
-  | { type: ServerActionTypes.ADD_TO_ICE; payload: { ice: IcePlayingCard } }
+  | {
+      type: ServerActionTypes.ADD_TO_ICE;
+      payload: { ice: IcePlayingCard; server: ServerName };
+    }
   | {
       type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE;
       payload: { ice: IcePlayingCard };
@@ -28,7 +43,7 @@ export type ServerAction =
   | { type: ServerActionTypes.CLEAR_UNENCOUNTERED_ICE }
   | {
       type: ServerActionTypes.REMOVE_FROM_ICE;
-      payload: { ice: IcePlayingCard };
+      payload: { ice: IcePlayingCard; server: ServerName };
     }
   | {
       type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE;
@@ -37,4 +52,8 @@ export type ServerAction =
   | {
       type: ServerActionTypes.SET_CURRENT_ENCOUNTERED_ICE;
       payload: { ice: IcePlayingCard | null };
+    }
+  | {
+      type: ServerActionTypes.SET_SELECTED_SERVER;
+      payload: { server: ServerName };
     };

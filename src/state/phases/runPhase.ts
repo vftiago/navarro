@@ -29,7 +29,7 @@ import {
 
 /**
  * Initiates a run - called by event handler when user clicks Run button.
- * Triggers ON_RUN_START, sets up ice, and determines first step.
+ * Triggers ON_RUN_START, sets up ice for selected server, and determines first step.
  */
 export const initiateRun = (): ThunkAction => {
   return (dispatch, getState) => {
@@ -48,8 +48,9 @@ export const initiateRun = (): ThunkAction => {
       });
     });
 
-    // Initialize unencountered ice with all installed ice (innermost to outermost)
-    const ice = state.serverState.serverInstalledIce;
+    // Initialize unencountered ice with ice from selected server (innermost to outermost)
+    const { selectedServer, servers } = state.serverState;
+    const ice = servers[selectedServer].installedIce;
     [...ice].reverse().forEach((iceCard) => {
       dispatch(addToUnencounteredIce(iceCard));
     });
@@ -94,6 +95,11 @@ export const clickIce = (payload: ClickIcePayload): ThunkAction => {
       gameState: getState(),
       sourceId: currentIce.deckContextId,
     });
+
+    // Check if the run was ended by an encounter effect (e.g., "End the run")
+    if (getState().turnState.runProgressState === RunProgressState.NOT_IN_RUN) {
+      return;
+    }
 
     // Remove from unencountered list
     dispatch(removeFromUnencounteredIce(currentIce));

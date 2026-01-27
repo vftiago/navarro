@@ -2,8 +2,8 @@ import type { GameState } from "../types";
 
 const CARD_SIZES = {
   xs: {
-    h: "300px",
-    w: "200px",
+    h: "18.75rem",
+    w: "12.5rem",
   },
 };
 

@@ -27,12 +27,12 @@ export type GameEvent =
       type: GameEventType.CARD_ACTIVATE_ABILITY;
     };
 
-// Event bus interface
-export interface EventBus {
+// Event bus type
+export type EventBus = {
   emit: (event: GameEvent) => void;
   getHistory: () => GameEvent[];
   subscribe: (listener: (event: GameEvent) => void) => () => void;
-}
+};
 
 /**
  * Creates an event bus for game actions.

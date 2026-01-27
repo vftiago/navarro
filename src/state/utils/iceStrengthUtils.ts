@@ -7,10 +7,10 @@ export type IceStrength = {
   modifier: number;
 };
 
-export function calculateIceStrength(
+export const calculateIceStrength = (
   ice: IcePlayingCard,
   gameState: GameState,
-): IceStrength {
+): IceStrength => {
   const baseStrength = ice.getStrength(gameState);
 
   const relevantEffects = gameState.boardState.permanentEffects.filter(
@@ -33,4 +33,4 @@ export function calculateIceStrength(
     current: currentStrength,
     modifier,
   };
-}
+};

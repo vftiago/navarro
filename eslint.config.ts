@@ -50,6 +50,7 @@ export default [
       "react-refresh": reactRefresh,
     },
     rules: {
+      "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {
@@ -57,6 +58,9 @@ export default [
           prefer: "type-imports",
         },
       ],
+      "@typescript-eslint/no-unused-expressions": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "func-style": ["warn", "expression"],
       "perfectionist/sort-classes": [
         "warn",
         {
@@ -77,7 +81,7 @@ export default [
             "index",
           ],
           ignoreCase: true,
-          newlinesBetween: "never",
+          newlinesBetween: 0,
           order: "asc",
           type: "alphabetical",
         },
@@ -107,6 +111,13 @@ export default [
         "warn",
         {
           allowConstantExport: true,
+        },
+      ],
+      "react/function-component-definition": [
+        "warn",
+        {
+          namedComponents: "arrow-function",
+          unnamedComponents: "arrow-function",
         },
       ],
     },

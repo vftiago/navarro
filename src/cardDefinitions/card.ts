@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { GameAction, GameState, ThunkAction } from "../state/types";
+import type { CardId } from "./registry";
 
 export enum CardRarity {
   BASIC = "Basic",
@@ -100,6 +101,7 @@ export type CardEffect = {
 };
 
 export type BaseCardDefinitions = {
+  id: CardId;
   name: string;
   rarity: CardRarity;
   image: string;

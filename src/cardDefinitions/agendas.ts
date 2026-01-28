@@ -1,13 +1,11 @@
-import {
-  modifyPlayerTags,
-  modifyPlayerVictoryPoints,
-} from "../../state/player";
+import { modifyPlayerTags, modifyPlayerVictoryPoints } from "../state/player";
 import {
   CardRarity,
   CardType,
   TriggerMoment,
   type AgendaCardDefinitions,
-} from "../card";
+} from "./card";
+import { CardId } from "./registry";
 
 export const agendaCards: AgendaCardDefinitions[] = [
   {
@@ -23,6 +21,7 @@ export const agendaCards: AgendaCardDefinitions[] = [
         triggerMoment: TriggerMoment.ON_FETCH,
       },
     ],
+    id: CardId.SIGNAL_BROADCAST,
     image: "_0b628974-25c9-4bc4-8eb0-ff8ed115b720.jpeg",
     name: "Signal Broadcast",
     rarity: CardRarity.COMMON,
@@ -37,6 +36,7 @@ export const agendaCards: AgendaCardDefinitions[] = [
         triggerMoment: TriggerMoment.ON_FETCH,
       },
     ],
+    id: CardId.CORPORATE_SECRETS,
     image: "_0bdf6635-5355-45f7-9c9c-8fc0773a4f1d.jpeg",
     name: "Corporate Secrets",
     rarity: CardRarity.COMMON,

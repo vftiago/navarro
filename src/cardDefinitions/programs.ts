@@ -1,6 +1,6 @@
-import { addPermanentEffect } from "../../state/board";
-import { drawCards } from "../../state/player";
-import { modifyClicks } from "../../state/turn";
+import { addPermanentEffect } from "../state/board";
+import { drawCards } from "../state/player";
+import { modifyClicks } from "../state/turn";
 import {
   CardRarity,
   CardType,
@@ -8,7 +8,8 @@ import {
   ProgramSubtype,
   type ProgramCardDefinitions,
   EffectCost,
-} from "../card";
+} from "./card";
+import { CardId } from "./registry";
 
 export const programCards: ProgramCardDefinitions[] = [
   {
@@ -21,6 +22,7 @@ export const programCards: ProgramCardDefinitions[] = [
       },
     ],
     flavorText: "Crude, but effective.",
+    id: CardId.SLEDGEHAMMER,
     image: "_09df83ab-9d58-4100-996f-dc93127dce30.jpg",
     name: "Sledgehammer",
     rarity: CardRarity.COMMON,
@@ -49,6 +51,7 @@ export const programCards: ProgramCardDefinitions[] = [
         triggerMoment: TriggerMoment.ON_PLAY,
       },
     ],
+    id: CardId.DEEP_THOUGHTS,
     image: "_b47f337e-e71d-4ced-8e50-bfaae92f4a4e.jpeg",
     name: "Deep Thoughts",
     rarity: CardRarity.RARE,
@@ -64,6 +67,7 @@ export const programCards: ProgramCardDefinitions[] = [
       },
     ],
     flavorText: "Gotta go fast.",
+    id: CardId.RUNNING_SNEAKERS,
     image: "_180289ee-9360-41f9-84b5-8555685ff210.jpg",
     name: "Running Sneakers",
     rarity: CardRarity.RARE,
@@ -79,6 +83,7 @@ export const programCards: ProgramCardDefinitions[] = [
         triggerMoment: TriggerMoment.ON_UPKEEP,
       },
     ],
+    id: CardId.INTRUSIVE_THOUGHTS,
     image: "_c70fe080-5f2d-474a-9431-5d9fd7e4ed9c.jpg",
     name: "Intrusive Thoughts",
     rarity: CardRarity.UNCOMMON,

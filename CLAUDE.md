@@ -73,9 +73,56 @@ Thunk actions for multi-step game phase flows:
 
 ### Card System
 
-- `src/cardDefinitions/` - Card types, interfaces, and keyword definitions
-- `src/cardDefinitions/createPlayingCard.ts` - Factory for creating card instances with unique IDs
-- `src/decks/` - Deck definitions
+The card system uses a type-safe, data-driven architecture with centralized effects.
+
+**Card Definitions** (`src/cardDefinitions/`):
+
+- `card.ts` - Core types: `CardEffect`, `CardDefinitions`, `PlayingCard`, enums
+- `registry.ts` - Type-safe `CardId` enum for all cards (prevents string typos)
+- `keywords.ts` - Keyword effect definitions (`KEYWORD_EFFECTS.Trash`, etc.)
+- `agendas.ts`, `ice.ts`, `programs.ts`, `scripts.ts`, `traps.ts` - Card data files
+
+**Effects System** (`src/cardDefinitions/effects/`):
+
+- `registry.ts` - `EffectId` enum for all effect types
+- `types.ts` - `EffectImplementation` interface
+- `common.ts` - Reusable effects (draw, clicks, tags, etc.)
+- `ice.ts`, `programs.ts`, `scripts.ts`, `traps.ts` - Category-specific effects
+- `index.ts` - `effect(EffectId, options?)` helper, `getEffectById()`
+
+**Card Factory** (`src/cardDefinitions/createPlayingCard.ts`):
+
+- `createPlayerCardById(id)` - Create player card by CardId (type-safe)
+- `createServerCardById(id)` - Create server card by CardId
+- `createIceCardById(id)` - Create ice card by CardId
+- Legacy name-based functions deprecated but still available
+
+**Decks** (`src/decks/`):
+
+- `playerStarterDeck.ts` - Uses `{ count, id: CardId }` format
+- `serverStarterDeck.ts` - Weighted card pools using CardId
+
+**Usage Patterns**:
+
+```typescript
+// Define a card with effects (in card definition files)
+{
+  id: CardId.ICE_WALL,
+  cardEffects: [
+    effect(EffectId.LOSE_CLICKS_1, { triggerMoment: TriggerMoment.ON_ENCOUNTER }),
+  ],
+  // ... other card properties
+}
+
+// Create a card instance (in deck or game logic)
+const card = createPlayerCardById(CardId.RUN);
+
+// Define a deck
+const deck: { count: number; id: PlayerCardId }[] = [
+  { count: 6, id: CardId.RUN },
+  { count: 3, id: CardId.FOCUS },
+];
+```
 
 ### Event System (User Action Decoupling)
 
@@ -350,8 +397,8 @@ Effects can return either:
 
 #### Active Issues
 
-1. **Copy-Paste Error** (cardDefinitions/serverCards/ice.ts:100)
-   - Fire Wall error message says "Bad Moon"
+1. **Copy-Paste Error** (cardDefinitions/effects/ice.ts)
+   - Fire Wall error message says "Bad Moon" instead of "Fire Wall"
    - **Impact**: Confusing error messages for developers
 
 ### Redundancies
@@ -406,6 +453,47 @@ _All redundancies have been cleaned up. Unused TurnPhase enum values and subphas
    - Document which phases are automatic vs user-driven
 
 ## Recently Completed
+
+### Session 2026-01-28: Card System Refactor
+
+**Major Achievement:** Type-safe card system with centralized effects
+
+**Problem Solved:** Card definitions contained inline effect implementations with direct state imports, making them hard to maintain and reuse. Decks used fragile string-based card names.
+
+**Solution:** Implemented a 4-phase migration to a data-driven card system:
+
+1. **CardId Registry** - Type-safe enum for all 20 cards
+2. **Effects Module** - Centralized effect implementations in `effects/` folder
+3. **Card Data Migration** - Card files now reference effects by ID
+4. **Deck Migration** - Decks use CardId with `{ count, id }` format
+
+**Files Created:**
+- `src/cardDefinitions/registry.ts` - CardId enum with category-specific types
+- `src/cardDefinitions/effects/` - Complete effects module:
+  - `registry.ts` - EffectId enum (15 unique effects)
+  - `types.ts` - EffectImplementation interface
+  - `common.ts` - Reusable effects (draw, clicks, tags, etc.)
+  - `ice.ts` - Ice-specific effects (Bad Moon buff, Fire Wall, end run)
+  - `programs.ts` - Program effects (Deep Thoughts, Sledgehammer, etc.)
+  - `scripts.ts` - Script effects (initiateRun)
+  - `traps.ts` - Trap effects (Server Lockdown conditional)
+  - `index.ts` - `effect()` helper function, exports
+
+**Files Modified:**
+- `src/cardDefinitions/card.ts` - Added `id: CardId` to BaseCardDefinitions
+- `src/cardDefinitions/createPlayingCard.ts` - Added ID-based factory functions, deprecated name-based
+- `src/cardDefinitions/{agendas,ice,programs,scripts,traps}.ts` - Now use `effect(EffectId.X)`, no state imports
+- `src/decks/playerStarterDeck.ts` - Uses `{ count, id: PlayerCardId }[]` format
+- `src/decks/serverStarterDeck.ts` - Uses CardId in weighted pools
+- `src/state/utils/cardUtils.ts` - Uses ID-based factory functions
+
+**Benefits Achieved:**
+- ✅ Type-safe card references - IDE autocomplete, compile-time error checking
+- ✅ Centralized effects - Game logic in one place, reusable across cards
+- ✅ Card files are pure data - No state imports in card definition files
+- ✅ O(1) card lookup - Map-based registry instead of array.find()
+- ✅ Cleaner deck format - `{ count, id }` instead of repeated strings
+- ✅ Backward compatible - Legacy name-based functions still work (deprecated)
 
 ### Session 2025-12-06 (Part 2): Upkeep Phase & Subphase Elimination
 
@@ -553,6 +641,7 @@ src/
 │   ├── turn/           # Turn & phase state module
 │   ├── board/          # Board state module
 │   ├── settings/       # Settings state module
+│   ├── events/         # Event bus system
 │   ├── phases/         # Complex phase logic (thunks)
 │   ├── utils/          # State utilities
 │   ├── store.ts        # Zustand store creation
@@ -563,8 +652,26 @@ src/
 │   ├── Card/           # Card rendering components
 │   ├── PlayerDashboard/
 │   └── ...
-├── cardDefinitions/    # Card types and definitions
-├── decks/              # Deck configurations
+├── cardDefinitions/    # Card system
+│   ├── effects/        # Centralized effect implementations
+│   │   ├── registry.ts # EffectId enum
+│   │   ├── types.ts    # EffectImplementation interface
+│   │   ├── common.ts   # Reusable effects
+│   │   ├── ice.ts      # Ice-specific effects
+│   │   ├── programs.ts # Program-specific effects
+│   │   ├── scripts.ts  # Script-specific effects
+│   │   ├── traps.ts    # Trap-specific effects
+│   │   └── index.ts    # effect() helper, exports
+│   ├── card.ts         # Core card types and enums
+│   ├── registry.ts     # CardId enum
+│   ├── keywords.ts     # Keyword effect definitions
+│   ├── createPlayingCard.ts  # Card factory functions
+│   ├── agendas.ts      # Agenda card definitions
+│   ├── ice.ts          # Ice card definitions
+│   ├── programs.ts     # Program card definitions
+│   ├── scripts.ts      # Script card definitions
+│   └── traps.ts        # Trap card definitions
+├── decks/              # Deck configurations (uses CardId)
 ├── PhaseManager.tsx    # Phase orchestration
 └── App.tsx             # Root component
 ```
@@ -593,7 +700,32 @@ Create a thunk action in `src/state/phases/` or add to an existing phase file.
 
 ### Working with Cards
 
-- Use `createPlayingCard()` from `src/cardDefinitions/createPlayingCard.ts` to create card instances
-- Each card gets a unique ID via `uuid`
-- Card definitions in `src/cardDefinitions/` define static properties
-- Card state (location, status) managed in player/server state modules
+**Creating Cards**:
+- Use `createPlayerCardById(CardId.X)` or `createServerCardById(CardId.X)` for type-safe card creation
+- Each card instance gets a unique `deckContextId` via `uuid`
+- Card definitions are static; card state (location, status) managed in player/server state modules
+
+**Adding New Cards**:
+
+1. Add card ID to `src/cardDefinitions/registry.ts` (e.g., `MY_CARD: "my_card"`)
+2. If needed, add new effects to `src/cardDefinitions/effects/` (or reuse existing)
+3. Add card definition to appropriate file (`programs.ts`, `scripts.ts`, etc.)
+4. Use `effect(EffectId.X)` to reference effects, with optional overrides for trigger/text
+
+**Adding New Effects**:
+
+1. Add effect ID to `src/cardDefinitions/effects/registry.ts`
+2. Add implementation to appropriate effects file (`common.ts`, `ice.ts`, etc.)
+3. Reference in card definition with `effect(EffectId.X)`
+
+**Effect Options**:
+```typescript
+// Use effect with defaults
+effect(EffectId.LOSE_CLICKS_1)
+
+// Override trigger moment
+effect(EffectId.LOSE_CLICKS_1, { triggerMoment: TriggerMoment.ON_ENCOUNTER })
+
+// Override text
+effect(EffectId.GAIN_TAG_1, { getText: () => "On Fetch, gain 1 tag." })
+```

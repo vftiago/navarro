@@ -6,8 +6,8 @@ import {
   type TriggerMoment,
 } from "../../cardDefinitions/card";
 import {
-  createIcePlayingCard,
-  createServerPlayingCard,
+  createIceCardById,
+  createServerCardById,
 } from "../../cardDefinitions/createPlayingCard";
 import {
   weightedServerCards,
@@ -16,11 +16,11 @@ import {
 import type { GameAction, GameState } from "../types";
 
 export const getRandomServerCard = (): PlayingCard => {
-  return createServerPlayingCard(weightedServerCards.pick());
+  return createServerCardById(weightedServerCards.pick());
 };
 
 export const getRandomIceCard = (): IcePlayingCard => {
-  return createIcePlayingCard(weightedServerIce.pick());
+  return createIceCardById(weightedServerIce.pick());
 };
 
 export const getCardEffectsByTrigger = (

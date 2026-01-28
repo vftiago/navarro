@@ -1,27 +1,19 @@
-import type { PermanentEffectT } from "../state/board";
-import { addPermanentEffect } from "../state/board";
-import { endRun } from "../state/phases";
-import { modifyPlayerTags } from "../state/player";
-import { getServerSecurityLevel } from "../state/server";
-import { modifyClicks } from "../state/turn";
-import { dealNetDamage } from "../state/utils";
 import {
   CardRarity,
   CardType,
-  TriggerMoment,
   IceSubtype,
+  TriggerMoment,
   type IceCardDefinitions,
 } from "./card";
+import { effect, EffectId } from "./effects";
 import { CardId } from "./registry";
 
 export const iceCards: IceCardDefinitions[] = [
   {
     cardEffects: [
-      {
-        getActions: () => [modifyClicks(-1)],
-        getText: () => "Lose 1 click.",
+      effect(EffectId.LOSE_CLICKS_1, {
         triggerMoment: TriggerMoment.ON_ENCOUNTER,
-      },
+      }),
     ],
     damage: 0,
     flavorText: `"It's gonna take forever to go around that."`,
@@ -36,36 +28,8 @@ export const iceCards: IceCardDefinitions[] = [
   },
   {
     cardEffects: [
-      {
-        getActions: ({ gameState, sourceId, targetId }) => {
-          if (!sourceId || !targetId) {
-            throw new Error("Source and Target IDs required.");
-          }
-
-          const permanentEffect: PermanentEffectT = {
-            getModifier: ({ sourceId, targetId }) => {
-              return sourceId === targetId
-                ? gameState.serverState.serverSecurityLevel
-                : 0;
-            },
-            sourceId,
-            targetSelector: "getIceStrength",
-          };
-
-          return [addPermanentEffect(permanentEffect)];
-        },
-        getText: () =>
-          "Fire Wall's strength is equal to the server security level.",
-        triggerMoment: TriggerMoment.ON_PLAY,
-      },
-      {
-        getText: () => "Take 1 net damage per server security level.",
-        getThunk: ({ gameState }) => {
-          const serverSecurityLevel = getServerSecurityLevel(gameState);
-          return dealNetDamage(serverSecurityLevel);
-        },
-        triggerMoment: TriggerMoment.ON_ENCOUNTER,
-      },
+      effect(EffectId.FIRE_WALL_DYNAMIC_STRENGTH),
+      effect(EffectId.FIRE_WALL_NET_DAMAGE),
     ],
     damage: 0,
     getStrength: (gameState) => gameState.serverState.serverSecurityLevel,
@@ -79,11 +43,9 @@ export const iceCards: IceCardDefinitions[] = [
   },
   {
     cardEffects: [
-      {
-        getActions: () => [modifyPlayerTags(1)],
-        getText: () => "Gain 1 tag.",
+      effect(EffectId.GAIN_TAG_1, {
         triggerMoment: TriggerMoment.ON_ENCOUNTER,
-      },
+      }),
     ],
     damage: 0,
     getStrength: () => 5,
@@ -96,27 +58,7 @@ export const iceCards: IceCardDefinitions[] = [
     type: CardType.ICE,
   },
   {
-    cardEffects: [
-      {
-        getActions: ({ sourceId }) => {
-          if (!sourceId) {
-            throw new Error("Source and Target IDs required.");
-          }
-
-          const permanentEffect: PermanentEffectT = {
-            getModifier: ({ sourceId, targetId }) => {
-              return sourceId === targetId ? 0 : 1;
-            },
-            sourceId,
-            targetSelector: "getIceStrength",
-          };
-
-          return [addPermanentEffect(permanentEffect)];
-        },
-        getText: () => "Other Ice gain 1 strength.",
-        triggerMoment: TriggerMoment.ON_REZ,
-      },
-    ],
+    cardEffects: [effect(EffectId.BAD_MOON_BUFF_OTHER_ICE)],
     damage: 0,
     getStrength: () => 4,
     id: CardId.BAD_MOON,
@@ -128,13 +70,7 @@ export const iceCards: IceCardDefinitions[] = [
     type: CardType.ICE,
   },
   {
-    cardEffects: [
-      {
-        getText: () => "End the run.",
-        getThunk: () => endRun(),
-        triggerMoment: TriggerMoment.ON_ENCOUNTER,
-      },
-    ],
+    cardEffects: [effect(EffectId.END_RUN)],
     damage: 0,
     getStrength: () => 5,
     id: CardId.WALL_OF_STATIC,

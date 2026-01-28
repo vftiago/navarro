@@ -4,6 +4,8 @@
  * This module provides type-safe effect lookup by EffectId.
  * Effects are implementations of card behaviors that can be reused across cards.
  */
+import type { ReactNode } from "react";
+import type { CardEffect, TriggerMoment } from "../card";
 import { commonEffects } from "./common";
 import { iceEffects } from "./ice";
 import { programEffects } from "./programs";
@@ -45,6 +47,41 @@ export const hasEffect = (id: string): id is EffectId => {
  */
 export const getAllEffectIds = (): EffectId[] => {
   return Object.keys(effectRegistry) as EffectId[];
+};
+
+/**
+ * Options for customizing an effect when used by a card
+ */
+export type EffectOptions = {
+  /** Override the default trigger moment */
+  triggerMoment?: TriggerMoment;
+  /** Override the default text */
+  getText?: () => ReactNode;
+};
+
+/**
+ * Create a CardEffect from an EffectId with optional overrides
+ *
+ * This allows cards to reference centralized effects while customizing
+ * trigger moments or text for their specific use case.
+ *
+ * @example
+ * // Use effect with default settings
+ * effect(EffectId.LOSE_CLICKS_1)
+ *
+ * // Override trigger moment
+ * effect(EffectId.LOSE_CLICKS_1, { triggerMoment: TriggerMoment.ON_ENCOUNTER })
+ *
+ * // Override text
+ * effect(EffectId.GAIN_TAG_1, { getText: () => "On Fetch, gain 1 tag." })
+ */
+export const effect = (id: EffectId, options?: EffectOptions): CardEffect => {
+  const impl = getEffectById(id);
+  return {
+    ...impl,
+    ...(options?.triggerMoment && { triggerMoment: options.triggerMoment }),
+    ...(options?.getText && { getText: options.getText }),
+  };
 };
 
 // Re-export types and registry

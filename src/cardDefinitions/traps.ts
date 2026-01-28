@@ -1,10 +1,10 @@
-import { modifyClicks, setTurnCurrentPhase, TurnPhase } from "../state/turn";
 import {
   CardRarity,
   CardType,
   TriggerMoment,
   type ServerCardDefinitions,
 } from "./card";
+import { effect, EffectId } from "./effects";
 import { KEYWORD_EFFECTS } from "./keywords";
 import { CardId } from "./registry";
 
@@ -18,19 +18,7 @@ export const trapCards: ServerCardDefinitions[] = [
     type: CardType.FILE,
   },
   {
-    cardEffects: [
-      {
-        getActions: ({ gameState }) => {
-          const serverSecurityLevel = gameState.serverState.serverSecurityLevel;
-          return serverSecurityLevel >= 3
-            ? [setTurnCurrentPhase(TurnPhase.End)]
-            : [];
-        },
-        getText: () =>
-          "On Access, if the server security level is 3 or more, end the run.",
-        triggerMoment: TriggerMoment.ON_ACCESS,
-      },
-    ],
+    cardEffects: [effect(EffectId.SERVER_LOCKDOWN_CONDITIONAL_END)],
     id: CardId.SERVER_LOCKDOWN,
     image: "_3785e7cf-fe8c-4e05-905f-44f3a467aff3.jpeg",
     name: "Server Lockdown",
@@ -39,11 +27,10 @@ export const trapCards: ServerCardDefinitions[] = [
   },
   {
     cardEffects: [
-      {
-        getActions: () => [modifyClicks(-1)],
+      effect(EffectId.LOSE_CLICKS_1, {
         getText: () => "On Draw, lose 1 tick.",
         triggerMoment: TriggerMoment.ON_DRAW,
-      },
+      }),
       KEYWORD_EFFECTS.Unplayable,
       KEYWORD_EFFECTS.Ethereal,
     ],

@@ -27,8 +27,7 @@ export const CardBase = ({
       onClick={onClick}
     >
       <Card
-        withBorder
-        className="rounded-md select-none hover:cursor-pointer"
+        className="relative flex flex-col rounded-md border border-x-white/10 border-t-white/20 border-b-white/4 bg-neutral-800 select-none hover:cursor-pointer"
         padding="0"
         {...cardSize}
       >

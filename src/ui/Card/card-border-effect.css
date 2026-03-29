@@ -1,0 +1,42 @@
+/*
+ * Top-down lighting border effect (from coss-ui/shadcn Card component)
+ *
+ * Creates a subtle inset shadow on a ::before pseudo-element that simulates
+ * top-down lighting — lighter at the top edge, creating contrast against
+ * the card background.
+ *
+ * How it works:
+ * - Light mode: `shadow-[0_1px_--theme(--color-black/4%)]` adds a faint
+ *   dark 1px shadow at the TOP of the ::before (inset via the pseudo-element),
+ *   which makes the top edge appear lighter by contrast.
+ * - Dark mode: `shadow-[0_-1px_--theme(--color-white/6%)]` adds a faint
+ *   white 1px shadow ABOVE the top edge (negative offset), giving the top
+ *   border a subtle light highlight.
+ *
+ * The border itself is a standard `border` on the outer element. The ::before
+ * overlay adds the lighting gradient illusion on top.
+ *
+ * Usage: Apply `.card-lighting` to any card container that already has
+ * `position: relative`, `border`, and `border-radius`.
+ */
+
+.card-lighting {
+  position: relative;
+}
+
+.card-lighting::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  /* Light mode: faint dark shadow at top edge (1px downward) */
+  box-shadow: 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark mode: faint white highlight above top edge (1px upward) */
+:is(.dark *) .card-lighting::before,
+.dark .card-lighting::before {
+  box-shadow: 0 -1px rgba(255, 255, 255, 0.06);
+}

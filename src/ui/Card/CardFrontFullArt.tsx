@@ -1,4 +1,4 @@
-import { Card, Image, Stack, Text } from "@mantine/core";
+import { Card, Image, Text } from "@mantine/core";
 import clsx from "clsx";
 import type { CardDefinitions } from "../../cardDefinitions/card";
 import { CardType } from "../../cardDefinitions/card";
@@ -21,18 +21,17 @@ export const CardFrontFullArt = ({ card }: { card: CardDefinitions }) => {
         shadow="lg"
         {...cardSize}
       >
-        <Stack align="center" justify="center">
+        <Card.Section>
           <Text
-            className={clsx({
-              "text-yellow-300": type === CardType.AGENDA,
-            })}
-            fw={500}
-            size="sm"
+            className={clsx(
+              "absolute flex w-full justify-center text-sm font-bold text-shadow-md text-shadow-neutral-950",
+              {
+                "text-yellow-300": type === CardType.AGENDA,
+              },
+            )}
           >
             {name}
           </Text>
-        </Stack>
-        <Card.Section>
           <Image
             alt={name}
             {...cardSize}

@@ -1,14 +1,12 @@
 import { Flex, Stack, Tabs } from "@mantine/core";
 import { useShallow } from "zustand/react/shallow";
 import { GameEventType, useEventBus } from "../state/events";
-import { ServerName, setSelectedServer } from "../state/server";
+import type { ServerName } from "../state/server";
+import { ALL_SERVERS, setSelectedServer } from "../state/server";
 import { getCardSize } from "../state/settings";
 import { getGameState, useGameStore } from "../state/store";
 import { RunProgressState, TurnPhase } from "../state/turn";
 import { CardFront } from "./Card/CardFront";
-import { IceUnitSlot } from "./IceUnitSlot";
-
-const ALL_SERVERS = [ServerName.HQ, ServerName.RD, ServerName.ARCHIVES];
 
 export const IceRow = () => {
   const {
@@ -109,9 +107,7 @@ export const IceRow = () => {
                         isBeingEncountered={isBeingEncountered}
                         onClick={() => handleIceClick(ice.deckContextId)}
                       />
-                    ) : (
-                      <IceUnitSlot index={index} />
-                    )}
+                    ) : null}
                   </Stack>
                 );
               })}

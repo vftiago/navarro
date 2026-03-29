@@ -1,5 +1,5 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
-import { addToIce, modifyServerSecurity, ServerName } from "../server";
+import { addToIce, ALL_SERVERS, modifyServerSecurity } from "../server";
 import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";
 import {
@@ -7,8 +7,6 @@ import {
   getCardEffectsByTrigger,
   getRandomIceCard,
 } from "../utils";
-
-const ALL_SERVERS = [ServerName.HQ, ServerName.RD, ServerName.ARCHIVES];
 
 /**
  * Corp Phase - Consolidated single handler (no subphases)

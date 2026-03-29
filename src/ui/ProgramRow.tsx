@@ -2,7 +2,6 @@ import { Flex, Stack } from "@mantine/core";
 import { useShallow } from "zustand/react/shallow";
 import { useGameStore } from "../state/store";
 import { CardFront } from "./Card/CardFront";
-import { MemoryUnitSlot } from "./MemoryUnitSlot";
 
 export const ProgramRow = () => {
   const { playerInstalledPrograms, playerMemory } = useGameStore(
@@ -19,9 +18,7 @@ export const ProgramRow = () => {
           <Stack className="rounded-md bg-neutral-900" gap="xs" key={index}>
             {playerInstalledPrograms[index] ? (
               <CardFront card={playerInstalledPrograms[index]} />
-            ) : (
-              <MemoryUnitSlot index={index} />
-            )}
+            ) : null}
           </Stack>
         );
       })}

@@ -6,6 +6,8 @@ export enum ServerName {
   ARCHIVES = "Archives",
 }
 
+export const ALL_SERVERS = [ServerName.HQ];
+
 export type ServerData = {
   installedIce: IcePlayingCard[];
 };

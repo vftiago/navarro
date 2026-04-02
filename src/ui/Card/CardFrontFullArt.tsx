@@ -3,13 +3,13 @@ import clsx from "clsx";
 import type { CardDefinitions } from "../../cardDefinitions/card";
 import { CardType } from "../../cardDefinitions/card";
 import { getCardSize } from "../../state/settings";
-import { getGameState } from "../../state/store";
+import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";
 
 export const CardFrontFullArt = ({ card }: { card: CardDefinitions }) => {
   const { image, name, type } = card;
 
-  const cardSize = getCardSize(getGameState());
+  const cardSize = useGameStore(getCardSize);
 
   return (
     <CardHoverEffect type={type}>

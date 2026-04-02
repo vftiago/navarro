@@ -1,9 +1,9 @@
 import { Stack } from "@mantine/core";
 import { getCardSize } from "../state/settings";
-import { getGameState } from "../state/store";
+import { useGameStore } from "../state/store";
 
 export const MemoryUnitSlot = ({ index }: { index: number }) => {
-  const cardSize = getCardSize(getGameState());
+  const cardSize = useGameStore(getCardSize);
 
   return (
     <Stack

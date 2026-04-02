@@ -1,10 +1,10 @@
 import { Card, Image } from "@mantine/core";
 import { getCardSize } from "../../state/settings";
-import { getGameState } from "../../state/store";
+import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";
 
 export const CardBack = () => {
-  const cardSize = getCardSize(getGameState());
+  const cardSize = useGameStore(getCardSize);
 
   return (
     <CardHoverEffect>

@@ -1,5 +1,7 @@
+export type CardSize = "xs" | "sm";
+
 export type SettingsState = {
-  cardSize: "xs";
+  cardSize: CardSize;
   fullArt: boolean;
 };
 
@@ -10,7 +12,7 @@ export enum SettingsActionTypes {
 
 type SetCardSizeAction = {
   type: SettingsActionTypes.SET_CARD_SIZE;
-  payload: "xs";
+  payload: CardSize;
 };
 
 type SetFullArtAction = {

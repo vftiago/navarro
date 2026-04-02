@@ -4,7 +4,7 @@ import { GameEventType, useEventBus } from "../state/events";
 import type { ServerName } from "../state/server";
 import { ALL_SERVERS, setSelectedServer } from "../state/server";
 import { getCardSize } from "../state/settings";
-import { getGameState, useGameStore } from "../state/store";
+import { useGameStore } from "../state/store";
 import { RunProgressState, TurnPhase } from "../state/turn";
 import { CardFront } from "./Card/CardFront";
 
@@ -31,7 +31,7 @@ export const IceRow = () => {
   );
 
   const eventBus = useEventBus();
-  const cardSize = getCardSize(getGameState());
+  const cardSize = useGameStore(getCardSize);
 
   const isEncounterActive =
     turnCurrentPhase === TurnPhase.Run &&

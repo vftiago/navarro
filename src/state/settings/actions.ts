@@ -1,7 +1,7 @@
-import type { SettingsAction } from "./types";
+import type { CardSize, SettingsAction } from "./types";
 import { SettingsActionTypes } from "./types";
 
-export const setCardSize = (cardSize: "xs"): SettingsAction => ({
+export const setCardSize = (cardSize: CardSize): SettingsAction => ({
   payload: cardSize,
   type: SettingsActionTypes.SET_CARD_SIZE,
 });

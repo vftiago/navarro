@@ -2,7 +2,7 @@ import { Card } from "@mantine/core";
 import type { ReactNode } from "react";
 import type { CardType } from "../../cardDefinitions/card";
 import { getCardSize } from "../../state/settings";
-import { getGameState } from "../../state/store";
+import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";
 
 type CardBaseProps = {
@@ -18,7 +18,7 @@ export const CardBase = ({
   onClick,
   type,
 }: CardBaseProps) => {
-  const cardSize = getCardSize(getGameState());
+  const cardSize = useGameStore(getCardSize);
 
   return (
     <CardHoverEffect

@@ -1,9 +1,13 @@
 import type { GameState } from "../types";
 
 const CARD_SIZES = {
-  xs: {
+  sm: {
     h: "18rem",
     w: "12rem",
+  },
+  xs: {
+    h: "15rem",
+    w: "10rem",
   },
 };
 

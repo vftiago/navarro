@@ -60,7 +60,11 @@ export const PlayerDashboard = ({
     >
       <Flex className="items-end justify-between">
         <Stack className="pointer-events-auto flex-col-reverse" w="10rem">
-          <Button size="lg" variant="gradient" onClick={() => setOpenModal("deck")}>
+          <Button
+            size="lg"
+            variant="gradient"
+            onClick={() => setOpenModal("deck")}
+          >
             Deck ({playerDeckLength})
           </Button>
           <ClickWidget remainingClicks={turnRemainingClicks} />

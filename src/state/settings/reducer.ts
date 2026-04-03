@@ -2,7 +2,7 @@ import type { SettingsAction, SettingsState } from "./types";
 import { SettingsActionTypes } from "./types";
 
 export const initialSettingsState: SettingsState = {
-  cardSize: "xs",
+  cardSize: "sm",
   fullArt: false,
 };
 

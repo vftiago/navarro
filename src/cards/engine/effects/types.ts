@@ -11,7 +11,7 @@ import type { GameAction, GameState, ThunkAction } from "../../../state/types";
  * `EffectParamsMap` is the single source of truth binding each effect id to
  * its params shape, so specs are fully type-checked at the call site.
  */
-import type { EffectCost, IceSubtype, TriggerMoment } from "../../enums";
+import type { TriggerMoment } from "../../enums";
 
 /**
  * Runtime context passed to effect implementations when they execute
@@ -29,7 +29,6 @@ export type EffectContext = {
  * card-specific effects live in `unique.ts`.
  */
 export type EffectParamsMap = {
-  break_subroutine: { iceSubtype: IceSubtype };
   destroy_all_programs: void;
   draw: { amount: number };
   end_run: void;
@@ -86,8 +85,6 @@ export type ConditionSpec = {
  * The code half of an effect, registered once per effect id
  */
 export type EffectImplementation<P = void> = {
-  /** Default costs required to activate this effect (spec can override) */
-  costs?: EffectCost[];
   /** When this effect triggers unless the spec overrides it */
   defaultTrigger: TriggerMoment;
   /** Returns actions to dispatch (simple effects) */
@@ -109,8 +106,6 @@ export type EffectSpec = {
   [K in EffectId]: {
     /** Gate the effect behind a condition: "on trigger: if condition, effect" */
     condition?: ConditionSpec;
-    /** Override the implementation's default costs */
-    costs?: EffectCost[];
     effect: K;
     /** Override the generated rules text */
     text?: string;

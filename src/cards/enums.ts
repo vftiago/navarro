@@ -29,7 +29,6 @@ export enum ProgramSubtype {
 
 export enum TriggerMoment {
   ON_ACCESS = "onAccess",
-  ON_CLICK = "onClick",
   ON_DISCARD = "onDiscard",
   ON_DRAW = "onDraw",
   ON_ENCOUNTER = "onEncounter",
@@ -41,11 +40,6 @@ export enum TriggerMoment {
   ON_RUN_START = "onRunStart",
   ON_TRASH = "onTrash",
   ON_UPKEEP = "onUpkeep",
-}
-
-export enum EffectCost {
-  CLICK = "Click",
-  TRASH = "Trash",
 }
 
 export enum Keyword {

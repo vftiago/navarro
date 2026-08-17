@@ -22,7 +22,6 @@ import type { GameAction, ThunkAction } from "../types";
 
 export type PlayPhasePayload = {
   cardId: string;
-  handIndex: number;
 };
 
 /**
@@ -34,19 +33,22 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
   return (dispatch, getState) => {
     const state = getState();
 
-    // Get the card from hand using payload data
-    const card = state.playerState.playerHand[payload.handIndex];
+    // Locate the card in hand
+    const handIndex = state.playerState.playerHand.findIndex(
+      (handCard) => handCard.instanceId === payload.cardId,
+    );
 
-    // Validate card exists and matches
-    if (!card || card.instanceId !== payload.cardId) {
-      console.error("playPhase: Card mismatch in payload");
+    if (handIndex === -1) {
+      console.error("playPhase: Card not found in hand");
       return;
     }
+
+    const card = state.playerState.playerHand[handIndex];
 
     // Batch the initial play actions
     const playActions: GameAction[] = [
       modifyClicks(-1),
-      removeCardFromHand(payload.handIndex),
+      removeCardFromHand(handIndex),
       addCardToPlayed(card),
     ];
 

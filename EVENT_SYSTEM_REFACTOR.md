@@ -13,8 +13,13 @@
   import phase thunks.
 - **Event handler** (`src/state/events/eventHandler.ts`): centralized
   validation of all user actions.
-- Event types: `PLAYER_PLAY_CARD`, `PLAYER_INITIATE_RUN`, `PLAYER_CLICK_ICE`,
-  `PLAYER_SELECT_ACCESSED_CARD`, `PLAYER_END_TURN`, `CARD_ACTIVATE_ABILITY`.
+- Event types (unified 2026-08-17): `CARD_CLICKED { instanceId }` — a click
+  carries no intent, the handler resolves play/ice-click/access-select from
+  the card's zone and the phase/run state — plus the two button intents,
+  `PLAYER_INITIATE_RUN` and `PLAYER_END_TURN`. The original five card-specific
+  events (and the never-implemented `CARD_ACTIVATE_ABILITY`) encoded state the
+  handler re-derived for validation anyway; unifying them deleted that
+  duplication. Add a specific event only when one click could mean two things.
 
 ## What was superseded
 
@@ -32,10 +37,13 @@ user-driven phases (direct invocation) is the intended design, not a gap.
 
 ## Open follow-ups
 
-1. **Implement `CARD_ACTIVATE_ABILITY`** — the event type, the `ON_CLICK`
-   trigger, `EffectCost.CLICK`, and Sledgehammer's `break_subroutine` effect
-   all exist as data, but nothing connects them: no UI emits the event, the
-   handler TODOs it, and `break_subroutine` is a no-op.
+1. **Design the icebreaker interaction** — Sledgehammer ("Break barrier
+   subroutine.") has no mechanics: the speculative `CARD_ACTIVATE_ABILITY` /
+   `ON_CLICK` / `EffectCost` machinery was deleted (2026-08-17) rather than
+   implemented. When the encounter interaction is designed, it should arrive
+   as a targeted event (e.g. `PLAYER_BREAK_SUBROUTINE { programId, iceId }`)
+   validated against `runProgressState`, with breaker capability as program
+   data (e.g. `breaks: IceSubtype.BARRIER`).
 2. **Add the import-boundary lint rule** — UI components must not import
    phase thunks; today this survives by convention only.
 3. **Seed the RNG if event replay ever matters** — deck shuffle, corp ice
@@ -46,5 +54,3 @@ user-driven phases (direct invocation) is the intended design, not a gap.
 4. **Write the first tests** — the decoupling was done for testability, but
    no test suite exists yet. Game logic can be driven headlessly via the
    store + event handler without rendering UI.
-5. **De-duplicate validation** — the event handler and the phase thunks both
-   re-check card/ice identity; one of the two checks is redundant.

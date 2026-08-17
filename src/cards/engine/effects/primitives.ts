@@ -21,11 +21,10 @@ import { dealNetDamage } from "../../../state/utils";
  * (e.g. `draw` replaces DRAW_CARDS_1/DRAW_CARDS_3). Rules text is
  * generated from the same params, so text can never drift from behavior.
  */
-import { EffectCost, TriggerMoment } from "../../enums";
+import { TriggerMoment } from "../../enums";
 import type { EffectImplementation, EffectParamsMap } from "./types";
 
 export type PrimitiveEffectId =
-  | "break_subroutine"
   | "destroy_all_programs"
   | "draw"
   | "end_run"
@@ -51,13 +50,6 @@ const gainOrLose = (amount: number): string => {
 export const primitiveEffects: {
   [K in PrimitiveEffectId]: EffectImplementation<EffectParamsMap[K]>;
 } = {
-  break_subroutine: {
-    costs: [EffectCost.CLICK],
-    defaultTrigger: TriggerMoment.ON_CLICK,
-    getActions: () => [],
-    getText: ({ iceSubtype }) =>
-      `Break ${iceSubtype.toLowerCase()} subroutine.`,
-  },
   destroy_all_programs: {
     defaultTrigger: TriggerMoment.ON_PLAY,
     // TODO: implement program destruction (ported placeholder from Flush)

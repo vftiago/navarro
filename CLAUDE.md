@@ -61,7 +61,7 @@ Thunk actions for multi-step game phase flows:
 
 - **Access state**: `useGameStore((state) => state.playerState)` or use specific selectors
 - **Dispatch actions**: `const dispatch = useGameStore((state) => state.dispatch); dispatch(actionCreator())`
-- **Emit user events** (UI layer): `const eventBus = useEventBus(); eventBus.emit({ type: GameEventType.PLAYER_PLAY_CARD, payload: {...} })`
+- **Emit user events** (UI layer): `const eventBus = useEventBus(); eventBus.emit({ type: GameEventType.CARD_CLICKED, payload: { instanceId } })`
 - **Dispatch thunks** (phase logic only): `const dispatchThunk = useThunk(); dispatchThunk(thunkAction)`
 - **Granular subscriptions**: Use targeted selectors to prevent unnecessary re-renders
 
@@ -77,7 +77,7 @@ Fully data-driven: cards are pure-data definitions, all behavior lives in a smal
 
 ```
 src/cards/
-├── enums.ts            # CardType, CardRarity, TriggerMoment, EffectCost, Keyword, subtypes
+├── enums.ts            # CardType, CardRarity, TriggerMoment, Keyword, subtypes
 ├── ids.ts              # CardId registry — type-safe union of all card ids
 ├── instance.ts         # CardInstance { instanceId, definitionId } (+ IceCardInstance
 │                       #   with isRezzed), createCardInstance(), resolveCard()
@@ -152,31 +152,38 @@ The game uses an event-driven architecture to decouple UI from game logic:
 
 **Flow**:
 ```
-UI Component → eventBus.emit(event) → Event Handler validates →
+UI Component → eventBus.emit(event) → Event Handler resolves & validates →
   Invokes phase thunk directly with payload → Phase executes and transitions state
 ```
 
-**User-Driven Phases** (invoked directly by triggering code):
-- `playPhase({ cardId, handIndex })` - Called by eventHandler when user plays card
-- `initiateRun()` - Called by eventHandler (Run button) or playPhase (Run card)
-- `clickIce({ iceId })` - Called by eventHandler during ice encounter
-- `selectAccessedCard({ cardId })` - Called by eventHandler during card access
+**Event Types** (deliberately minimal — a click carries no intent; the
+handler derives meaning from where the card lives and the current
+phase/run state):
+- `CARD_CLICKED { instanceId }` - Any card, any zone. Resolved by the handler:
+  in hand during Main → play it; the currently encountered ice → click through
+  it; an accessed card during access → select it; anything else → ignored.
+- `PLAYER_INITIATE_RUN` - Run button (a genuine non-card intent)
+- `PLAYER_END_TURN` - End Turn button (a genuine non-card intent)
+
+Add a more specific event only when one click could mean two different things
+(e.g. a future ability menu → a targeted event like `PLAYER_BREAK_SUBROUTINE`).
+
+**User-Driven Phases** (invoked directly by the event handler with payloads):
+- `playPhase({ cardId })` - resolved from CARD_CLICKED on a hand card
+- `initiateRun()` - PLAYER_INITIATE_RUN, or playPhase (Run card effect)
+- `clickIce({ iceId })` - resolved from CARD_CLICKED on the encountered ice
+- `selectAccessedCard({ cardId })` - resolved from CARD_CLICKED on an accessed card
 
 **Automatic Phases** (handled by PhaseManager):
 - `corpPhase()`, `drawPhase()`, `upkeepPhase()`, `mainPhase()`, `endPhase()`
 
-**Event Types**:
-- `PLAYER_PLAY_CARD` - User plays a card from hand
-- `PLAYER_INITIATE_RUN` - User clicks "Run" button
-- `PLAYER_CLICK_ICE` - User clicks ice during encounter
-- `PLAYER_SELECT_ACCESSED_CARD` - User selects accessed card in modal
-- `PLAYER_END_TURN` - User clicks "End Turn" button
-- `CARD_ACTIVATE_ABILITY` - User activates card ability (future)
-
 **Benefits**:
-- UI components never import phase thunks directly
-- Centralized validation of all user actions
-- Event history for debugging (`eventBus.getHistory()`)
+- UI components never import phase thunks directly; state checks in UI are
+  cosmetic affordances only — the event handler is the single authority on
+  click rules
+- Centralized validation of all user actions (no UI/handler duplication)
+- Event history for debugging (`eventBus.getHistory()`); the handler logs the
+  resolved intent in dev mode
 - Testable game logic without UI rendering
 
 ### Game Flow
@@ -384,12 +391,6 @@ These triggers are actively executed in phase implementations:
 **Executed on**: Card being trashed
 **Note**: Different from `Keyword.TRASH` which determines card destination
 **Example**: Effects that trigger when cards with Trash keyword are trashed
-
-#### `ON_CLICK`
-
-**When**: User manually activates card ability (UI-driven)
-**Requires**: `EffectCost.CLICK` cost to be paid
-**Example**: "Sledgehammer" - breaks barrier subroutine on click
 
 ### Trigger Execution Pattern
 

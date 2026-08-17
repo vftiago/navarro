@@ -1,3 +1,5 @@
+import { hasKeywordFlag } from "../../cards/engine";
+import { resolveCard } from "../../cards/instance";
 import {
   clickIce,
   initiateRun,
@@ -13,10 +15,11 @@ import { GameEventType } from "./eventBus";
  * Creates an event handler that translates game events into state updates.
  * This is the bridge between the event bus and the game state.
  *
- * Pattern:
- * 1. Validate the event is legal in current game state
- * 2. Invoke phase thunk directly with payload (no pending state)
- * 3. Phase logic executes and handles all state transitions
+ * A CARD_CLICKED event carries no intent — this resolver derives what the
+ * click means from where the card lives and the current phase/run state,
+ * validates it, and invokes the matching phase thunk. This is the single
+ * authority on click rules; any checks in UI components are cosmetic
+ * affordances only.
  */
 export const createEventHandler = (
   dispatch: (action: GameAction) => void,
@@ -49,26 +52,74 @@ export const createEventHandler = (
     const state = getState();
 
     switch (event.type) {
-      case GameEventType.PLAYER_PLAY_CARD: {
-        // Validate: Must be in Main phase
-        if (state.turnState.turnCurrentPhase !== TurnPhase.Main) {
-          console.warn("Cannot play card outside Main phase");
+      case GameEventType.CARD_CLICKED: {
+        const { instanceId } = event.payload;
+        const { runProgressState, turnCurrentPhase } = state.turnState;
+
+        // Card in hand → play it (Main phase only)
+        const handCard = state.playerState.playerHand.find(
+          (card) => card.instanceId === instanceId,
+        );
+        if (handCard) {
+          if (turnCurrentPhase !== TurnPhase.Main) {
+            console.warn("Cannot play card outside Main phase");
+            return;
+          }
+          if (hasKeywordFlag(resolveCard(handCard).keywords, "unplayable")) {
+            console.warn("Card is unplayable");
+            return;
+          }
+          if (import.meta.env.DEV) {
+            console.log("[CARD_CLICKED] resolved: play card", instanceId);
+          }
+          dispatch(setTurnCurrentPhase(TurnPhase.Play));
+          dispatchThunk(playPhase, { cardId: instanceId });
           return;
         }
 
-        // Validate: Card must exist in hand
-        const card = state.playerState.playerHand[event.payload.handIndex];
-        if (!card || card.instanceId !== event.payload.cardId) {
-          console.error("Card not found in hand at specified index");
+        // Currently encountered ice → click through it
+        if (
+          state.serverState.serverCurrentEncounteredIce?.instanceId ===
+          instanceId
+        ) {
+          if (
+            turnCurrentPhase !== TurnPhase.Run ||
+            runProgressState !== RunProgressState.ENCOUNTERING_ICE
+          ) {
+            console.warn("Cannot click ice outside run encounter state");
+            return;
+          }
+          if (import.meta.env.DEV) {
+            console.log("[CARD_CLICKED] resolved: click ice", instanceId);
+          }
+          dispatchThunk(clickIce, { iceId: instanceId });
           return;
         }
 
-        // Transition to Play phase and execute phase logic directly
-        dispatch(setTurnCurrentPhase(TurnPhase.Play));
-        dispatchThunk(playPhase, {
-          cardId: event.payload.cardId,
-          handIndex: event.payload.handIndex,
-        });
+        // Accessed card → select it (access state only)
+        const accessedCard = state.playerState.playerAccessedCards.find(
+          (card) => card.instanceId === instanceId,
+        );
+        if (accessedCard) {
+          if (
+            turnCurrentPhase !== TurnPhase.Run ||
+            runProgressState !== RunProgressState.ACCESSING_CARDS
+          ) {
+            console.warn("Cannot select card outside run access state");
+            return;
+          }
+          if (import.meta.env.DEV) {
+            console.log(
+              "[CARD_CLICKED] resolved: select accessed card",
+              instanceId,
+            );
+          }
+          dispatchThunk(selectAccessedCard, { cardId: instanceId });
+          return;
+        }
+
+        // No interaction for this card in the current state — ignore
+        console.warn("CARD_CLICKED: no interaction for card", instanceId);
         break;
       }
 
@@ -90,56 +141,6 @@ export const createEventHandler = (
         break;
       }
 
-      case GameEventType.PLAYER_CLICK_ICE: {
-        // Validate: Must be in Run phase with ENCOUNTERING_ICE state
-        if (
-          state.turnState.turnCurrentPhase !== TurnPhase.Run ||
-          state.turnState.runProgressState !== RunProgressState.ENCOUNTERING_ICE
-        ) {
-          console.warn("Cannot click ice outside run encounter state");
-          return;
-        }
-
-        // Validate: Ice must be the current encountered ice
-        if (
-          !state.serverState.serverCurrentEncounteredIce ||
-          state.serverState.serverCurrentEncounteredIce.instanceId !==
-            event.payload.iceId
-        ) {
-          console.warn("Can only click currently encountered ice");
-          return;
-        }
-
-        // Execute ice click logic directly
-        dispatchThunk(clickIce, { iceId: event.payload.iceId });
-        break;
-      }
-
-      case GameEventType.PLAYER_SELECT_ACCESSED_CARD: {
-        // Validate: Must be in Run phase with ACCESSING_CARDS state
-        if (
-          state.turnState.turnCurrentPhase !== TurnPhase.Run ||
-          state.turnState.runProgressState !== RunProgressState.ACCESSING_CARDS
-        ) {
-          console.warn("Cannot select card outside run access state");
-          return;
-        }
-
-        // Validate: Card must be in accessed cards
-        const accessedCard = state.playerState.playerAccessedCards.find(
-          (card) => card.instanceId === event.payload.cardId,
-        );
-
-        if (!accessedCard) {
-          console.error("Card not found in accessed cards");
-          return;
-        }
-
-        // Execute card selection logic directly
-        dispatchThunk(selectAccessedCard, { cardId: event.payload.cardId });
-        break;
-      }
-
       case GameEventType.PLAYER_END_TURN: {
         // Validate: Must be in Main phase
         if (state.turnState.turnCurrentPhase !== TurnPhase.Main) {
@@ -149,16 +150,6 @@ export const createEventHandler = (
 
         // Transition to End phase
         dispatch(setTurnCurrentPhase(TurnPhase.End));
-        break;
-      }
-
-      case GameEventType.CARD_ACTIVATE_ABILITY: {
-        // TODO: Implement card ability activation
-        // This will be used for cards with ON_CLICK effects
-        console.warn(
-          "CARD_ACTIVATE_ABILITY not yet implemented:",
-          event.payload,
-        );
         break;
       }
 

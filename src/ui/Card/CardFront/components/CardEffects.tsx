@@ -1,17 +1,10 @@
 import { Text, Tooltip } from "@mantine/core";
 import { IoMdReturnRight } from "react-icons/io";
 import type { CardTextLine } from "../../../../cards/engine";
-import type { EffectCost } from "../../../../cards/enums";
-
-const renderLineCosts = (costs: EffectCost[]) => {
-  return costs.map((cost, index) => {
-    return `${cost}${index >= costs.length - 1 ? ": " : ", "}`;
-  });
-};
 
 export const CardEffects = ({ textLines }: { textLines: CardTextLine[] }) => {
   return textLines.map((line, index) => {
-    const { costs, isSubroutine, keyword, reminderText, text } = line;
+    const { isSubroutine, keyword, reminderText, text } = line;
 
     return (
       <Text fw="500" key={index} size="xs">
@@ -19,10 +12,6 @@ export const CardEffects = ({ textLines }: { textLines: CardTextLine[] }) => {
           <span className="inline">
             <IoMdReturnRight className="-mt-0.5 inline" />{" "}
           </span>
-        ) : null}
-
-        {costs ? (
-          <span className="inline">{renderLineCosts(costs)}</span>
         ) : null}
 
         {keyword ? (

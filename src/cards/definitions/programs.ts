@@ -1,27 +1,21 @@
-import {
-  CardRarity,
-  CardType,
-  IceSubtype,
-  ProgramSubtype,
-  TriggerMoment,
-} from "../enums";
+import { CardRarity, CardType, ProgramSubtype, TriggerMoment } from "../enums";
 import { CardId } from "../ids";
 import type { ProgramCardDefinition } from "./types";
 
 export const programCardDefinitions: ProgramCardDefinition[] = [
   {
-    effects: [
-      {
-        effect: "break_subroutine",
-        params: { iceSubtype: IceSubtype.BARRIER },
-      },
-    ],
+    // TODO: no mechanics yet — the icebreaker interaction (breaking
+    // subroutines during an encounter) is not designed; when it lands it
+    // will be a targeted event (e.g. PLAYER_BREAK_SUBROUTINE), and this
+    // becomes program data like `breaks: IceSubtype.BARRIER`
+    effects: [],
     flavorText: "Crude, but effective.",
     id: CardId.SLEDGEHAMMER,
     image: "_09df83ab-9d58-4100-996f-dc93127dce30.jpg",
     name: "Sledgehammer",
     rarity: CardRarity.COMMON,
     subtype: ProgramSubtype.FRACTER,
+    text: "Break barrier subroutine.",
     type: CardType.PROGRAM,
   },
   {

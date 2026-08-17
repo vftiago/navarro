@@ -96,8 +96,9 @@ export const PlayerHand = () => {
   const topValues = calculateCardTopValues(playerHand.length);
 
   const handleCardClick = useCallback(
-    (card: CardInstance, index: number) => {
-      // Only allow card play during Main phase
+    (card: CardInstance) => {
+      // UX gating only (skip the exit animation for clicks that can't
+      // resolve) — the event handler is the authority on click rules
       if (!isMainPhase) {
         return;
       }
@@ -129,14 +130,10 @@ export const PlayerHand = () => {
           return next;
         });
 
-        // Emit event to play card
-        // Event handler will validate, set pending action, and transition phase
+        // Report the click — the event handler resolves and validates it
         eventBus.emit({
-          payload: {
-            cardId: card.instanceId,
-            handIndex: index,
-          },
-          type: GameEventType.PLAYER_PLAY_CARD,
+          payload: { instanceId: card.instanceId },
+          type: GameEventType.CARD_CLICKED,
         });
       }, EXIT_ANIMATION_DURATION);
     },
@@ -211,7 +208,7 @@ export const PlayerHand = () => {
                 }}
                 onClick={() => {
                   if (!isExiting) {
-                    handleCardClick(card, index);
+                    handleCardClick(card);
                   }
                 }}
               >

@@ -6,7 +6,7 @@ import type { CardDefinition } from "../definitions/types";
  * can never drift apart. Precedence: card-level `text` override >
  * per-effect `text` override > generated.
  */
-import type { EffectCost, Keyword } from "../enums";
+import type { Keyword } from "../enums";
 import { TriggerMoment } from "../enums";
 import { getConditionImplementation } from "./effects/conditions";
 import { getEffectImplementation } from "./effects/registry";
@@ -22,9 +22,8 @@ import { resolveEffectSpecs } from "./resolve";
 /**
  * Human-readable labels for triggers that merit a textual prefix.
  *
- * Intentionally unlabeled: ON_PLAY (the default reading of a card),
- * ON_ENCOUNTER (rendered as a subroutine marker by the UI), and
- * ON_CLICK (conveyed by the "Click:" cost prefix).
+ * Intentionally unlabeled: ON_PLAY (the default reading of a card) and
+ * ON_ENCOUNTER (rendered as a subroutine marker by the UI).
  */
 const TRIGGER_LABELS: Partial<Record<TriggerMoment, string>> = {
   [TriggerMoment.ON_ACCESS]: "On Access",
@@ -105,11 +104,9 @@ export const renderEffectText = (spec: EffectSpec): string => {
 
 /**
  * One rendered line of a card's rules text, with the metadata the UI
- * needs to style it (subroutine marker, cost prefix, keyword tooltip)
+ * needs to style it (subroutine marker, keyword tooltip)
  */
 export type CardTextLine = {
-  /** Costs to render as a prefix, e.g. "Click: " */
-  costs?: EffectCost[];
   /** Render with the subroutine marker (ON_ENCOUNTER effects) */
   isSubroutine?: boolean;
   /** Set for keyword lines — style distinctly, tooltip the reminder */
@@ -146,10 +143,8 @@ export const getCardTextLines = (
     const spec = specs[index];
     const label = getTriggerLabel(spec);
     if (!label) {
-      const costs = spec.costs ?? getEffectImplementation(spec.effect).costs;
       lines.push({
         text: renderEffectText(spec),
-        ...(costs && { costs }),
         ...(getEffectiveTrigger(spec) === TriggerMoment.ON_ENCOUNTER && {
           isSubroutine: true,
         }),

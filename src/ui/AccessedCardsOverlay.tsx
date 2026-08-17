@@ -28,8 +28,8 @@ export const AccessedCardsOverlay = () => {
 
   const handleCardClick = (card: (typeof playerAccessedCards)[0]) => {
     eventBus.emit({
-      payload: { cardId: card.instanceId },
-      type: GameEventType.PLAYER_SELECT_ACCESSED_CARD,
+      payload: { instanceId: card.instanceId },
+      type: GameEventType.CARD_CLICKED,
     });
   };
 

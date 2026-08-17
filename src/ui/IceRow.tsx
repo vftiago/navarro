@@ -40,13 +40,14 @@ export const IceRow = () => {
   const isRunning = turnCurrentPhase === TurnPhase.Run;
 
   const handleIceClick = (iceId: string) => {
+    // UX gating only — the event handler is the authority on click rules
     if (
       isEncounterActive &&
       serverCurrentEncounteredIce?.instanceId === iceId
     ) {
       eventBus.emit({
-        payload: { iceId },
-        type: GameEventType.PLAYER_CLICK_ICE,
+        payload: { instanceId: iceId },
+        type: GameEventType.CARD_CLICKED,
       });
     }
   };

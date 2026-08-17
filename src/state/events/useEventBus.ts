@@ -13,7 +13,7 @@ export const EventBusContext = createContext<EventBus | null>(null);
  *
  * @example
  * const eventBus = useEventBus();
- * eventBus.emit({ type: GameEventType.PLAYER_PLAY_CARD, payload: { ... } });
+ * eventBus.emit({ type: GameEventType.CARD_CLICKED, payload: { ... } });
  */
 export const useEventBus = (): EventBus => {
   const eventBus = useContext(EventBusContext);

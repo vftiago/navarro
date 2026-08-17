@@ -1,31 +1,21 @@
 // Event types for game actions
+//
+// The vocabulary is deliberately minimal: a card click is a single generic
+// event — the event handler resolves what it means from where the card lives
+// and the current phase/run state. Named intents exist only for actions that
+// are not card clicks (buttons). Add a more specific event only when one
+// click could mean two different things (e.g. future ability menus).
 export enum GameEventType {
-  // Player actions
-  CARD_ACTIVATE_ABILITY = "CARD_ACTIVATE_ABILITY",
-  PLAYER_CLICK_ICE = "PLAYER_CLICK_ICE",
+  CARD_CLICKED = "CARD_CLICKED",
   PLAYER_END_TURN = "PLAYER_END_TURN",
   PLAYER_INITIATE_RUN = "PLAYER_INITIATE_RUN",
-  PLAYER_PLAY_CARD = "PLAYER_PLAY_CARD",
-  PLAYER_SELECT_ACCESSED_CARD = "PLAYER_SELECT_ACCESSED_CARD",
 }
 
 // Event payloads (discriminated union type)
 export type GameEvent =
-  | {
-      payload: { cardId: string; handIndex: number };
-      type: GameEventType.PLAYER_PLAY_CARD;
-    }
-  | { payload: Record<string, never>; type: GameEventType.PLAYER_INITIATE_RUN }
-  | { payload: { iceId: string }; type: GameEventType.PLAYER_CLICK_ICE }
-  | {
-      payload: { cardId: string };
-      type: GameEventType.PLAYER_SELECT_ACCESSED_CARD;
-    }
   | { payload: Record<string, never>; type: GameEventType.PLAYER_END_TURN }
-  | {
-      payload: { abilityIndex: number; cardId: string };
-      type: GameEventType.CARD_ACTIVATE_ABILITY;
-    };
+  | { payload: Record<string, never>; type: GameEventType.PLAYER_INITIATE_RUN }
+  | { payload: { instanceId: string }; type: GameEventType.CARD_CLICKED };
 
 // Event bus type
 export type EventBus = {

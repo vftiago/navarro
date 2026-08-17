@@ -1,8 +1,4 @@
-import {
-  type AgendaPlayingCard,
-  type PlayingCard,
-  type ProgramPlayingCard,
-} from "../../cardDefinitions/card";
+import type { CardInstance } from "../../cards/instance";
 import type { PlayerAction } from "./types";
 import { PlayerActionTypes } from "./types";
 
@@ -15,32 +11,32 @@ export const discardHand = (): PlayerAction => ({
   type: PlayerActionTypes.DISCARD_HAND,
 });
 
-export const addToPrograms = (card: ProgramPlayingCard): PlayerAction => ({
+export const addToPrograms = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_PROGRAMS,
 });
 
-export const addToDiscard = (card: PlayingCard): PlayerAction => ({
+export const addToDiscard = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_DISCARD,
 });
 
-export const addToTrash = (card: PlayingCard): PlayerAction => ({
+export const addToTrash = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_TRASH,
 });
 
-export const addToScoreArea = (card: AgendaPlayingCard): PlayerAction => ({
+export const addToScoreArea = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_SCORE_AREA,
 });
 
-export const addToAccessedCards = (cards: PlayingCard[]): PlayerAction => ({
+export const addToAccessedCards = (cards: CardInstance[]): PlayerAction => ({
   payload: { cards },
   type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS,
 });
 
-export const addToDeck = (card: PlayingCard): PlayerAction => ({
+export const addToDeck = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_DECK,
 });
@@ -58,7 +54,7 @@ export const removeCardFromHand = (index: number): PlayerAction => ({
   type: PlayerActionTypes.REMOVE_CARD_FROM_HAND,
 });
 
-export const addCardToPlayed = (card: PlayingCard): PlayerAction => ({
+export const addCardToPlayed = (card: CardInstance): PlayerAction => ({
   payload: { card },
   type: PlayerActionTypes.ADD_TO_PLAYED,
 });

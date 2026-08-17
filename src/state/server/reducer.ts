@@ -51,7 +51,7 @@ export const serverReducer = (
           [server]: {
             ...state.servers[server],
             installedIce: state.servers[server].installedIce.filter(
-              (i) => i.deckContextId !== ice.deckContextId,
+              (i) => i.instanceId !== ice.instanceId,
             ),
           },
         },
@@ -83,7 +83,7 @@ export const serverReducer = (
       return {
         ...state,
         serverUnencounteredIce: state.serverUnencounteredIce.filter(
-          (ice) => ice.deckContextId !== action.payload.ice.deckContextId,
+          (ice) => ice.instanceId !== action.payload.ice.instanceId,
         ),
       };
 

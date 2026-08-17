@@ -1,4 +1,6 @@
 import { CardType, TriggerMoment } from "../../cardDefinitions/card";
+import { executeTriggers } from "../../cards/engine";
+import { resolveCard } from "../../cards/instance";
 import {
   addToAccessedCards,
   addToDiscard,
@@ -20,12 +22,7 @@ import {
   TurnPhase,
 } from "../turn";
 import type { GameAction, GameState, ThunkAction } from "../types";
-import {
-  executeCardEffects,
-  executeCardTriggers,
-  getCardEffectsByTrigger,
-  getRandomServerCard,
-} from "../utils";
+import { getRandomServerCard } from "../utils";
 
 /**
  * Initiates a run - called by event handler when user clicks Run button.
@@ -41,11 +38,7 @@ export const initiateRun = (): ThunkAction => {
 
     // Trigger ON_RUN_START effects
     programs.forEach((card) => {
-      const effects = getCardEffectsByTrigger(card, TriggerMoment.ON_RUN_START);
-      executeCardEffects(effects, dispatch, getState, {
-        gameState: getState(),
-        sourceId: card.deckContextId,
-      });
+      executeTriggers(card, TriggerMoment.ON_RUN_START, dispatch, getState);
     });
 
     // Initialize unencountered ice with ice from selected server (innermost to outermost)
@@ -81,20 +74,13 @@ export const clickIce = (payload: ClickIcePayload): ThunkAction => {
     const state = getState();
     const currentIce = state.serverState.serverCurrentEncounteredIce;
 
-    if (!currentIce || currentIce.deckContextId !== payload.iceId) {
+    if (!currentIce || currentIce.instanceId !== payload.iceId) {
       console.error("clickIce: Ice mismatch in payload");
       return;
     }
 
     // Trigger ON_ENCOUNTER effects
-    const encounterEffects = getCardEffectsByTrigger(
-      currentIce,
-      TriggerMoment.ON_ENCOUNTER,
-    );
-    executeCardEffects(encounterEffects, dispatch, getState, {
-      gameState: getState(),
-      sourceId: currentIce.deckContextId,
-    });
+    executeTriggers(currentIce, TriggerMoment.ON_ENCOUNTER, dispatch, getState);
 
     // Check if the run was ended by an encounter effect (e.g., "End the run")
     if (getState().turnState.runProgressState === RunProgressState.NOT_IN_RUN) {
@@ -131,7 +117,7 @@ export const selectAccessedCard = (
   return (dispatch, getState) => {
     const state = getState();
     const selectedCard = state.playerState.playerAccessedCards.find(
-      (card) => card.deckContextId === payload.cardId,
+      (card) => card.instanceId === payload.cardId,
     );
 
     if (!selectedCard) {
@@ -140,20 +126,13 @@ export const selectAccessedCard = (
     }
 
     // Trigger ON_FETCH effects
-    const fetchEffects = getCardEffectsByTrigger(
-      selectedCard,
-      TriggerMoment.ON_FETCH,
-    );
-    executeCardEffects(fetchEffects, dispatch, getState, {
-      gameState: getState(),
-      sourceId: selectedCard.deckContextId,
-    });
+    executeTriggers(selectedCard, TriggerMoment.ON_FETCH, dispatch, getState);
 
     // Move card to appropriate zone
-    if (selectedCard.type === CardType.AGENDA) {
+    if (resolveCard(selectedCard).type === CardType.AGENDA) {
       dispatch(addToScoreArea(selectedCard));
     } else {
-      executeCardTriggers(
+      executeTriggers(
         selectedCard,
         TriggerMoment.ON_DISCARD,
         dispatch,
@@ -168,14 +147,7 @@ export const selectAccessedCard = (
     // Trigger ON_RUN_END (run is complete!)
     const endPrograms = getPlayerInstalledPrograms(getState());
     endPrograms.forEach((card) => {
-      const runEndEffects = getCardEffectsByTrigger(
-        card,
-        TriggerMoment.ON_RUN_END,
-      );
-      executeCardEffects(runEndEffects, dispatch, getState, {
-        gameState: getState(),
-        sourceId: card.deckContextId,
-      });
+      executeTriggers(card, TriggerMoment.ON_RUN_END, dispatch, getState);
     });
 
     // Reset run state
@@ -207,14 +179,7 @@ const transitionToAccess = (
 
   // Trigger ON_ACCESS effects on all accessed cards
   accessedCards.forEach((card) => {
-    const accessEffects = getCardEffectsByTrigger(
-      card,
-      TriggerMoment.ON_ACCESS,
-    );
-    executeCardEffects(accessEffects, dispatch, getState, {
-      gameState: getState(),
-      sourceId: card.deckContextId,
-    });
+    executeTriggers(card, TriggerMoment.ON_ACCESS, dispatch, getState);
   });
 
   dispatch(setRunProgressState(RunProgressState.ACCESSING_CARDS));

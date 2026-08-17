@@ -1,9 +1,9 @@
 import { Container, Flex, Modal, Stack, Text } from "@mantine/core";
-import type { PlayingCard } from "../cardDefinitions/card";
+import type { CardInstance } from "../cards/instance";
 import { CardFront } from "./Card/CardFront";
 
 type CardGridModalProps = {
-  cards: PlayingCard[];
+  cards: CardInstance[];
   emptyMessage: string;
   opened: boolean;
   title: string;

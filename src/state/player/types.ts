@@ -1,18 +1,14 @@
-import {
-  type AgendaPlayingCard,
-  type PlayingCard,
-  type ProgramPlayingCard,
-} from "../../cardDefinitions/card";
+import type { CardInstance } from "../../cards/instance";
 
 export type PlayerState = {
-  playerDeck: PlayingCard[];
-  playerHand: PlayingCard[];
-  playerPlayedCards: PlayingCard[];
-  playerDiscardPile: PlayingCard[];
-  playerTrashPile: PlayingCard[];
-  playerInstalledPrograms: ProgramPlayingCard[];
-  playerAccessedCards: PlayingCard[];
-  playerScoreArea: PlayingCard[];
+  playerDeck: CardInstance[];
+  playerHand: CardInstance[];
+  playerPlayedCards: CardInstance[];
+  playerDiscardPile: CardInstance[];
+  playerTrashPile: CardInstance[];
+  playerInstalledPrograms: CardInstance[];
+  playerAccessedCards: CardInstance[];
+  playerScoreArea: CardInstance[];
   playerMaxHandSize: number;
   playerCardsPerTurn: number;
   playerClicksPerTurn: number;
@@ -46,22 +42,22 @@ export enum PlayerActionTypes {
 export type PlayerAction =
   | { type: PlayerActionTypes.DRAW_CARDS; payload: { count: number } }
   | { type: PlayerActionTypes.DISCARD_HAND }
-  | { type: PlayerActionTypes.ADD_TO_PLAYED; payload: { card: PlayingCard } }
+  | { type: PlayerActionTypes.ADD_TO_PLAYED; payload: { card: CardInstance } }
   | {
       type: PlayerActionTypes.ADD_TO_PROGRAMS;
-      payload: { card: ProgramPlayingCard };
+      payload: { card: CardInstance };
     }
-  | { type: PlayerActionTypes.ADD_TO_DISCARD; payload: { card: PlayingCard } }
-  | { type: PlayerActionTypes.ADD_TO_TRASH; payload: { card: PlayingCard } }
+  | { type: PlayerActionTypes.ADD_TO_DISCARD; payload: { card: CardInstance } }
+  | { type: PlayerActionTypes.ADD_TO_TRASH; payload: { card: CardInstance } }
   | {
       type: PlayerActionTypes.ADD_TO_SCORE_AREA;
-      payload: { card: AgendaPlayingCard };
+      payload: { card: CardInstance };
     }
   | {
       type: PlayerActionTypes.ADD_TO_ACCESSED_CARDS;
-      payload: { cards: PlayingCard[] };
+      payload: { cards: CardInstance[] };
     }
-  | { type: PlayerActionTypes.ADD_TO_DECK; payload: { card: PlayingCard } }
+  | { type: PlayerActionTypes.ADD_TO_DECK; payload: { card: CardInstance } }
   | { type: PlayerActionTypes.CLEAR_ACCESSED_CARDS }
   | { type: PlayerActionTypes.CLEAR_PLAYED_CARDS }
   | { type: PlayerActionTypes.REMOVE_CARD_FROM_HAND; payload: number }

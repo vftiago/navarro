@@ -1,6 +1,7 @@
-import { createPlayerCardById } from "../cardDefinitions/createPlayingCard";
 import type { PlayerCardId } from "../cardDefinitions/registry";
 import { CardId } from "../cardDefinitions/registry";
+import type { CardInstance } from "../cards/instance";
+import { createCardInstance } from "../cards/instance";
 
 /**
  * Player starter deck definition using type-safe CardId references
@@ -17,6 +18,7 @@ const deckList: { count: number; id: PlayerCardId }[] = [
   { count: 1, id: CardId.INTRUSIVE_THOUGHTS },
 ];
 
-export const playerStarterDeck = deckList.flatMap(({ count, id }) =>
-  Array.from({ length: count }, () => createPlayerCardById(id)),
+export const playerStarterDeck: CardInstance[] = deckList.flatMap(
+  ({ count, id }) =>
+    Array.from({ length: count }, () => createCardInstance(id)),
 );

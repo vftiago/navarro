@@ -1,27 +1,17 @@
 import { Text, Tooltip } from "@mantine/core";
 import { IoMdReturnRight } from "react-icons/io";
-import {
-  type CardEffect,
-  type EffectCost,
-  TriggerMoment,
-} from "../../../../cardDefinitions/card";
-import { getKeywordDefinition } from "../../../../cards/engine";
+import type { EffectCost } from "../../../../cardDefinitions/card";
+import type { CardTextLine } from "../../../../cards/engine";
 
-const renderEffectCosts = (costs: EffectCost[]) => {
+const renderLineCosts = (costs: EffectCost[]) => {
   return costs.map((cost, index) => {
     return `${cost}${index >= costs.length - 1 ? ": " : ", "}`;
   });
 };
 
-export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
-  if (!cardEffects) {
-    return null;
-  }
-
-  const effects = cardEffects.map((effect, index) => {
-    const { costs, getText, keyword, triggerMoment } = effect;
-
-    const isSubroutine = triggerMoment === TriggerMoment.ON_ENCOUNTER;
+export const CardEffects = ({ textLines }: { textLines: CardTextLine[] }) => {
+  return textLines.map((line, index) => {
+    const { costs, isSubroutine, keyword, reminderText, text } = line;
 
     return (
       <Text fw="500" key={index} size="xs">
@@ -32,19 +22,17 @@ export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
         ) : null}
 
         {costs ? (
-          <span className="inline">{renderEffectCosts(costs)}</span>
+          <span className="inline">{renderLineCosts(costs)}</span>
         ) : null}
 
         {keyword ? (
-          <Tooltip label={getKeywordDefinition(keyword).reminderText}>
-            <span className="inline text-purple-300">{getText()}</span>
+          <Tooltip label={reminderText}>
+            <span className="inline text-purple-300">{text}</span>
           </Tooltip>
         ) : (
-          <span className="inline">{getText()}</span>
+          <span className="inline">{text}</span>
         )}
       </Text>
     );
   });
-
-  return effects;
 };

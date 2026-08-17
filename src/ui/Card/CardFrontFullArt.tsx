@@ -1,13 +1,17 @@
 import { Card, Image, Text } from "@mantine/core";
 import clsx from "clsx";
-import type { CardDefinitions } from "../../cardDefinitions/card";
 import { CardType } from "../../cardDefinitions/card";
+import type { CardDefinition } from "../../cards/definitions";
 import { getCardSize } from "../../state/settings";
 import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";
 
-export const CardFrontFullArt = ({ card }: { card: CardDefinitions }) => {
-  const { image, name, type } = card;
+export const CardFrontFullArt = ({
+  definition,
+}: {
+  definition: CardDefinition;
+}) => {
+  const { image, name, type } = definition;
 
   const cardSize = useGameStore(getCardSize);
 

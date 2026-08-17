@@ -1,29 +1,26 @@
-import {
-  CardType,
-  type AgendaCardDefinitions,
-  type ProgramCardDefinitions,
-  type ServerCardDefinitions,
-} from "../../../cardDefinitions/card";
+import { CardType } from "../../../cardDefinitions/card";
+import type { CardDefinition } from "../../../cards/definitions";
+import { getCardTextLines } from "../../../cards/engine";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 type CardFrontGenericProps = {
-  card: AgendaCardDefinitions | ProgramCardDefinitions | ServerCardDefinitions;
+  definition: Exclude<CardDefinition, { type: CardType.ICE }>;
 };
 
-export const CardFrontGeneric = ({ card }: CardFrontGenericProps) => {
-  const { cardEffects, flavorText, image, name, rarity, type } = card;
+export const CardFrontGeneric = ({ definition }: CardFrontGenericProps) => {
+  const { flavorText, image, name, rarity, type } = definition;
 
   const isAgenda = type === CardType.AGENDA;
-  const subtype = "subtype" in card ? card.subtype : undefined;
+  const subtype = "subtype" in definition ? definition.subtype : undefined;
 
   return (
     <CardFrontLayout
-      cardEffects={cardEffects}
       flavorText={flavorText}
       image={image}
       name={name}
       rarity={rarity}
       subtype={subtype}
+      textLines={getCardTextLines(definition)}
       titleClassName={isAgenda ? "text-yellow-300" : undefined}
       type={type}
     />

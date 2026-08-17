@@ -58,7 +58,7 @@ export const createEventHandler = (
 
         // Validate: Card must exist in hand
         const card = state.playerState.playerHand[event.payload.handIndex];
-        if (!card || card.deckContextId !== event.payload.cardId) {
+        if (!card || card.instanceId !== event.payload.cardId) {
           console.error("Card not found in hand at specified index");
           return;
         }
@@ -103,7 +103,7 @@ export const createEventHandler = (
         // Validate: Ice must be the current encountered ice
         if (
           !state.serverState.serverCurrentEncounteredIce ||
-          state.serverState.serverCurrentEncounteredIce.deckContextId !==
+          state.serverState.serverCurrentEncounteredIce.instanceId !==
             event.payload.iceId
         ) {
           console.warn("Can only click currently encountered ice");
@@ -127,7 +127,7 @@ export const createEventHandler = (
 
         // Validate: Card must be in accessed cards
         const accessedCard = state.playerState.playerAccessedCards.find(
-          (card) => card.deckContextId === event.payload.cardId,
+          (card) => card.instanceId === event.payload.cardId,
         );
 
         if (!accessedCard) {

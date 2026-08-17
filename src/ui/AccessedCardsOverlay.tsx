@@ -28,7 +28,7 @@ export const AccessedCardsOverlay = () => {
 
   const handleCardClick = (card: (typeof playerAccessedCards)[0]) => {
     eventBus.emit({
-      payload: { cardId: card.deckContextId },
+      payload: { cardId: card.instanceId },
       type: GameEventType.PLAYER_SELECT_ACCESSED_CARD,
     });
   };
@@ -57,7 +57,7 @@ export const AccessedCardsOverlay = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
-                  key={card.deckContextId}
+                  key={card.instanceId}
                   whileHover={{ scale: 1.1 }}
                   onClick={() => handleCardClick(card)}
                 >

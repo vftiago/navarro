@@ -1,4 +1,4 @@
-import type { IcePlayingCard } from "../../cardDefinitions/card";
+import type { IceCardInstance } from "../../cards/instance";
 import type { ServerAction } from "./types";
 import { type ServerName, ServerActionTypes } from "./types";
 
@@ -8,14 +8,14 @@ export const modifyServerSecurity = (amount: number): ServerAction => ({
 });
 
 export const addToIce = (
-  ice: IcePlayingCard,
+  ice: IceCardInstance,
   server: ServerName,
 ): ServerAction => ({
   payload: { ice, server },
   type: ServerActionTypes.ADD_TO_ICE,
 });
 
-export const addToUnencounteredIce = (ice: IcePlayingCard): ServerAction => ({
+export const addToUnencounteredIce = (ice: IceCardInstance): ServerAction => ({
   payload: { ice },
   type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE,
 });
@@ -25,7 +25,7 @@ export const clearUnencounteredIce = (): ServerAction => ({
 });
 
 export const removeFromIce = (
-  ice: IcePlayingCard,
+  ice: IceCardInstance,
   server: ServerName,
 ): ServerAction => ({
   payload: { ice, server },
@@ -33,14 +33,14 @@ export const removeFromIce = (
 });
 
 export const removeFromUnencounteredIce = (
-  ice: IcePlayingCard,
+  ice: IceCardInstance,
 ): ServerAction => ({
   payload: { ice },
   type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE,
 });
 
 export const setCurrentEncounteredIce = (
-  ice: IcePlayingCard | null,
+  ice: IceCardInstance | null,
 ): ServerAction => ({
   payload: { ice },
   type: ServerActionTypes.SET_CURRENT_ENCOUNTERED_ICE,

@@ -279,16 +279,24 @@ Implementation notes / deviations:
 
 Bonus: card UI now shows each keyword's reminder text as a tooltip (`CardEffects.tsx` reads the registry) — e.g. hovering "Trash." shows "(Goes to the trash after being played.)".
 
-### Phase 4 — Definition/instance split (the big one)
+### Phase 4 — Definition/instance split (the big one) ✅ DONE
 
-1. Introduce `CardInstance` + `createCardInstance`; change deck utils to produce instances.
-2. Slice by slice (player → server → board): change state types from `PlayingCard` to `CardInstance`, updating reducers/selectors. `deckContextId` → `instanceId`; move `isRezzed` to the ice instance.
-3. Add `useCardView` / `resolveCard` and update UI components (`Card/*`, `PlayerHand`, `IceRow`, modals) to consume resolved views; rules text comes from `renderCardText`.
-4. Update phase thunks (`playPhase`, `runPhase`, `accessPhase`, `corpPhase`, damage utils) to resolve definitions at the point of use.
+1. ✅ `src/cards/instance.ts`: `CardInstance` (`{ instanceId, definitionId }`), `IceCardInstance` (+ `isRezzed`, moved off the definition), `createCardInstance`/`createIceCardInstance`, `resolveCard`/`resolveIceCard`.
+2. ✅ All state slices store instances: player module (deck/hand/piles/programs/accessed/score), server module (installed/unencountered/current ice). `deckContextId` → `instanceId` everywhere (state, phases, eventHandler, UI keys).
+3. ✅ UI resolves definitions at the edge: `CardFront` takes an instance, resolves once, routes to `CardFrontIce`/`CardFrontGeneric`/`CardFrontFullArt` with typed definitions. Rules text renders via a new `getCardTextLines(definition)` engine API — `CardTextLine[]` carries the metadata the UI styles (subroutine marker, cost prefix, keyword tooltip) — with `renderCardText` now a thin plain-string wrapper over it.
+4. ✅ Phases and utils execute effects via a new engine executor (`engine/execute.ts`): `executeTriggers(instance, trigger, dispatch, getState)` resolves the definition, filters `resolveEffectSpecs` by effective trigger, and runs implementations with condition gating. `cardUtils` shrank to the two random-card factories.
 
-### Phase 5 — Cleanup
+Phase 5 work absorbed early (dead code deleted as consumers vanished): `createPlayingCard.ts`, the effects `legacyAdapter.ts`, all legacy `CardEffect`/`PlayingCard`/`CardDefinitions` types (`card.ts` is now enums only), the unused `getIceStrength` selector, `getCardById`, and the `CardSubtype` enum.
 
-1. Delete `src/cardDefinitions/` entirely: legacy `CardEffect`, `KEYWORD_EFFECTS`, the adapter, name-based factories, `DRAW_CARDS_1`-style ids.
+Verified: tsc, lint, build, and a CDP-driven multi-turn browser session — corp installed 3 ice over 4 turns with correct live strength math (Biometric 5+1=6 from Bad Moon's aura, Bad Moon 4 excluding itself, Wall of Static 5+1=6), subroutine markers rendered, zero console errors.
+
+### Phase 5 — Cleanup (mostly absorbed into Phases 2–4)
+
+Already done along the way: legacy `CardEffect`/`PlayingCard` types, `KEYWORD_EFFECTS`, the adapter, both card factories (name- and id-based), and `DRAW_CARDS_1`-style ids are all deleted.
+
+Remaining:
+
+1. Move the enums (`card.ts`) and `CardId` registry (`registry.ts`) from `src/cardDefinitions/` into `src/cards/`, then delete `src/cardDefinitions/`.
 2. Update `CLAUDE.md` architecture docs; add a "How to add a card" section pointing at the new flow.
 3. `pnpm lint && pnpm build` zero-warning check.
 

@@ -1,5 +1,6 @@
-import type { PlayingCard } from "../../cardDefinitions/card";
 import { hasKeywordFlag } from "../../cards/engine";
+import type { CardInstance } from "../../cards/instance";
+import { resolveCard } from "../../cards/instance";
 
 export const shuffleCards = <T>(cards: T[]): T[] => {
   const result = [...cards];
@@ -16,18 +17,18 @@ export const drawCardsFromDeck = ({
   discard,
   hand,
 }: {
-  deck: PlayingCard[];
-  hand: PlayingCard[];
-  discard: PlayingCard[];
+  deck: CardInstance[];
+  hand: CardInstance[];
+  discard: CardInstance[];
   count: number;
 }): {
-  newDeck: PlayingCard[];
-  newHand: PlayingCard[];
-  newDiscard: PlayingCard[];
+  newDeck: CardInstance[];
+  newHand: CardInstance[];
+  newDiscard: CardInstance[];
 } => {
-  let remainingDeck: PlayingCard[] = [...deck];
-  let remainingDiscard: PlayingCard[] = [...discard];
-  let drawnCards: PlayingCard[] = [...hand];
+  let remainingDeck: CardInstance[] = [...deck];
+  let remainingDiscard: CardInstance[] = [...discard];
+  let drawnCards: CardInstance[] = [...hand];
 
   while (drawnCards.length < hand.length + count) {
     if (remainingDeck.length === 0) {
@@ -59,18 +60,21 @@ export const discardHand = ({
   hand,
   trash,
 }: {
-  hand: PlayingCard[];
-  discard: PlayingCard[];
-  trash: PlayingCard[];
+  hand: CardInstance[];
+  discard: CardInstance[];
+  trash: CardInstance[];
 }): {
-  newDiscard: PlayingCard[];
-  newTrash: PlayingCard[];
+  newDiscard: CardInstance[];
+  newTrash: CardInstance[];
 } => {
   const newDiscard = [...discard];
   const newTrash = [...trash];
 
   for (const card of hand) {
-    const shouldTrash = hasKeywordFlag(card.keywords, "trashOnHandDiscard");
+    const shouldTrash = hasKeywordFlag(
+      resolveCard(card).keywords,
+      "trashOnHandDiscard",
+    );
 
     if (shouldTrash) {
       newTrash.unshift(card);

@@ -1,36 +1,40 @@
-import type { ComponentProps } from "react";
 import { CardType } from "../../../cardDefinitions/card";
+import type { CardInstance } from "../../../cards/instance";
+import { resolveCard } from "../../../cards/instance";
 import { getFullArt } from "../../../state/settings";
 import { useGameStore } from "../../../state/store";
 import { CardFrontFullArt } from "../CardFrontFullArt";
 import { CardFrontGeneric } from "./CardFrontGeneric";
 import { CardFrontIce } from "./CardFrontIce";
 
-type CardFrontProps = Omit<
-  ComponentProps<typeof CardFrontGeneric | typeof CardFrontIce>,
-  "size"
-> & {
+type CardFrontProps = {
+  card: CardInstance;
   isBeingEncountered?: boolean;
   onClick?: () => void;
 };
 
-export const CardFront = (props: CardFrontProps) => {
-  const { card, isBeingEncountered, onClick } = props;
+export const CardFront = ({
+  card,
+  isBeingEncountered,
+  onClick,
+}: CardFrontProps) => {
   const fullArt = useGameStore(getFullArt);
+  const definition = resolveCard(card);
 
   if (fullArt) {
-    return <CardFrontFullArt card={card} />;
+    return <CardFrontFullArt definition={definition} />;
   }
 
-  if (card.type === CardType.ICE) {
+  if (definition.type === CardType.ICE) {
     return (
       <CardFrontIce
-        card={card}
+        definition={definition}
+        instance={card}
         isBeingEncountered={isBeingEncountered}
         onClick={onClick}
       />
     );
   }
 
-  return <CardFrontGeneric card={card} />;
+  return <CardFrontGeneric definition={definition} />;
 };

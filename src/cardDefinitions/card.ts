@@ -1,7 +1,3 @@
-import type { ReactNode } from "react";
-import type { GameAction, GameState, ThunkAction } from "../state/types";
-import type { CardId } from "./registry";
-
 export enum CardRarity {
   BASIC = "Basic",
   COMMON = "Common",
@@ -15,21 +11,6 @@ export enum CardType {
   PROGRAM = "Program", // the equivalent to permanents
   FILE = "File", // cards that don't do anything on their own
   ICE = "Ice", // the equivalent to enemy permanents
-}
-
-export enum CardSubtype {
-  ACTION = "Action",
-  COMMAND = "Command",
-  OPERATION = "Operation",
-  UPGRADE = "Upgrade",
-  ASSET = "Asset",
-  IDENTITY = "Identity",
-  EVENT = "Event",
-  RESOURCE = "Resource",
-  HARDWARE = "Hardware",
-  CONNECTION = "Connection",
-  TRAP = "Trap",
-  FILE = "File",
 }
 
 export enum IceSubtype {
@@ -73,79 +54,3 @@ export enum Keyword {
   TRASH = "Trash",
   STEALTHY = "Stealthy",
 }
-
-export type CardEffect = {
-  costs?: EffectCost[];
-  keyword?: Keyword;
-  triggerMoment: TriggerMoment;
-  getActions?: ({
-    gameState,
-    sourceId,
-    targetId,
-  }: {
-    gameState: GameState;
-    sourceId?: string;
-    targetId?: string;
-  }) => GameAction[];
-  getThunk?: ({
-    gameState,
-    sourceId,
-    targetId,
-  }: {
-    gameState: GameState;
-    sourceId?: string;
-    targetId?: string;
-  }) => ThunkAction;
-  getText: () => ReactNode;
-};
-
-export type BaseCardDefinitions = {
-  id: CardId;
-  name: string;
-  rarity: CardRarity;
-  image: string;
-  cardEffects: CardEffect[];
-  keywords?: Keyword[];
-  flavorText?: string;
-};
-
-export type IceCardDefinitions = BaseCardDefinitions & {
-  type: CardType.ICE;
-  subtype: IceSubtype.BARRIER | IceSubtype.CODE_GATE | IceSubtype.SENTRY;
-  isRezzed: boolean;
-  damage: number;
-  getStrength: (gameState: GameState) => number;
-};
-
-export type ProgramCardDefinitions = BaseCardDefinitions & {
-  type: CardType.PROGRAM;
-  subtype: ProgramSubtype;
-};
-
-export type AgendaCardDefinitions = BaseCardDefinitions & {
-  type: CardType.AGENDA;
-  victoryPoints: number;
-};
-
-export type ServerCardDefinitions = BaseCardDefinitions & {
-  type: Exclude<CardType, CardType.ICE | CardType.AGENDA | CardType.PROGRAM>;
-};
-
-export type CardDefinitions =
-  | ServerCardDefinitions
-  | IceCardDefinitions
-  | ProgramCardDefinitions
-  | AgendaCardDefinitions;
-
-type WithDeckContext<T> = T & { deckContextId: string };
-
-export type ServerPlayingCard = WithDeckContext<ServerCardDefinitions>;
-export type IcePlayingCard = WithDeckContext<IceCardDefinitions>;
-export type ProgramPlayingCard = WithDeckContext<ProgramCardDefinitions>;
-export type AgendaPlayingCard = WithDeckContext<AgendaCardDefinitions>;
-
-export type PlayingCard =
-  | ServerPlayingCard
-  | IcePlayingCard
-  | ProgramPlayingCard
-  | AgendaPlayingCard;

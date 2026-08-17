@@ -5,6 +5,11 @@
  */
 export * from "./effects";
 export {
+  executeEffectSpec,
+  executeTriggers,
+  getEffectSpecsByTrigger,
+} from "./execute";
+export {
   getKeywordDefinition,
   getKeywordGrants,
   hasKeywordFlag,
@@ -14,6 +19,8 @@ export {
 } from "./keywords";
 export { getImplicitEffects, resolveEffectSpecs } from "./resolve";
 export {
+  type CardTextLine,
+  getCardTextLines,
   getEffectiveTrigger,
   renderCardText,
   renderEffectBody,

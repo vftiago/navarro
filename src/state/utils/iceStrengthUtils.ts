@@ -1,4 +1,5 @@
-import type { IcePlayingCard } from "../../cardDefinitions/card";
+import type { IceCardDefinition } from "../../cards/definitions";
+import type { CardInstance } from "../../cards/instance";
 import type { GameState } from "../types";
 
 export type IceStrength = {
@@ -8,10 +9,11 @@ export type IceStrength = {
 };
 
 export const calculateIceStrength = (
-  ice: IcePlayingCard,
+  ice: CardInstance,
+  definition: IceCardDefinition,
   gameState: GameState,
 ): IceStrength => {
-  const baseStrength = ice.getStrength(gameState);
+  const baseStrength = definition.strength;
 
   const relevantEffects = gameState.boardState.permanentEffects.filter(
     (effect) => effect.targetSelector === "getIceStrength",
@@ -21,7 +23,7 @@ export const calculateIceStrength = (
     const mod = getModifier({
       gameState,
       sourceId,
-      targetId: ice.deckContextId,
+      targetId: ice.instanceId,
     });
     return acc + mod;
   }, 0);

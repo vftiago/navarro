@@ -12,7 +12,14 @@ import type {
   Keyword,
   ProgramSubtype,
 } from "../../cardDefinitions/card";
-import type { CardId } from "../../cardDefinitions/registry";
+import type {
+  AgendaCardId,
+  CardId,
+  IceCardId,
+  ProgramCardId,
+  ScriptCardId,
+  TrapCardId,
+} from "../../cardDefinitions/registry";
 import type { EffectSpec } from "../engine/effects";
 
 export type BaseCardDefinition = {
@@ -29,6 +36,7 @@ export type BaseCardDefinition = {
 
 export type IceCardDefinition = BaseCardDefinition & {
   damage: number;
+  id: IceCardId;
   /** Base strength; modifier effects (e.g. strength_per_server_security) add to it */
   strength: number;
   subtype: IceSubtype;
@@ -36,17 +44,20 @@ export type IceCardDefinition = BaseCardDefinition & {
 };
 
 export type ProgramCardDefinition = BaseCardDefinition & {
+  id: ProgramCardId;
   subtype: ProgramSubtype;
   type: CardType.PROGRAM;
 };
 
 export type AgendaCardDefinition = BaseCardDefinition & {
+  id: AgendaCardId;
   type: CardType.AGENDA;
   victoryPoints: number;
 };
 
 /** Scripts, files, traps — cards with no extra stats beyond the base */
 export type GenericCardDefinition = BaseCardDefinition & {
+  id: ScriptCardId | TrapCardId;
   type: Exclude<CardType, CardType.AGENDA | CardType.ICE | CardType.PROGRAM>;
 };
 

@@ -5,6 +5,7 @@
  * can never drift apart. Precedence: card-level `text` override >
  * per-effect `text` override > generated.
  */
+import type { EffectCost, Keyword } from "../../cardDefinitions/card";
 import { TriggerMoment } from "../../cardDefinitions/card";
 import type { CardDefinition } from "../definitions/types";
 import { getConditionImplementation } from "./effects/conditions";
@@ -15,6 +16,7 @@ import type {
   EffectImplementation,
   EffectSpec,
 } from "./effects/types";
+import { getKeywordDefinition } from "./keywords";
 import { resolveEffectSpecs } from "./resolve";
 
 /**
@@ -102,6 +104,21 @@ export const renderEffectText = (spec: EffectSpec): string => {
 };
 
 /**
+ * One rendered line of a card's rules text, with the metadata the UI
+ * needs to style it (subroutine marker, cost prefix, keyword tooltip)
+ */
+export type CardTextLine = {
+  /** Costs to render as a prefix, e.g. "Click: " */
+  costs?: EffectCost[];
+  /** Render with the subroutine marker (ON_ENCOUNTER effects) */
+  isSubroutine?: boolean;
+  /** Set for keyword lines — style distinctly, tooltip the reminder */
+  keyword?: Keyword;
+  reminderText?: string;
+  text: string;
+};
+
+/**
  * All rules-text lines for a card: keyword lines first, then effect lines
  * (printed and implicit — e.g. an agenda's derived "Score N.").
  *
@@ -109,13 +126,17 @@ export const renderEffectText = (spec: EffectSpec): string => {
  * single label: "On Upkeep: Draw 1 card. Lose 1 click." A card-level `text`
  * override replaces the effect lines (keyword lines always render).
  */
-export const renderCardText = (definition: CardDefinition): string[] => {
-  const lines: string[] = (definition.keywords ?? []).map(
-    (keyword) => `${keyword}.`,
-  );
+export const getCardTextLines = (
+  definition: CardDefinition,
+): CardTextLine[] => {
+  const lines: CardTextLine[] = (definition.keywords ?? []).map((keyword) => ({
+    keyword,
+    reminderText: getKeywordDefinition(keyword).reminderText,
+    text: `${keyword}.`,
+  }));
 
   if (definition.text) {
-    lines.push(definition.text);
+    lines.push({ text: definition.text });
     return lines;
   }
 
@@ -125,7 +146,14 @@ export const renderCardText = (definition: CardDefinition): string[] => {
     const spec = specs[index];
     const label = getTriggerLabel(spec);
     if (!label) {
-      lines.push(renderEffectText(spec));
+      const costs = spec.costs ?? getEffectImplementation(spec.effect).costs;
+      lines.push({
+        text: renderEffectText(spec),
+        ...(costs && { costs }),
+        ...(getEffectiveTrigger(spec) === TriggerMoment.ON_ENCOUNTER && {
+          isSubroutine: true,
+        }),
+      });
       index += 1;
       continue;
     }
@@ -142,8 +170,15 @@ export const renderCardText = (definition: CardDefinition): string[] => {
       bodies.push(renderEffectBody(specs[index]));
       index += 1;
     }
-    lines.push(`${label}: ${bodies.join(" ")}`);
+    lines.push({ text: `${label}: ${bodies.join(" ")}` });
   }
 
   return lines;
+};
+
+/**
+ * A card's full rules text as plain strings
+ */
+export const renderCardText = (definition: CardDefinition): string[] => {
+  return getCardTextLines(definition).map((line) => line.text);
 };

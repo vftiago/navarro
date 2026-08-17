@@ -42,7 +42,7 @@ export const IceRow = () => {
   const handleIceClick = (iceId: string) => {
     if (
       isEncounterActive &&
-      serverCurrentEncounteredIce?.deckContextId === iceId
+      serverCurrentEncounteredIce?.instanceId === iceId
     ) {
       eventBus.emit({
         payload: { iceId },
@@ -92,8 +92,8 @@ export const IceRow = () => {
                 const ice = serverIce[index];
                 const isBeingEncountered =
                   ice &&
-                  serverCurrentEncounteredIce?.deckContextId ===
-                    ice.deckContextId;
+                  serverCurrentEncounteredIce?.instanceId ===
+                    ice.instanceId;
 
                 return (
                   <Stack
@@ -105,7 +105,7 @@ export const IceRow = () => {
                       <CardFront
                         card={ice}
                         isBeingEncountered={isBeingEncountered}
-                        onClick={() => handleIceClick(ice.deckContextId)}
+                        onClick={() => handleIceClick(ice.instanceId)}
                       />
                     ) : null}
                   </Stack>

@@ -1,9 +1,9 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
+import { executeTriggers } from "../../cards/engine";
 import { getPlayerInstalledPrograms } from "../player";
 import { setTurnCurrentPhase } from "../turn/actions";
 import { TurnPhase } from "../turn/types";
 import type { ThunkAction } from "../types";
-import { executeCardEffects, getCardEffectsByTrigger } from "../utils";
 
 /**
  * Upkeep Phase - Consolidated single handler (no subphases)
@@ -17,15 +17,7 @@ export const upkeepPhase = (): ThunkAction => {
     const playerPrograms = getPlayerInstalledPrograms(getState());
 
     playerPrograms.forEach((card) => {
-      const upkeepEffects = getCardEffectsByTrigger(
-        card,
-        TriggerMoment.ON_UPKEEP,
-      );
-
-      executeCardEffects(upkeepEffects, dispatch, getState, {
-        gameState: getState(),
-        sourceId: card.deckContextId,
-      });
+      executeTriggers(card, TriggerMoment.ON_UPKEEP, dispatch, getState);
     });
 
     // After upkeep effects, transition to Main phase

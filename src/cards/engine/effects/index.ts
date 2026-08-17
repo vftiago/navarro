@@ -4,7 +4,6 @@
  * See CARD_REGISTRY.md for the architecture and migration plan.
  */
 export { conditionRegistry, getConditionImplementation } from "./conditions";
-export { specToCardEffect } from "./legacyAdapter";
 export { primitiveEffects, type PrimitiveEffectId } from "./primitives";
 export { effectRegistry, getEffectImplementation } from "./registry";
 export type {

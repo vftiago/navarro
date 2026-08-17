@@ -1,27 +1,32 @@
 import clsx from "clsx";
-import type { IcePlayingCard } from "../../../cardDefinitions/card";
+import type { IceCardDefinition } from "../../../cards/definitions";
+import { getCardTextLines } from "../../../cards/engine";
+import type { CardInstance } from "../../../cards/instance";
 import { getGameState, useGameStore } from "../../../state/store";
 import { calculateIceStrength } from "../../../state/utils/iceStrengthUtils";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 export const CardFrontIce = ({
-  card,
+  definition,
+  instance,
   isBeingEncountered,
   onClick,
 }: {
-  card: IcePlayingCard;
+  definition: IceCardDefinition;
+  instance: CardInstance;
   isBeingEncountered?: boolean;
   onClick?: () => void;
 }) => {
   // Subscribe to board state to trigger re-renders when effects change
   useGameStore((state) => state.boardState);
 
-  const { cardEffects, flavorText, image, name, rarity, subtype, type } = card;
+  const { flavorText, image, name, rarity, subtype, type } = definition;
 
   // Calculate strength using utility
   const gameState = getGameState();
   const { base: baseStrength, current: currentStrength } = calculateIceStrength(
-    card,
+    instance,
+    definition,
     gameState,
   );
 
@@ -41,7 +46,6 @@ export const CardFrontIce = ({
 
   return (
     <CardFrontLayout
-      cardEffects={cardEffects}
       flavorText={flavorText}
       image={image}
       isBeingEncountered={isBeingEncountered}
@@ -49,6 +53,7 @@ export const CardFrontIce = ({
       overlay={strengthOverlay}
       rarity={rarity}
       subtype={subtype}
+      textLines={getCardTextLines(definition)}
       type={type}
       onClick={onClick}
     />

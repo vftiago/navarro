@@ -1,4 +1,4 @@
-import type { IcePlayingCard } from "../../cardDefinitions/card";
+import type { IceCardInstance } from "../../cards/instance";
 
 export enum ServerName {
   HQ = "HQ",
@@ -9,14 +9,14 @@ export enum ServerName {
 export const ALL_SERVERS = [ServerName.HQ];
 
 export type ServerData = {
-  installedIce: IcePlayingCard[];
+  installedIce: IceCardInstance[];
 };
 
 export type ServerState = {
   servers: Record<ServerName, ServerData>;
   selectedServer: ServerName;
-  serverUnencounteredIce: IcePlayingCard[];
-  serverCurrentEncounteredIce: IcePlayingCard | null;
+  serverUnencounteredIce: IceCardInstance[];
+  serverCurrentEncounteredIce: IceCardInstance | null;
   serverSecurityLevel: number;
   serverMaxIceSlots: number;
 };
@@ -36,24 +36,24 @@ export type ServerAction =
   | { type: ServerActionTypes.MODIFY_SERVER_SECURITY; payload: number }
   | {
       type: ServerActionTypes.ADD_TO_ICE;
-      payload: { ice: IcePlayingCard; server: ServerName };
+      payload: { ice: IceCardInstance; server: ServerName };
     }
   | {
       type: ServerActionTypes.ADD_TO_UNENCOUNTERED_ICE;
-      payload: { ice: IcePlayingCard };
+      payload: { ice: IceCardInstance };
     }
   | { type: ServerActionTypes.CLEAR_UNENCOUNTERED_ICE }
   | {
       type: ServerActionTypes.REMOVE_FROM_ICE;
-      payload: { ice: IcePlayingCard; server: ServerName };
+      payload: { ice: IceCardInstance; server: ServerName };
     }
   | {
       type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE;
-      payload: { ice: IcePlayingCard };
+      payload: { ice: IceCardInstance };
     }
   | {
       type: ServerActionTypes.SET_CURRENT_ENCOUNTERED_ICE;
-      payload: { ice: IcePlayingCard | null };
+      payload: { ice: IceCardInstance | null };
     }
   | {
       type: ServerActionTypes.SET_SELECTED_SERVER;

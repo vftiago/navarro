@@ -1,19 +1,18 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import {
-  type CardEffect,
   type CardRarity,
   type CardType,
   type IceSubtype,
   type ProgramSubtype,
 } from "../../../cardDefinitions/card";
+import type { CardTextLine } from "../../../cards/engine";
 import { CardBase } from "../CardBase";
 import { CardEffects } from "./components/CardEffects";
 import { CardTitle } from "./components/CardTitle";
 import { CardTypeLine } from "./components/CardTypeLine";
 
 type CardFrontLayoutProps = {
-  cardEffects: CardEffect[];
   flavorText?: string;
   image: string;
   isBeingEncountered?: boolean;
@@ -22,12 +21,12 @@ type CardFrontLayoutProps = {
   overlay?: ReactNode;
   rarity: CardRarity;
   subtype?: IceSubtype | ProgramSubtype;
+  textLines: CardTextLine[];
   titleClassName?: string;
   type: CardType;
 };
 
 export const CardFrontLayout = ({
-  cardEffects,
   flavorText,
   image,
   isBeingEncountered,
@@ -36,6 +35,7 @@ export const CardFrontLayout = ({
   overlay,
   rarity,
   subtype,
+  textLines,
   titleClassName,
   type,
 }: CardFrontLayoutProps) => {
@@ -61,7 +61,7 @@ export const CardFrontLayout = ({
       </Card.Section>
       <Card.Section flex={1}>
         <Stack align="center" gap="0.25rem" h="100%" justify="center" p="xs">
-          <CardEffects cardEffects={cardEffects} />
+          <CardEffects textLines={textLines} />
           {flavorText ? (
             <Text className="italic" size="xs">
               {flavorText}

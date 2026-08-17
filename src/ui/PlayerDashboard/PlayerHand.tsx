@@ -3,8 +3,9 @@ import clsx from "clsx";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import type { PlayingCard } from "../../cardDefinitions/card";
 import { hasKeywordFlag } from "../../cards/engine";
+import type { CardInstance } from "../../cards/instance";
+import { resolveCard } from "../../cards/instance";
 import { GameEventType, useEventBus } from "../../state/events";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
@@ -81,7 +82,7 @@ export const PlayerHand = () => {
 
   useEffect(() => {
     const currentCardIds = new Set(
-      playerHand.map((card) => card.deckContextId),
+      playerHand.map((card) => card.instanceId),
     );
 
     for (const [id] of cardRefs.current) {
@@ -95,23 +96,23 @@ export const PlayerHand = () => {
   const topValues = calculateCardTopValues(playerHand.length);
 
   const handleCardClick = useCallback(
-    (card: PlayingCard, index: number) => {
+    (card: CardInstance, index: number) => {
       // Only allow card play during Main phase
       if (!isMainPhase) {
         return;
       }
 
-      if (hasKeywordFlag(card.keywords, "unplayable")) {
+      if (hasKeywordFlag(resolveCard(card).keywords, "unplayable")) {
         return;
       }
 
-      const cardElement = cardRefs.current.get(card.deckContextId);
+      const cardElement = cardRefs.current.get(card.instanceId);
 
       if (!cardElement) {
         return;
       }
 
-      setExitingCards((prev) => new Set(prev).add(card.deckContextId));
+      setExitingCards((prev) => new Set(prev).add(card.instanceId));
 
       void animate(
         cardElement,
@@ -124,7 +125,7 @@ export const PlayerHand = () => {
       setTimeout(() => {
         setExitingCards((prev) => {
           const next = new Set(prev);
-          next.delete(card.deckContextId);
+          next.delete(card.instanceId);
           return next;
         });
 
@@ -132,7 +133,7 @@ export const PlayerHand = () => {
         // Event handler will validate, set pending action, and transition phase
         eventBus.emit({
           payload: {
-            cardId: card.deckContextId,
+            cardId: card.instanceId,
             handIndex: index,
           },
           type: GameEventType.PLAYER_PLAY_CARD,
@@ -182,7 +183,7 @@ export const PlayerHand = () => {
           variants={containerVariants}
         >
           {playerHand.map((card, index) => {
-            const isExiting = exitingCards.has(card.deckContextId);
+            const isExiting = exitingCards.has(card.instanceId);
 
             return (
               <motion.li
@@ -194,8 +195,8 @@ export const PlayerHand = () => {
                     "pointer-events-none": isExiting,
                   },
                 )}
-                key={card.deckContextId}
-                ref={(el) => setCardRef(card.deckContextId, el)}
+                key={card.instanceId}
+                ref={(el) => setCardRef(card.instanceId, el)}
                 style={{
                   rotate: isExiting ? 0 : rotationValues[index],
                   scale: isExiting ? 1.1 : 1,

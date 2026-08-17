@@ -1,31 +1,31 @@
-import type { PlayingCard } from "../../cardDefinitions/card";
+import type { CardInstance } from "../../cards/instance";
 import type { GameState } from "../types";
 
-export const getPlayerHand = (state: GameState): PlayingCard[] =>
+export const getPlayerHand = (state: GameState): CardInstance[] =>
   state.playerState.playerHand;
 
-export const getPlayerDeck = (state: GameState): PlayingCard[] =>
+export const getPlayerDeck = (state: GameState): CardInstance[] =>
   state.playerState.playerDeck;
 
-export const getPlayerDiscardPile = (state: GameState): PlayingCard[] =>
+export const getPlayerDiscardPile = (state: GameState): CardInstance[] =>
   state.playerState.playerDiscardPile;
 
-export const getPlayerTrashPile = (state: GameState): PlayingCard[] =>
+export const getPlayerTrashPile = (state: GameState): CardInstance[] =>
   state.playerState.playerTrashPile;
 
-export const getPlayerScoreArea = (state: GameState): PlayingCard[] =>
+export const getPlayerScoreArea = (state: GameState): CardInstance[] =>
   state.playerState.playerScoreArea;
 
-export const getPlayerInstalledPrograms = (state: GameState): PlayingCard[] =>
+export const getPlayerInstalledPrograms = (state: GameState): CardInstance[] =>
   state.playerState.playerInstalledPrograms;
 
 export const getPlayerMaxHandSize = (state: GameState): number =>
   state.playerState.playerMaxHandSize;
 
-export const getPlayerPlayedCards = (state: GameState): PlayingCard[] =>
+export const getPlayerPlayedCards = (state: GameState): CardInstance[] =>
   state.playerState.playerPlayedCards;
 
-export const getPlayerAccessedCards = (state: GameState): PlayingCard[] =>
+export const getPlayerAccessedCards = (state: GameState): CardInstance[] =>
   state.playerState.playerAccessedCards;
 
 export const getPlayerCardsPerTurn = (state: GameState): number => {
@@ -55,5 +55,5 @@ export const getPlayerTags = (state: GameState): number =>
 export const getPlayerVictoryPoints = (state: GameState): number =>
   state.playerState.playerVictoryPoints;
 
-export const getAccessedCards = (state: GameState): PlayingCard[] =>
+export const getAccessedCards = (state: GameState): CardInstance[] =>
   state.playerState.playerAccessedCards;

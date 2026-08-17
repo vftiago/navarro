@@ -1,5 +1,6 @@
 import { CardType, TriggerMoment } from "../../cardDefinitions/card";
-import { hasKeywordFlag } from "../../cards/engine";
+import { executeTriggers, hasKeywordFlag } from "../../cards/engine";
+import { resolveCard } from "../../cards/instance";
 import {
   addCardToPlayed,
   addToDiscard,
@@ -18,11 +19,6 @@ import {
   TurnPhase,
 } from "../turn";
 import type { GameAction, ThunkAction } from "../types";
-import {
-  executeCardEffects,
-  executeCardTriggers,
-  getCardEffectsByTrigger,
-} from "../utils";
 
 export type PlayPhasePayload = {
   cardId: string;
@@ -42,7 +38,7 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
     const card = state.playerState.playerHand[payload.handIndex];
 
     // Validate card exists and matches
-    if (!card || card.deckContextId !== payload.cardId) {
+    if (!card || card.instanceId !== payload.cardId) {
       console.error("playPhase: Card mismatch in payload");
       return;
     }
@@ -54,7 +50,7 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
       addCardToPlayed(card),
     ];
 
-    if (!hasKeywordFlag(card.keywords, "noNoiseOnPlay")) {
+    if (!hasKeywordFlag(resolveCard(card).keywords, "noNoiseOnPlay")) {
       playActions.push(modifyPlayerNoise(1));
     }
 
@@ -63,38 +59,27 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
     // Trigger ON_PLAY effects (may dispatch additional actions)
     const playerPlayedCards = getPlayerPlayedCards(getState());
     playerPlayedCards.forEach((playedCard) => {
-      const playEffects = getCardEffectsByTrigger(
-        playedCard,
-        TriggerMoment.ON_PLAY,
-      );
-      executeCardEffects(playEffects, dispatch, getState, {
-        gameState: getState(),
-        sourceId: playedCard.deckContextId,
-      });
+      executeTriggers(playedCard, TriggerMoment.ON_PLAY, dispatch, getState);
     });
 
     // Collect zone movement actions
     const zoneActions: GameAction[] = [];
 
     playerPlayedCards.forEach((playedCard) => {
-      if (playedCard.type === CardType.PROGRAM) {
-        executeCardTriggers(
+      const definition = resolveCard(playedCard);
+      if (definition.type === CardType.PROGRAM) {
+        executeTriggers(
           playedCard,
           TriggerMoment.ON_INSTALL,
           dispatch,
           getState,
         );
         zoneActions.push(addToPrograms(playedCard));
-      } else if (hasKeywordFlag(playedCard.keywords, "trashAfterPlay")) {
-        executeCardTriggers(
-          playedCard,
-          TriggerMoment.ON_TRASH,
-          dispatch,
-          getState,
-        );
+      } else if (hasKeywordFlag(definition.keywords, "trashAfterPlay")) {
+        executeTriggers(playedCard, TriggerMoment.ON_TRASH, dispatch, getState);
         zoneActions.push(addToTrash(playedCard));
       } else {
-        executeCardTriggers(
+        executeTriggers(
           playedCard,
           TriggerMoment.ON_DISCARD,
           dispatch,

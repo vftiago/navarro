@@ -1,12 +1,9 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
+import { executeTriggers } from "../../cards/engine";
 import { addToIce, ALL_SERVERS, modifyServerSecurity } from "../server";
 import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";
-import {
-  executeCardEffects,
-  getCardEffectsByTrigger,
-  getRandomIceCard,
-} from "../utils";
+import { getRandomIceCard } from "../utils";
 
 /**
  * Corp Phase - Consolidated single handler (no subphases)
@@ -34,15 +31,7 @@ export const corpPhase = (): ThunkAction => {
       dispatch(addToIce(randomIceCard, randomServer));
 
       // Trigger ON_REZ effects on newly installed ice
-      const rezEffects = getCardEffectsByTrigger(
-        randomIceCard,
-        TriggerMoment.ON_REZ,
-      );
-
-      executeCardEffects(rezEffects, dispatch, getState, {
-        gameState,
-        sourceId: randomIceCard.deckContextId,
-      });
+      executeTriggers(randomIceCard, TriggerMoment.ON_REZ, dispatch, getState);
     }
 
     // Transition to Draw phase

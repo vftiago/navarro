@@ -1,4 +1,5 @@
 import { TriggerMoment } from "../../cardDefinitions/card";
+import { executeTriggers } from "../../cards/engine";
 import {
   drawCards,
   getPlayerCardsPerTurn,
@@ -11,7 +12,6 @@ import {
   TurnPhase,
 } from "../turn";
 import type { ThunkAction } from "../types";
-import { executeCardEffects, getCardEffectsByTrigger } from "../utils";
 
 /**
  * Draw Phase - Consolidated single handler (no subphases)
@@ -30,11 +30,7 @@ export const drawPhase = (): ThunkAction => {
     // Trigger ON_DRAW effects on all cards in hand
     const { playerHand } = getState().playerState;
     playerHand.forEach((card) => {
-      const drawEffects = getCardEffectsByTrigger(card, TriggerMoment.ON_DRAW);
-      executeCardEffects(drawEffects, dispatch, getState, {
-        gameState: getState(),
-        sourceId: card.deckContextId,
-      });
+      executeTriggers(card, TriggerMoment.ON_DRAW, dispatch, getState);
     });
 
     // Transition to Upkeep or End based on remaining clicks

@@ -13,7 +13,9 @@ import type { ThunkAction } from "../types";
  */
 export const mainPhase = (): ThunkAction => {
   return () => {
-    // Main phase is a pure waiting state - no effects, no phase transition
-    // Player actions (via event system) will transition to other phases
+    /*
+     * Main phase is a pure waiting state - no effects, no phase transition
+     * Player actions (via event system) will transition to other phases
+     */
   };
 };

@@ -74,8 +74,15 @@ export const clickIce = (payload: ClickIcePayload): ThunkAction => {
     const state = getState();
     const currentIce = state.serverState.serverCurrentEncounteredIce;
 
-    if (!currentIce || currentIce.instanceId !== payload.iceId) {
+    if (!currentIce) {
+      console.error("clickIce: no ice is currently encountered");
+
+      return;
+    }
+
+    if (currentIce.instanceId !== payload.iceId) {
       console.error("clickIce: Ice mismatch in payload");
+
       return;
     }
 
@@ -122,6 +129,7 @@ export const selectAccessedCard = (
 
     if (!selectedCard) {
       console.error("selectAccessedCard: Card not found in accessed cards");
+
       return;
     }
 

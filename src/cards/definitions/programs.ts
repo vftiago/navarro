@@ -4,10 +4,12 @@ import type { ProgramCardDefinition } from "./types";
 
 export const programCardDefinitions: ProgramCardDefinition[] = [
   {
-    // TODO: no mechanics yet — the icebreaker interaction (breaking
-    // subroutines during an encounter) is not designed; when it lands it
-    // will be a targeted event (e.g. PLAYER_BREAK_SUBROUTINE), and this
-    // becomes program data like `breaks: IceSubtype.BARRIER`
+    /*
+     * TODO: no mechanics yet — the icebreaker interaction (breaking
+     * subroutines during an encounter) is not designed; when it lands it
+     * will be a targeted event (e.g. PLAYER_BREAK_SUBROUTINE), and this
+     * becomes program data like `breaks: IceSubtype.BARRIER`
+     */
     effects: [],
     flavorText: "Crude, but effective.",
     id: CardId.SLEDGEHAMMER,

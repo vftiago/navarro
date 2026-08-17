@@ -1,10 +1,12 @@
-// Event types for game actions
-//
-// The vocabulary is deliberately minimal: a card click is a single generic
-// event — the event handler resolves what it means from where the card lives
-// and the current phase/run state. Named intents exist only for actions that
-// are not card clicks (buttons). Add a more specific event only when one
-// click could mean two different things (e.g. future ability menus).
+/*
+ * Event types for game actions
+ *
+ * The vocabulary is deliberately minimal: a card click is a single generic
+ * event — the event handler resolves what it means from where the card lives
+ * and the current phase/run state. Named intents exist only for actions that
+ * are not card clicks (buttons). Add a more specific event only when one
+ * click could mean two different things (e.g. future ability menus).
+ */
 export enum GameEventType {
   CARD_CLICKED = "CARD_CLICKED",
   PLAYER_END_TURN = "PLAYER_END_TURN",
@@ -50,10 +52,13 @@ export const createEventBus = (): EventBus => {
 
     subscribe: (listener: (event: GameEvent) => void) => {
       listeners.push(listener);
+
       // Return unsubscribe function
       return () => {
         const index = listeners.indexOf(listener);
-        if (index > -1) listeners.splice(index, 1);
+        if (index > -1) {
+          listeners.splice(index, 1);
+        }
       };
     },
   };

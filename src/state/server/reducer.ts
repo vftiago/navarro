@@ -30,6 +30,7 @@ export const serverReducer = (
 
     case ServerActionTypes.ADD_TO_ICE: {
       const { ice, server } = action.payload;
+
       return {
         ...state,
         servers: {
@@ -44,6 +45,7 @@ export const serverReducer = (
 
     case ServerActionTypes.REMOVE_FROM_ICE: {
       const { ice, server } = action.payload;
+
       return {
         ...state,
         servers: {

@@ -23,7 +23,7 @@ export const PlayerSettings = () => {
             label="Card size"
             value={cardSize}
             onChange={(value) => {
-              if (value) dispatch(setCardSize(value as CardSize));
+              if (value) {dispatch(setCardSize(value as CardSize));}
             }}
           />
           <Switch

@@ -23,25 +23,25 @@ export type EffectContext = {
 };
 
 /**
- * Binds each effect id to its params shape (`void` = no params).
+ * Binds each effect id to its params shape (`undefined` = no params).
  *
  * Parameterized primitives live in `primitives.ts`; genuinely one-off,
  * card-specific effects live in `unique.ts`.
  */
 export type EffectParamsMap = {
-  destroy_all_programs: void;
+  destroy_all_programs: undefined;
   draw: { amount: number };
-  end_run: void;
+  end_run: undefined;
   gain_victory_points: { amount: number };
-  initiate_run: void;
+  initiate_run: undefined;
   modify_cards_per_turn: { amount: number };
   modify_clicks: { amount: number };
   modify_other_ice_strength: { amount: number };
   modify_server_security: { amount: number };
   modify_signal: { amount: number };
   modify_tags: { amount: number };
-  net_damage_per_security: void;
-  strength_per_server_security: void;
+  net_damage_per_security: undefined;
+  strength_per_server_security: undefined;
 };
 
 export type EffectId = keyof EffectParamsMap;
@@ -62,7 +62,7 @@ export type ConditionId = keyof ConditionParamsMap;
 /**
  * The code half of a condition, registered once per condition id
  */
-export type ConditionImplementation<P = void> = {
+export type ConditionImplementation<P = undefined> = {
   /** Returns the generated text fragment, e.g. "if the server security level is 3 or more" */
   getText: (params: P) => string;
   /** Evaluated at effect execution time */
@@ -76,7 +76,7 @@ export type ConditionImplementation<P = void> = {
 export type ConditionSpec = {
   [K in ConditionId]: {
     check: K;
-  } & (ConditionParamsMap[K] extends void
+  } & (ConditionParamsMap[K] extends undefined
     ? { params?: never }
     : { params: ConditionParamsMap[K] });
 }[ConditionId];
@@ -84,7 +84,7 @@ export type ConditionSpec = {
 /**
  * The code half of an effect, registered once per effect id
  */
-export type EffectImplementation<P = void> = {
+export type EffectImplementation<P = undefined> = {
   /** When this effect triggers unless the spec overrides it */
   defaultTrigger: TriggerMoment;
   /** Returns actions to dispatch (simple effects) */
@@ -100,7 +100,7 @@ export type EffectImplementation<P = void> = {
  *
  * A distributive union over `EffectParamsMap`: `effect` narrows `params`,
  * so `{ effect: "draw" }` without `params: { amount: number }` is a
- * compile-time error, while void-params effects forbid `params` entirely.
+ * compile-time error, while no-params effects forbid `params` entirely.
  */
 export type EffectSpec = {
   [K in EffectId]: {
@@ -111,7 +111,7 @@ export type EffectSpec = {
     text?: string;
     /** Override the implementation's default trigger */
     trigger?: TriggerMoment;
-  } & (EffectParamsMap[K] extends void
+  } & (EffectParamsMap[K] extends undefined
     ? { params?: never }
     : { params: EffectParamsMap[K] });
 }[EffectId];

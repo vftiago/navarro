@@ -68,6 +68,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.REMOVE_CARD_FROM_HAND: {
       const newHand = state.playerHand.filter((_, i) => i !== action.payload);
+
       return {
         ...state,
         playerHand: newHand,
@@ -77,6 +78,7 @@ export const playerReducer = (
     case PlayerActionTypes.REMOVE_RANDOM_CARD_FROM_HAND: {
       const randomIndex = Math.floor(Math.random() * state.playerHand.length);
       const newHand = state.playerHand.filter((_, i) => i !== randomIndex);
+
       return {
         ...state,
         playerHand: newHand,
@@ -85,6 +87,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_PLAYED: {
       const { card } = action.payload;
+
       return {
         ...state,
         playerPlayedCards: [...state.playerPlayedCards, card],
@@ -93,6 +96,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_DISCARD: {
       const { card } = action.payload;
+
       return {
         ...state,
         playerDiscardPile: [...state.playerDiscardPile, card],
@@ -101,6 +105,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_TRASH: {
       const { card } = action.payload;
+
       return {
         ...state,
         playerTrashPile: [...state.playerTrashPile, card],
@@ -119,6 +124,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_SCORE_AREA: {
       const { card } = action.payload;
+
       return {
         ...state,
         playerScoreArea: [...state.playerScoreArea, card],
@@ -127,6 +133,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_ACCESSED_CARDS: {
       const { cards } = action.payload;
+
       return {
         ...state,
         playerAccessedCards: [...state.playerAccessedCards, ...cards],
@@ -135,6 +142,7 @@ export const playerReducer = (
 
     case PlayerActionTypes.ADD_TO_DECK: {
       const { card } = action.payload;
+
       return {
         ...state,
         playerDeck: [...state.playerDeck, card],

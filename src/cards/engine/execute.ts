@@ -45,6 +45,7 @@ const isConditionMet = (spec: EffectSpec, context: EffectContext): boolean => {
   const impl = getConditionImplementation(
     spec.condition.check,
   ) as ConditionImplementation<unknown>;
+
   return impl.isMet(spec.condition.params, context);
 };
 

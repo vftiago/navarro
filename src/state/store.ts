@@ -30,6 +30,7 @@ export const useGameStore = create<GameStore>()(
 // Helper to get GameState shape from store (for thunks and selectors)
 export const getGameState = (): GameState => {
   const state = useGameStore.getState();
+
   return {
     boardState: state.boardState,
     playerState: state.playerState,

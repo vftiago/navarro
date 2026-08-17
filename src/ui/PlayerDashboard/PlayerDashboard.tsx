@@ -43,8 +43,10 @@ export const PlayerDashboard = ({
       return;
     }
 
-    // Emit event to end turn
-    // Event handler will validate and transition to End phase
+    /*
+     * Emit event to end turn
+     * Event handler will validate and transition to End phase
+     */
     eventBus.emit({
       payload: {},
       type: GameEventType.PLAYER_END_TURN,

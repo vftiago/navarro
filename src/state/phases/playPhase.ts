@@ -40,6 +40,7 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
 
     if (handIndex === -1) {
       console.error("playPhase: Card not found in hand");
+
       return;
     }
 

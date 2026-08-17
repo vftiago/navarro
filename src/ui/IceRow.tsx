@@ -53,7 +53,7 @@ export const IceRow = () => {
   };
 
   const handleTabChange = (value: string | null) => {
-    if (isRunning || !value) return;
+    if (isRunning || !value) {return;}
     dispatch(setSelectedServer(value as ServerName));
   };
 
@@ -90,7 +90,8 @@ export const IceRow = () => {
                 </Stack>
               </Stack>
               {Array.from({ length: serverMaxIceSlots }).map((_, index) => {
-                const ice = serverIce[index];
+                // May be out of bounds — fewer ice than slots
+                const ice = serverIce.at(index);
                 const isBeingEncountered =
                   ice &&
                   serverCurrentEncounteredIce?.instanceId ===

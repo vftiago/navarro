@@ -24,6 +24,7 @@ export const CardHoverEffect = ({
     if (type === CardType.AGENDA) {
       return "0 0 4px 2px rgba(255, 255, 255, 0.8), 0 0 8px 4px rgba(252, 240, 120, 0.6), 0 0 24px 8px rgba(253, 240, 200, 0.4)";
     }
+
     return "0 0 4px 2px rgba(255, 255, 255, 0.8), 0 0 8px 4px rgba(165, 243, 252, 0.6), 0 0 24px 8px rgba(103, 232, 249, 0.4)";
   };
 

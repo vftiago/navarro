@@ -63,10 +63,12 @@ export const createEventHandler = (
         if (handCard) {
           if (turnCurrentPhase !== TurnPhase.Main) {
             console.warn("Cannot play card outside Main phase");
+
             return;
           }
           if (hasKeywordFlag(resolveCard(handCard).keywords, "unplayable")) {
             console.warn("Card is unplayable");
+
             return;
           }
           if (import.meta.env.DEV) {
@@ -74,6 +76,7 @@ export const createEventHandler = (
           }
           dispatch(setTurnCurrentPhase(TurnPhase.Play));
           dispatchThunk(playPhase, { cardId: instanceId });
+
           return;
         }
 
@@ -87,12 +90,14 @@ export const createEventHandler = (
             runProgressState !== RunProgressState.ENCOUNTERING_ICE
           ) {
             console.warn("Cannot click ice outside run encounter state");
+
             return;
           }
           if (import.meta.env.DEV) {
             console.log("[CARD_CLICKED] resolved: click ice", instanceId);
           }
           dispatchThunk(clickIce, { iceId: instanceId });
+
           return;
         }
 
@@ -106,6 +111,7 @@ export const createEventHandler = (
             runProgressState !== RunProgressState.ACCESSING_CARDS
           ) {
             console.warn("Cannot select card outside run access state");
+
             return;
           }
           if (import.meta.env.DEV) {
@@ -115,6 +121,7 @@ export const createEventHandler = (
             );
           }
           dispatchThunk(selectAccessedCard, { cardId: instanceId });
+
           return;
         }
 
@@ -127,12 +134,14 @@ export const createEventHandler = (
         // Validate: Must be in Main phase
         if (state.turnState.turnCurrentPhase !== TurnPhase.Main) {
           console.warn("Cannot initiate run outside Main phase");
+
           return;
         }
 
         // Validate: Must have clicks remaining
         if (state.turnState.turnRemainingClicks <= 0) {
           console.warn("Cannot initiate run without clicks");
+
           return;
         }
 
@@ -145,6 +154,7 @@ export const createEventHandler = (
         // Validate: Must be in Main phase
         if (state.turnState.turnCurrentPhase !== TurnPhase.Main) {
           console.warn("Cannot end turn outside Main phase");
+
           return;
         }
 

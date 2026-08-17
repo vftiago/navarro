@@ -1,6 +1,6 @@
 export const calculateCardRotations = (
   cardCount: number,
-  maxRotationAngle: number = 10,
+  maxRotationAngle = 10,
 ): number[] => {
   if (cardCount === 1) {
     return [0];
@@ -20,7 +20,7 @@ export const calculateCardRotations = (
 
 export const calculateCardTopValues = (
   cardCount: number,
-  maxTopValue: number = 32,
+  maxTopValue = 32,
 ): number[] => {
   if (cardCount === 1) {
     return [0];

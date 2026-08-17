@@ -147,8 +147,10 @@ export const primitiveEffects: {
     },
   },
   strength_per_server_security: {
-    // ON_REZ so the corp phase actually fires it when installing ice (the
-    // old FIRE_WALL_DYNAMIC_STRENGTH was ON_PLAY, which never fires on ice)
+    /*
+     * ON_REZ so the corp phase actually fires it when installing ice (the
+     * old FIRE_WALL_DYNAMIC_STRENGTH was ON_PLAY, which never fires on ice)
+     */
     defaultTrigger: TriggerMoment.ON_REZ,
     getActions: (_params, { sourceId }) => {
       if (!sourceId) {
@@ -156,8 +158,10 @@ export const primitiveEffects: {
       }
 
       const permanentEffect: PermanentEffectT = {
-        // Read the gameState passed at evaluation time, not the one captured
-        // at rez time — strength must track the live security level
+        /*
+         * Read the gameState passed at evaluation time, not the one captured
+         * at rez time — strength must track the live security level
+         */
         getModifier: ({ gameState, sourceId: src, targetId: tgt }) => {
           return src === tgt ? gameState.serverState.serverSecurityLevel : 0;
         },

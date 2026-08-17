@@ -30,21 +30,27 @@ export const PhaseManager = () => {
 
   const lastPhaseCounterRef = useRef<number>(-1);
 
-  type PhaseHandlers = {
-    [P in TurnPhase]?: () => void | (() => void);
-  };
+  // A handler may return a cleanup function (e.g. Corp's delayed dispatch)
+  type PhaseHandler = () => (() => void) | undefined;
+  type PhaseHandlers = Partial<Record<TurnPhase, PhaseHandler>>;
 
   const PHASE_HANDLERS: PhaseHandlers = useMemo(() => {
+    const run = (thunk: () => void): undefined => {
+      thunk();
+
+      return undefined;
+    };
+
     return {
       [TurnPhase.Corp]: () => {
         return delay(() => {
           dispatchThunk(corpPhase());
         }, 1000);
       },
-      [TurnPhase.Draw]: () => dispatchThunk(drawPhase()),
-      [TurnPhase.End]: () => dispatchThunk(endPhase()),
-      [TurnPhase.Main]: () => dispatchThunk(mainPhase()),
-      [TurnPhase.Upkeep]: () => dispatchThunk(upkeepPhase()),
+      [TurnPhase.Draw]: () => run(() => dispatchThunk(drawPhase())),
+      [TurnPhase.End]: () => run(() => dispatchThunk(endPhase())),
+      [TurnPhase.Main]: () => run(() => dispatchThunk(mainPhase())),
+      [TurnPhase.Upkeep]: () => run(() => dispatchThunk(upkeepPhase())),
       // Play and Run are user-driven, handled directly by eventHandler/playPhase
     };
   }, [dispatchThunk]);

@@ -59,6 +59,7 @@ const getTriggerLabel = (spec: EffectSpec): string | undefined => {
   if (trigger === getEffectImplementation(spec.effect).defaultTrigger) {
     return undefined;
   }
+
   return TRIGGER_LABELS[trigger];
 };
 
@@ -67,6 +68,7 @@ const getConditionText = (condition: ConditionSpec): string => {
   const impl = getConditionImplementation(
     condition.check,
   ) as ConditionImplementation<unknown>;
+
   return impl.getText(condition.params);
 };
 
@@ -86,6 +88,7 @@ export const renderEffectBody = (spec: EffectSpec): string => {
   if (!spec.condition) {
     return effectText;
   }
+
   return `${capitalizeFirst(getConditionText(spec.condition))}, ${lowercaseFirst(effectText)}`;
 };
 
@@ -99,6 +102,7 @@ export const renderEffectText = (spec: EffectSpec): string => {
   }
   const label = getTriggerLabel(spec);
   const body = renderEffectBody(spec);
+
   return label ? `${label}: ${body}` : body;
 };
 
@@ -134,6 +138,7 @@ export const getCardTextLines = (
 
   if (definition.text) {
     lines.push({ text: definition.text });
+
     return lines;
   }
 

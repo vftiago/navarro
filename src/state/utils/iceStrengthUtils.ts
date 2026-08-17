@@ -25,6 +25,7 @@ export const calculateIceStrength = (
       sourceId,
       targetId: ice.instanceId,
     });
+
     return acc + mod;
   }, 0);
 

@@ -97,8 +97,10 @@ export const PlayerHand = () => {
 
   const handleCardClick = useCallback(
     (card: CardInstance) => {
-      // UX gating only (skip the exit animation for clicks that can't
-      // resolve) — the event handler is the authority on click rules
+      /*
+       * UX gating only (skip the exit animation for clicks that can't
+       * resolve) — the event handler is the authority on click rules
+       */
       if (!isMainPhase) {
         return;
       }
@@ -127,6 +129,7 @@ export const PlayerHand = () => {
         setExitingCards((prev) => {
           const next = new Set(prev);
           next.delete(card.instanceId);
+
           return next;
         });
 

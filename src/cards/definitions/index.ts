@@ -31,6 +31,7 @@ export const getCardDefinition = (id: CardId): CardDefinition => {
   if (!definition) {
     throw new Error(`Card definition not found: ${id}`);
   }
+
   return definition;
 };
 
@@ -46,6 +47,7 @@ export const getIceCardDefinition = (id: IceCardId): IceCardDefinition => {
   if (!definition) {
     throw new Error(`Ice card definition not found: ${id}`);
   }
+
   return definition;
 };
 

@@ -1,15 +1,21 @@
 import {
   CardRarity,
   CardType,
+  IceSubtype,
   ProgramSubtype,
-  type ProgramCardDefinitions,
-} from "./card";
-import { effect, EffectId } from "./effects";
-import { CardId } from "./registry";
+  TriggerMoment,
+} from "../../cardDefinitions/card";
+import { CardId } from "../../cardDefinitions/registry";
+import type { ProgramCardDefinition } from "./types";
 
-export const programCards: ProgramCardDefinitions[] = [
+export const programCardDefinitions: ProgramCardDefinition[] = [
   {
-    cardEffects: [effect(EffectId.SLEDGEHAMMER_BREAK_BARRIER)],
+    effects: [
+      {
+        effect: "break_subroutine",
+        params: { iceSubtype: IceSubtype.BARRIER },
+      },
+    ],
     flavorText: "Crude, but effective.",
     id: CardId.SLEDGEHAMMER,
     image: "_09df83ab-9d58-4100-996f-dc93127dce30.jpg",
@@ -19,7 +25,7 @@ export const programCards: ProgramCardDefinitions[] = [
     type: CardType.PROGRAM,
   },
   {
-    cardEffects: [effect(EffectId.DEEP_THOUGHTS_EXTRA_DRAW)],
+    effects: [{ effect: "modify_cards_per_turn", params: { amount: 1 } }],
     id: CardId.DEEP_THOUGHTS,
     image: "_b47f337e-e71d-4ced-8e50-bfaae92f4a4e.jpeg",
     name: "Deep Thoughts",
@@ -28,7 +34,14 @@ export const programCards: ProgramCardDefinitions[] = [
     type: CardType.PROGRAM,
   },
   {
-    cardEffects: [effect(EffectId.RUNNING_SNEAKERS_ON_RUN_END)],
+    effects: [
+      {
+        effect: "modify_clicks",
+        params: { amount: 1 },
+        text: "When you complete a run, gain 1 click.",
+        trigger: TriggerMoment.ON_RUN_END,
+      },
+    ],
     flavorText: "Gotta go fast.",
     id: CardId.RUNNING_SNEAKERS,
     image: "_180289ee-9360-41f9-84b5-8555685ff210.jpg",
@@ -38,7 +51,18 @@ export const programCards: ProgramCardDefinitions[] = [
     type: CardType.PROGRAM,
   },
   {
-    cardEffects: [effect(EffectId.INTRUSIVE_THOUGHTS_UPKEEP)],
+    effects: [
+      {
+        effect: "draw",
+        params: { amount: 1 },
+        trigger: TriggerMoment.ON_UPKEEP,
+      },
+      {
+        effect: "modify_clicks",
+        params: { amount: -1 },
+        trigger: TriggerMoment.ON_UPKEEP,
+      },
+    ],
     id: CardId.INTRUSIVE_THOUGHTS,
     image: "_c70fe080-5f2d-474a-9431-5d9fd7e4ed9c.jpg",
     name: "Intrusive Thoughts",

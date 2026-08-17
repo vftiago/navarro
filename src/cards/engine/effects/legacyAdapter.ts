@@ -1,12 +1,13 @@
 /**
  * Legacy Adapter - Bridges the new effect engine to the old CardEffect shape
  *
- * Lets existing card definition files and `executeCardEffects` consume
- * engine `EffectSpec`s unchanged during the migration.
+ * Lets `executeCardEffects` and the existing card UI consume engine
+ * `EffectSpec`s unchanged during the migration.
  *
  * TODO(card-registry Phase 5): delete once nothing consumes `CardEffect`.
  */
 import type { CardEffect } from "../../../cardDefinitions/card";
+import { renderEffectText } from "../text";
 import { getConditionImplementation } from "./conditions";
 import { getEffectImplementation } from "./registry";
 import type {
@@ -15,14 +16,6 @@ import type {
   EffectImplementation,
   EffectSpec,
 } from "./types";
-
-const lowercaseFirst = (text: string): string => {
-  return text.charAt(0).toLowerCase() + text.slice(1);
-};
-
-const capitalizeFirst = (text: string): string => {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-};
 
 export const specToCardEffect = (spec: EffectSpec): CardEffect => {
   // Erase the per-id params links; the `EffectSpec`/`ConditionSpec`
@@ -43,17 +36,8 @@ export const specToCardEffect = (spec: EffectSpec): CardEffect => {
     return condition ? condition.impl.isMet(condition.params, context) : true;
   };
 
-  const getGeneratedText = (): string => {
-    const effectText = impl.getText(params);
-    if (!condition) {
-      return effectText;
-    }
-    const conditionText = condition.impl.getText(condition.params);
-    return `${capitalizeFirst(conditionText)}, ${lowercaseFirst(effectText)}`;
-  };
-
   const cardEffect: CardEffect = {
-    getText: () => spec.text ?? getGeneratedText(),
+    getText: () => renderEffectText(spec),
     triggerMoment: spec.trigger ?? impl.defaultTrigger,
   };
 

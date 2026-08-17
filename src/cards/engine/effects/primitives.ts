@@ -26,6 +26,7 @@ import type { EffectImplementation, EffectParamsMap } from "./types";
 
 export type PrimitiveEffectId =
   | "break_subroutine"
+  | "destroy_all_programs"
   | "draw"
   | "end_run"
   | "gain_victory_points"
@@ -56,6 +57,12 @@ export const primitiveEffects: {
     getActions: () => [],
     getText: ({ iceSubtype }) =>
       `Break ${iceSubtype.toLowerCase()} subroutine.`,
+  },
+  destroy_all_programs: {
+    defaultTrigger: TriggerMoment.ON_PLAY,
+    // TODO: implement program destruction (ported placeholder from Flush)
+    getActions: () => [],
+    getText: () => "Destroy all programs.",
   },
   draw: {
     defaultTrigger: TriggerMoment.ON_PLAY,
@@ -148,14 +155,18 @@ export const primitiveEffects: {
     },
   },
   strength_per_server_security: {
-    defaultTrigger: TriggerMoment.ON_PLAY,
-    getActions: (_params, { gameState, sourceId }) => {
+    // ON_REZ so the corp phase actually fires it when installing ice (the
+    // old FIRE_WALL_DYNAMIC_STRENGTH was ON_PLAY, which never fires on ice)
+    defaultTrigger: TriggerMoment.ON_REZ,
+    getActions: (_params, { sourceId }) => {
       if (!sourceId) {
         throw new Error("Source ID required for strength_per_server_security.");
       }
 
       const permanentEffect: PermanentEffectT = {
-        getModifier: ({ sourceId: src, targetId: tgt }) => {
+        // Read the gameState passed at evaluation time, not the one captured
+        // at rez time — strength must track the live security level
+        getModifier: ({ gameState, sourceId: src, targetId: tgt }) => {
           return src === tgt ? gameState.serverState.serverSecurityLevel : 0;
         },
         sourceId,

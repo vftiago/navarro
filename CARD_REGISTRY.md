@@ -255,12 +255,20 @@ Implementation notes:
 - `strength_per_server_security` faithfully ports an existing quirk: the old Fire Wall permanent effect closes over `gameState` at creation time, so its strength freezes at the security level when it was played. `PermanentEffectT.getModifier` can't read live state; fixing this belongs to Phase 2 (`engine/stats.ts`), not the port.
 - Type guarantees verified with `@ts-expect-error` probes: missing params, wrong-shaped params, params on void effects, and unknown ids are all compile errors.
 
-### Phase 2 — Pure-data card definitions
+### Phase 2 — Pure-data card definitions ✅ DONE
 
-1. Create `definitions/types.ts` (function-free `CardDefinition` union) and migrate `agendas/ice/programs/scripts/traps.ts` to the new shape with `satisfies`.
-2. Implement `engine/text.ts` and `engine/stats.ts` (Fire Wall, Bad Moon).
-3. `createPlayingCard.ts` temporarily builds the legacy `PlayingCard` shape *from* the new definitions via the adapter — state and UI still untouched.
-4. Update the two deck files' imports.
+1. ✅ Created `src/cards/definitions/` — function-free `CardDefinition` union (`types.ts`) and all five card data files. Every card is now a pure object literal; the old data files and the entire old `cardDefinitions/effects/` module were deleted (nothing else imported them).
+2. ✅ Implemented `engine/text.ts`: `renderEffectText` (trigger labels for non-default triggers; ON_PLAY/ON_ENCOUNTER/ON_CLICK intentionally unlabeled — the UI conveys those via position/subroutine-arrow/cost-prefix), `renderCardText` (keyword lines + trigger grouping + condition composition). The legacy adapter routes per-effect text through `renderEffectText`, so generated text is already live in the UI.
+3. ✅ `createPlayingCard.ts` rebuilt: converts definitions → legacy `PlayingCard` shape (keywords become `KEYWORD_EFFECTS` entries until Phase 3; `getStrength` synthesized from `strength`). Same exported API, so state, UI, and the deck files needed no changes. The unused deprecated name-based factories were deleted.
+4. ✅ Verified: tsc, lint, production build, and a headless-browser smoke test of the running game (cards render with generated text, no console errors).
+
+Implementation notes / deviations:
+
+- `engine/stats.ts` was **not needed**: the existing selectors (`getIceStrength`, `calculateIceStrength`, `getPlayerCardsPerTurn`) already aggregate base + permanent-effect modifiers. The Fire Wall fix landed inside `strength_per_server_security` instead: default trigger changed to ON_REZ (the old FIRE_WALL_DYNAMIC_STRENGTH was ON_PLAY, which **never fires on ice** — its live strength actually came from the definition's `getStrength`), and `getModifier` now reads the `gameState` passed at evaluation time, so strength tracks the live security level. Fire Wall's definition is `strength: 0` + that modifier.
+- `CardId` stayed in `cardDefinitions/registry.ts` for now (the planned `definitions/ids.ts` move happens with the Phase 5 relocation, to avoid churning every import twice).
+- Added `destroy_all_programs` primitive (still a no-op placeholder, ported from Flush's inline TODO).
+- **Implicit effects** (`engine/resolve.ts`, pulled forward from Phase 3): effects implied by a stat or type rule are derived, not printed — an agenda's `victoryPoints` stat generates its `gain_victory_points` ON_FETCH effect and "Score N." text, so the stat and the scoring can never disagree (they did: Signal Broadcast said 2 but scored 3, Corporate Secrets said 1 but scored 2 — resolved to 3 and 2). `resolveEffectSpecs(definition)` = printed effects + implicit effects; Phase 3 extends it with keyword grants.
+- Gameplay-visible changes shipped in this phase: Server Lockdown now truly ends the run (decided earlier); Fire Wall's strength digit now renders in the UI's "buffed" green (base 0 + modifier instead of dynamic base); keyword lines render before printed effects everywhere; text fixes ("Gain 3 clicks.", "On Draw: Lose 1 click."); Intrusive Thoughts shows two labeled lines until the grouped `renderCardText` reaches the UI in Phase 4.
 
 ### Phase 3 — Mechanical keywords
 

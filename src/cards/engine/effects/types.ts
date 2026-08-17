@@ -34,6 +34,7 @@ export type EffectContext = {
  */
 export type EffectParamsMap = {
   break_subroutine: { iceSubtype: IceSubtype };
+  destroy_all_programs: void;
   draw: { amount: number };
   end_run: void;
   gain_victory_points: { amount: number };

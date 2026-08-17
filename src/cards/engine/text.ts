@@ -147,7 +147,8 @@ export const getCardTextLines = (
   while (index < specs.length) {
     const spec = specs[index];
     const label = getTriggerLabel(spec);
-    if (!label) {
+    // A per-effect text override renders verbatim — never labeled or grouped
+    if (spec.text || !label) {
       lines.push({
         text: renderEffectText(spec),
         ...(getEffectiveTrigger(spec) === TriggerMoment.ON_ENCOUNTER && {

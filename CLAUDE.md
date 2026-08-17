@@ -26,7 +26,7 @@ Three layers with lint-enforced boundaries (see `eslint.config.ts`): **UI never 
 
 ### Card System (`src/cards/`)
 
-Cards are pure data; behavior lives in the engine; game state stores lightweight instances. Full design record: `CARD_REGISTRY.md`.
+Cards are pure data; behavior lives in the engine; game state stores lightweight instances.
 
 ```
 src/cards/

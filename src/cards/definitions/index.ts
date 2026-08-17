@@ -1,7 +1,7 @@
 /**
  * Card Definitions - Pure-data card registry
  *
- * See CARD_REGISTRY.md for the architecture and migration plan.
+ * See the Card System section in CLAUDE.md for the architecture.
  */
 import type { CardId, IceCardId } from "../ids";
 import { agendaCardDefinitions } from "./agendas";

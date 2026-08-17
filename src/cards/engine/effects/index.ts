@@ -1,7 +1,7 @@
 /**
  * Effect Engine - Parameterized, data-driven card effects
  *
- * See CARD_REGISTRY.md for the architecture and migration plan.
+ * See the Card System section in CLAUDE.md for the architecture.
  */
 export { conditionRegistry, getConditionImplementation } from "./conditions";
 export { primitiveEffects, type PrimitiveEffectId } from "./primitives";

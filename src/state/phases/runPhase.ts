@@ -136,16 +136,14 @@ export const selectAccessedCard = (
     // Trigger ON_FETCH effects
     executeTriggers(selectedCard, TriggerMoment.ON_FETCH, dispatch, getState);
 
-    // Move card to appropriate zone
+    /*
+     * Move card to appropriate zone. No ON_DISCARD for non-agendas: an
+     * accessed card was never in hand, so routing it to the discard pile
+     * is bookkeeping, not a discard.
+     */
     if (resolveCard(selectedCard).type === CardType.AGENDA) {
       dispatch(addToScoreArea(selectedCard));
     } else {
-      executeTriggers(
-        selectedCard,
-        TriggerMoment.ON_DISCARD,
-        dispatch,
-        getState,
-      );
       dispatch(addToDiscard(selectedCard));
     }
 

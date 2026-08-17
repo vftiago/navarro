@@ -91,11 +91,15 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 | ON_DRAW | Draw phase | each card in hand |
 | ON_UPKEEP | Upkeep phase (once/turn) | installed programs |
 | ON_PLAY | Card played | played cards |
-| ON_INSTALL / ON_TRASH / ON_DISCARD | Zone moves after play, access resolution, net damage | the moved card |
+| ON_INSTALL | Program installed on play | the program |
+| ON_TRASH | Trash-keyword card trashed after play | the card |
+| ON_DISCARD | Card lost from hand to a game effect (e.g. net damage) | the card |
 | ON_RUN_START / ON_RUN_END | Run boundaries | installed programs |
 | ON_ENCOUNTER | Ice clicked (subroutines) | the encountered ice |
 | ON_ACCESS | Access begins | each accessed card |
 | ON_FETCH | Accessed card selected | the selected card |
+
+**Design rule (decided 2026-08-17):** "discarded" means *losing a card from hand to a game effect* — nothing else. Mechanical pile-routing is silent: a played card moving to the discard pile, a non-agenda accessed card routed there, and the end-of-turn hand discard fire no ON_DISCARD/ON_TRASH triggers (Ethereal's trash routing is a keyword flag, not a trigger). If a card ever needs to react to end-of-turn cleanup, add an ON_CLEANUP trigger then.
 
 ## Development Guidelines
 

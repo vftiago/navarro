@@ -82,12 +82,11 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
         executeTriggers(playedCard, TriggerMoment.ON_TRASH, dispatch, getState);
         zoneActions.push(addToTrash(playedCard));
       } else {
-        executeTriggers(
-          playedCard,
-          TriggerMoment.ON_DISCARD,
-          dispatch,
-          getState,
-        );
+        /*
+         * No ON_DISCARD here: a played card moving to the discard pile is
+         * bookkeeping, not a discard. ON_DISCARD means losing a card from
+         * hand to a game effect (e.g. net damage).
+         */
         zoneActions.push(addToDiscard(playedCard));
       }
     });

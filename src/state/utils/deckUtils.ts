@@ -56,6 +56,12 @@ export const drawCardsFromDeck = ({
   };
 };
 
+/*
+ * End-of-turn cleanup is mechanically silent by design: no triggers fire
+ * when the hand is discarded (Ethereal's trash routing is a keyword flag,
+ * not a trigger). If a card ever needs to react to cleanup, add an
+ * ON_CLEANUP trigger moment then.
+ */
 export const discardHand = ({
   discard,
   hand,

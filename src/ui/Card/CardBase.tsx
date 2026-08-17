@@ -1,6 +1,6 @@
 import { Card } from "@mantine/core";
 import type { ReactNode } from "react";
-import type { CardType } from "../../cardDefinitions/card";
+import type { CardType } from "../../cards/enums";
 import { getCardSize } from "../../state/settings";
 import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";

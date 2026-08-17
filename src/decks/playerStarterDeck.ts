@@ -1,5 +1,5 @@
-import type { PlayerCardId } from "../cardDefinitions/registry";
-import { CardId } from "../cardDefinitions/registry";
+import type { PlayerCardId } from "../cards/ids";
+import { CardId } from "../cards/ids";
 import type { CardInstance } from "../cards/instance";
 import { createCardInstance } from "../cards/instance";
 

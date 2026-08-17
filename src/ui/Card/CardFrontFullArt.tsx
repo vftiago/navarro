@@ -1,7 +1,7 @@
 import { Card, Image, Text } from "@mantine/core";
 import clsx from "clsx";
-import { CardType } from "../../cardDefinitions/card";
 import type { CardDefinition } from "../../cards/definitions";
+import { CardType } from "../../cards/enums";
 import { getCardSize } from "../../state/settings";
 import { useGameStore } from "../../state/store";
 import { CardHoverEffect } from "./CardHoverEffect";

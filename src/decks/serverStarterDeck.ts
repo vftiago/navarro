@@ -1,6 +1,6 @@
 import { addWeight, weighted } from "@lrkit/weighted";
-import type { IceCardId, ServerCardId } from "../cardDefinitions/registry";
-import { CardId } from "../cardDefinitions/registry";
+import type { IceCardId, ServerCardId } from "../cards/ids";
+import { CardId } from "../cards/ids";
 
 /**
  * Weighted ice card pool for server deck generation

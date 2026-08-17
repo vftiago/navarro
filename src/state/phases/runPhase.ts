@@ -1,5 +1,5 @@
-import { CardType, TriggerMoment } from "../../cardDefinitions/card";
 import { executeTriggers } from "../../cards/engine";
+import { CardType, TriggerMoment } from "../../cards/enums";
 import { resolveCard } from "../../cards/instance";
 import {
   addToAccessedCards,

@@ -1,3 +1,4 @@
+import type { GameAction, GameState, ThunkAction } from "../../../state/types";
 /**
  * Effect Engine Types
  *
@@ -10,12 +11,7 @@
  * `EffectParamsMap` is the single source of truth binding each effect id to
  * its params shape, so specs are fully type-checked at the call site.
  */
-import type {
-  EffectCost,
-  IceSubtype,
-  TriggerMoment,
-} from "../../../cardDefinitions/card";
-import type { GameAction, GameState, ThunkAction } from "../../../state/types";
+import type { EffectCost, IceSubtype, TriggerMoment } from "../../enums";
 
 /**
  * Runtime context passed to effect implementations when they execute

@@ -290,15 +290,15 @@ Phase 5 work absorbed early (dead code deleted as consumers vanished): `createPl
 
 Verified: tsc, lint, build, and a CDP-driven multi-turn browser session — corp installed 3 ice over 4 turns with correct live strength math (Biometric 5+1=6 from Bad Moon's aura, Bad Moon 4 excluding itself, Wall of Static 5+1=6), subroutine markers rendered, zero console errors.
 
-### Phase 5 — Cleanup (mostly absorbed into Phases 2–4)
+### Phase 5 — Cleanup ✅ DONE
 
-Already done along the way: legacy `CardEffect`/`PlayingCard` types, `KEYWORD_EFFECTS`, the adapter, both card factories (name- and id-based), and `DRAW_CARDS_1`-style ids are all deleted.
+Most of it was absorbed into Phases 2–4 (legacy types, `KEYWORD_EFFECTS`, the adapter, both card factories, and `DRAW_CARDS_1`-style ids were deleted as their consumers vanished). The remainder:
 
-Remaining:
+1. ✅ Enums moved to `src/cards/enums.ts`, `CardId` registry to `src/cards/ids.ts`; `src/cardDefinitions/` deleted.
+2. ✅ `CLAUDE.md` updated: new Card System section, "How to Add a Card" guide, project structure, trigger execution pattern, stale known-issues cleared.
+3. ✅ `pnpm tsc && pnpm lint && pnpm build` zero-warning check + browser smoke test.
 
-1. Move the enums (`card.ts`) and `CardId` registry (`registry.ts`) from `src/cardDefinitions/` into `src/cards/`, then delete `src/cardDefinitions/`.
-2. Update `CLAUDE.md` architecture docs; add a "How to add a card" section pointing at the new flow.
-3. `pnpm lint && pnpm build` zero-warning check.
+**The migration is complete.** All five phases landed; the target architecture in §2 is now the actual architecture.
 
 ---
 

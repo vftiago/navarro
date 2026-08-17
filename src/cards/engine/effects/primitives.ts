@@ -1,11 +1,3 @@
-/**
- * Effect Primitives - Parameterized, reusable effect implementations
- *
- * Each primitive covers a whole family of card effects via params
- * (e.g. `draw` replaces DRAW_CARDS_1/DRAW_CARDS_3). Rules text is
- * generated from the same params, so text can never drift from behavior.
- */
-import { EffectCost, TriggerMoment } from "../../../cardDefinitions/card";
 import type { PermanentEffectT } from "../../../state/board";
 import { addPermanentEffect } from "../../../state/board";
 import { endRun } from "../../../state/phases";
@@ -22,6 +14,14 @@ import {
 } from "../../../state/server";
 import { modifyClicks } from "../../../state/turn";
 import { dealNetDamage } from "../../../state/utils";
+/**
+ * Effect Primitives - Parameterized, reusable effect implementations
+ *
+ * Each primitive covers a whole family of card effects via params
+ * (e.g. `draw` replaces DRAW_CARDS_1/DRAW_CARDS_3). Rules text is
+ * generated from the same params, so text can never drift from behavior.
+ */
+import { EffectCost, TriggerMoment } from "../../enums";
 import type { EffectImplementation, EffectParamsMap } from "./types";
 
 export type PrimitiveEffectId =

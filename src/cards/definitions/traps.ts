@@ -1,10 +1,5 @@
-import {
-  CardRarity,
-  CardType,
-  Keyword,
-  TriggerMoment,
-} from "../../cardDefinitions/card";
-import { CardId } from "../../cardDefinitions/registry";
+import { CardRarity, CardType, Keyword, TriggerMoment } from "../enums";
+import { CardId } from "../ids";
 import type { GenericCardDefinition } from "./types";
 
 export const trapCardDefinitions: GenericCardDefinition[] = [

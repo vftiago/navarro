@@ -1,3 +1,4 @@
+import type { EffectSpec } from "../engine/effects";
 /**
  * Card Definition Types - Pure data, no functions
  *
@@ -11,7 +12,7 @@ import type {
   IceSubtype,
   Keyword,
   ProgramSubtype,
-} from "../../cardDefinitions/card";
+} from "../enums";
 import type {
   AgendaCardId,
   CardId,
@@ -19,8 +20,7 @@ import type {
   ProgramCardId,
   ScriptCardId,
   TrapCardId,
-} from "../../cardDefinitions/registry";
-import type { EffectSpec } from "../engine/effects";
+} from "../ids";
 
 export type BaseCardDefinition = {
   effects: EffectSpec[];

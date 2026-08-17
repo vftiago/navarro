@@ -4,8 +4,8 @@ import {
   IceSubtype,
   ProgramSubtype,
   TriggerMoment,
-} from "../../cardDefinitions/card";
-import { CardId } from "../../cardDefinitions/registry";
+} from "../enums";
+import { CardId } from "../ids";
 import type { ProgramCardDefinition } from "./types";
 
 export const programCardDefinitions: ProgramCardDefinition[] = [

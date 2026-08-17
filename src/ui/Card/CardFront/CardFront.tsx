@@ -1,4 +1,4 @@
-import { CardType } from "../../../cardDefinitions/card";
+import { CardType } from "../../../cards/enums";
 import type { CardInstance } from "../../../cards/instance";
 import { resolveCard } from "../../../cards/instance";
 import { getFullArt } from "../../../state/settings";

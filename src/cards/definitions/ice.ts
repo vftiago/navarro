@@ -1,10 +1,5 @@
-import {
-  CardRarity,
-  CardType,
-  IceSubtype,
-  TriggerMoment,
-} from "../../cardDefinitions/card";
-import { CardId } from "../../cardDefinitions/registry";
+import { CardRarity, CardType, IceSubtype, TriggerMoment } from "../enums";
+import { CardId } from "../ids";
 import type { IceCardDefinition } from "./types";
 
 export const iceCardDefinitions: IceCardDefinition[] = [

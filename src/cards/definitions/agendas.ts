@@ -1,9 +1,5 @@
-import {
-  CardRarity,
-  CardType,
-  TriggerMoment,
-} from "../../cardDefinitions/card";
-import { CardId } from "../../cardDefinitions/registry";
+import { CardRarity, CardType, TriggerMoment } from "../enums";
+import { CardId } from "../ids";
 import type { AgendaCardDefinition } from "./types";
 
 export const agendaCardDefinitions: AgendaCardDefinition[] = [

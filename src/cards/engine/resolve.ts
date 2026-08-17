@@ -1,3 +1,4 @@
+import type { CardDefinition } from "../definitions/types";
 /**
  * Effect Resolution - The full effect list for a card definition
  *
@@ -6,8 +7,7 @@
  * "Score N on fetch" — card data never repeats it as an effect).
  * Phase 3 adds keyword-granted effects here as well.
  */
-import { CardType } from "../../cardDefinitions/card";
-import type { CardDefinition } from "../definitions/types";
+import { CardType } from "../enums";
 import type { EffectSpec } from "./effects/types";
 import { getKeywordGrants } from "./keywords";
 

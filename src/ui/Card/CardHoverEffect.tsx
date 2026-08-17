@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { CardType } from "../../cardDefinitions/card";
+import { CardType } from "../../cards/enums";
 
 export const CardHoverEffect = ({
   children,

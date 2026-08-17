@@ -1,3 +1,5 @@
+import type { GameAction, GameState } from "../../state/types";
+import type { CardDefinition } from "../definitions";
 /**
  * Effect Execution - Runs a card's effects against game state
  *
@@ -6,9 +8,7 @@
  * conditions. This is the only execution path — phases never touch effect
  * implementations directly.
  */
-import type { TriggerMoment } from "../../cardDefinitions/card";
-import type { GameAction, GameState } from "../../state/types";
-import type { CardDefinition } from "../definitions";
+import type { TriggerMoment } from "../enums";
 import type { CardInstance } from "../instance";
 import { resolveCard } from "../instance";
 import { getConditionImplementation } from "./effects/conditions";

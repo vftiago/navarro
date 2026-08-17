@@ -1,3 +1,4 @@
+import type { CardDefinition } from "../definitions/types";
 /**
  * Text Generation - Rules text derived from effect data
  *
@@ -5,9 +6,8 @@
  * can never drift apart. Precedence: card-level `text` override >
  * per-effect `text` override > generated.
  */
-import type { EffectCost, Keyword } from "../../cardDefinitions/card";
-import { TriggerMoment } from "../../cardDefinitions/card";
-import type { CardDefinition } from "../definitions/types";
+import type { EffectCost, Keyword } from "../enums";
+import { TriggerMoment } from "../enums";
 import { getConditionImplementation } from "./effects/conditions";
 import { getEffectImplementation } from "./effects/registry";
 import type {

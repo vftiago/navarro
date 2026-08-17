@@ -6,9 +6,9 @@
  * card data or functions, so it stays serializable.
  */
 import { v4 as uuid } from "uuid";
-import type { CardId, IceCardId } from "../cardDefinitions/registry";
 import type { CardDefinition, IceCardDefinition } from "./definitions";
 import { getCardDefinition, getIceCardDefinition } from "./definitions";
+import type { CardId, IceCardId } from "./ids";
 
 export type CardInstance = {
   definitionId: CardId;

@@ -3,7 +3,7 @@
  *
  * See CARD_REGISTRY.md for the architecture and migration plan.
  */
-import type { CardId, IceCardId } from "../../cardDefinitions/registry";
+import type { CardId, IceCardId } from "../ids";
 import { agendaCardDefinitions } from "./agendas";
 import { iceCardDefinitions } from "./ice";
 import { programCardDefinitions } from "./programs";

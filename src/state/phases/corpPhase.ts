@@ -1,5 +1,5 @@
-import { TriggerMoment } from "../../cardDefinitions/card";
 import { executeTriggers } from "../../cards/engine";
+import { TriggerMoment } from "../../cards/enums";
 import { addToIce, ALL_SERVERS, modifyServerSecurity } from "../server";
 import { setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { ThunkAction } from "../types";

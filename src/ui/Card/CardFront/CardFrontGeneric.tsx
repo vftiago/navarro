@@ -1,6 +1,6 @@
-import { CardType } from "../../../cardDefinitions/card";
 import type { CardDefinition } from "../../../cards/definitions";
 import { getCardTextLines } from "../../../cards/engine";
+import { CardType } from "../../../cards/enums";
 import { CardFrontLayout } from "./CardFrontLayout";
 
 type CardFrontGenericProps = {

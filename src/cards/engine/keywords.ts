@@ -10,7 +10,7 @@
  * doesn't know yet, add one flag check at the relevant spot — once, not
  * per card.
  */
-import { Keyword } from "../../cardDefinitions/card";
+import { Keyword } from "../enums";
 import type { EffectSpec } from "./effects/types";
 
 /**

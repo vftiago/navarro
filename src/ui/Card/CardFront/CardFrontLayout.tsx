@@ -1,12 +1,12 @@
 import { Card, Image, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
+import type { CardTextLine } from "../../../cards/engine";
 import {
   type CardRarity,
   type CardType,
   type IceSubtype,
   type ProgramSubtype,
-} from "../../../cardDefinitions/card";
-import type { CardTextLine } from "../../../cards/engine";
+} from "../../../cards/enums";
 import { CardBase } from "../CardBase";
 import { CardEffects } from "./components/CardEffects";
 import { CardTitle } from "./components/CardTitle";

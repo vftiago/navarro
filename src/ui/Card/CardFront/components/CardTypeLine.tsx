@@ -1,6 +1,6 @@
 import { Flex, Text } from "@mantine/core";
 import clsx from "clsx";
-import { CardRarity } from "../../../../cardDefinitions/card";
+import { CardRarity } from "../../../../cards/enums";
 
 export const CardTypeLine = ({
   rarity,

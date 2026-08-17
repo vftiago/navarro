@@ -1,5 +1,5 @@
-import { TriggerMoment } from "../../cardDefinitions/card";
 import { executeTriggers } from "../../cards/engine";
+import { TriggerMoment } from "../../cards/enums";
 import {
   drawCards,
   getPlayerCardsPerTurn,

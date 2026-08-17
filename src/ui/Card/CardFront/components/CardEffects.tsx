@@ -1,7 +1,7 @@
 import { Text, Tooltip } from "@mantine/core";
 import { IoMdReturnRight } from "react-icons/io";
-import type { EffectCost } from "../../../../cardDefinitions/card";
 import type { CardTextLine } from "../../../../cards/engine";
+import type { EffectCost } from "../../../../cards/enums";
 
 const renderLineCosts = (costs: EffectCost[]) => {
   return costs.map((cost, index) => {

@@ -71,58 +71,74 @@ Thunk actions for multi-step game phase flows:
 - `src/ui/Card/` - Card rendering with type-specific components (CardFrontIce, CardFrontAgenda)
 - `src/ui/PlayerDashboard/` - Player hand and resource management
 
-### Card System
+### Card System (`src/cards/`)
 
-The card system uses a type-safe, data-driven architecture with centralized effects.
+Fully data-driven: cards are pure-data definitions, all behavior lives in a small engine, and game state stores lightweight instances. See `CARD_REGISTRY.md` for the full architecture and migration history.
 
-**Card Definitions** (`src/cardDefinitions/`):
+```
+src/cards/
+├── enums.ts            # CardType, CardRarity, TriggerMoment, EffectCost, Keyword, subtypes
+├── ids.ts              # CardId registry — type-safe union of all card ids
+├── instance.ts         # CardInstance { instanceId, definitionId } (+ IceCardInstance
+│                       #   with isRezzed), createCardInstance(), resolveCard()
+├── definitions/        # Pure-data card definitions (object literals, no functions)
+│   ├── types.ts        # CardDefinition union (Ice/Program/Agenda/Generic)
+│   ├── agendas.ts, ice.ts, programs.ts, scripts.ts, traps.ts
+│   └── index.ts        # getCardDefinition(id), getIceCardDefinition(id)
+└── engine/
+    ├── effects/
+    │   ├── types.ts      # EffectParamsMap, EffectSpec, EffectImplementation,
+    │   │                 #   ConditionParamsMap, ConditionSpec
+    │   ├── primitives.ts # Parameterized implementations (draw, modify_clicks, …)
+    │   ├── conditions.ts # Named condition predicates (server_security_at_least, …)
+    │   └── registry.ts   # effectRegistry — compile-time-complete via mapped type
+    ├── keywords.ts     # Keyword registry: rule-flags + effect grants + reminder text
+    ├── resolve.ts      # resolveEffectSpecs = keyword grants + printed + implicit effects
+    ├── execute.ts      # executeTriggers(instance, trigger, dispatch, getState)
+    └── text.ts         # getCardTextLines / renderCardText — generated rules text
+```
 
-- `card.ts` - Core types: `CardEffect`, `CardDefinitions`, `PlayingCard`, enums
-- `registry.ts` - Type-safe `CardId` enum for all cards (prevents string typos)
-- `keywords.ts` - Keyword effect definitions (`KEYWORD_EFFECTS.Trash`, etc.)
-- `agendas.ts`, `ice.ts`, `programs.ts`, `scripts.ts`, `traps.ts` - Card data files
+**Key concepts**:
 
-**Effects System** (`src/cardDefinitions/effects/`):
+- **EffectSpec** (pure data): `{ effect: "draw", params: { amount: 3 } }`. Params are typed per effect id via `EffectParamsMap` — wrong or missing params are compile errors. Optional overrides: `trigger`, `condition`, `costs`, `text`.
+- **Conditions**: `{ check: "server_security_at_least", params: { level: 3 } }` gates an effect — "on trigger: if condition, effect". Named predicates, deliberately not a `{ stat, op, value }` DSL.
+- **Keywords are mechanical**: a registry entry with rule-`flags` (queried via `hasKeywordFlag(keywords, flag)` — e.g. `trashAfterPlay`, `unplayable`, `noNoiseOnPlay`, `trashOnHandDiscard`) and/or effect `grants`. Never special-case a keyword in phase logic.
+- **Implicit effects**: effects implied by stats/type rules (an agenda's `victoryPoints` generates its `gain_victory_points` + "Score N." text). Single source of truth — never duplicate a stat as an effect.
+- **Instances**: state stores `{ instanceId, definitionId }` only (serializable, no functions). Resolve with `resolveCard(instance)` at the point of use.
+- **Generated text**: rules text derives from effect params (with per-effect or card-level `text` overrides), so text can never drift from behavior. UI renders `getCardTextLines(definition)`.
 
-- `registry.ts` - `EffectId` enum for all effect types
-- `types.ts` - `EffectImplementation` interface
-- `common.ts` - Reusable effects (draw, clicks, tags, etc.)
-- `ice.ts`, `programs.ts`, `scripts.ts`, `traps.ts` - Category-specific effects
-- `index.ts` - `effect(EffectId, options?)` helper, `getEffectById()`
+**Usage patterns**:
 
-**Card Factory** (`src/cardDefinitions/createPlayingCard.ts`):
+```typescript
+// A card definition — pure data
+{
+  id: CardId.ICE_WALL,
+  name: "Ice Wall",
+  type: CardType.ICE,
+  subtype: IceSubtype.BARRIER,
+  rarity: CardRarity.COMMON,
+  image: "ice_wall.jpeg",
+  strength: 8,
+  damage: 0,
+  effects: [
+    { effect: "modify_clicks", params: { amount: -1 }, trigger: TriggerMoment.ON_ENCOUNTER },
+  ],
+}
 
-- `createPlayerCardById(id)` - Create player card by CardId (type-safe)
-- `createServerCardById(id)` - Create server card by CardId
-- `createIceCardById(id)` - Create ice card by CardId
-- Legacy name-based functions deprecated but still available
+// Create an instance (deck building, corp install)
+const card = createCardInstance(CardId.RUN);
+
+// Execute a card's effects for a trigger (phase logic)
+executeTriggers(card, TriggerMoment.ON_PLAY, dispatch, getState);
+
+// Query a keyword rule
+hasKeywordFlag(resolveCard(card).keywords, "trashAfterPlay");
+```
 
 **Decks** (`src/decks/`):
 
-- `playerStarterDeck.ts` - Uses `{ count, id: CardId }` format
+- `playerStarterDeck.ts` - `{ count, id: CardId }` entries → `CardInstance[]`
 - `serverStarterDeck.ts` - Weighted card pools using CardId
-
-**Usage Patterns**:
-
-```typescript
-// Define a card with effects (in card definition files)
-{
-  id: CardId.ICE_WALL,
-  cardEffects: [
-    effect(EffectId.LOSE_CLICKS_1, { triggerMoment: TriggerMoment.ON_ENCOUNTER }),
-  ],
-  // ... other card properties
-}
-
-// Create a card instance (in deck or game logic)
-const card = createPlayerCardById(CardId.RUN);
-
-// Define a deck
-const deck: { count: number; id: PlayerCardId }[] = [
-  { count: 6, id: CardId.RUN },
-  { count: 3, id: CardId.FOCUS },
-];
-```
 
 ### Event System (User Action Decoupling)
 
@@ -377,18 +393,13 @@ These triggers are actively executed in phase implementations:
 
 ### Trigger Execution Pattern
 
-All trigger executions follow this pattern (see src/state/utils/cardUtils.ts:46):
+All trigger executions go through the engine executor (`src/cards/engine/execute.ts`):
 
 ```typescript
-const effects = getCardEffectsByTrigger(card, TriggerMoment.ON_PLAY);
-executeCardEffects(effects, dispatch, getState, {
-  gameState: getState(),
-  sourceId: card.deckContextId,
-  targetId: optionalTargetId,
-});
+executeTriggers(cardInstance, TriggerMoment.ON_PLAY, dispatch, getState);
 ```
 
-Effects can return either:
+It resolves the instance's definition, filters `resolveEffectSpecs` (keyword grants + printed + implicit effects) by effective trigger, checks each spec's condition, and runs the implementation. Effect implementations can return either:
 
 - **Actions** (`getActions`): Dispatched immediately
 - **Thunks** (`getThunk`): Complex multi-step operations with state access
@@ -397,9 +408,7 @@ Effects can return either:
 
 #### Active Issues
 
-1. **Copy-Paste Error** (cardDefinitions/effects/ice.ts)
-   - Fire Wall error message says "Bad Moon" instead of "Fire Wall"
-   - **Impact**: Confusing error messages for developers
+_None currently known._ (The Fire Wall/"Bad Moon" copy-paste error was eliminated with the card registry refactor — bespoke strings no longer exist.)
 
 ### Redundancies
 
@@ -439,7 +448,7 @@ _All redundancies have been cleaned up. Unused TurnPhase enum values and subphas
 
 5. **Fix Remaining Issues**
 
-   - Fix Fire Wall error message (says "Bad Moon" instead of "Fire Wall")
+   - ~~Fix Fire Wall error message~~ ✅ Obsolete after card registry refactor
    - Add ESLint rule to catch unused enum values
 
 6. **Improve Phase Observability**
@@ -453,6 +462,19 @@ _All redundancies have been cleaned up. Unused TurnPhase enum values and subphas
    - Document which phases are automatic vs user-driven
 
 ## Recently Completed
+
+### Session 2026-08-17: Card Registry Refactor (CARD_REGISTRY.md Phases 1–5)
+
+**Major Achievement:** Fully data-driven card system — cards are pure data, behavior lives in the engine, state stores serializable instances.
+
+- **Parameterized effects**: `EffectSpec` data (`{ effect: "draw", params: { amount: 3 } }`) + one implementation per primitive; params typed per effect id via `EffectParamsMap`. Killed all `DRAW_CARDS_1`-style ids.
+- **Conditions**: named predicates gate effects ("on trigger: if condition, effect").
+- **Mechanical keywords**: registry with rule-flags (`hasKeywordFlag`) and effect grants; removed all keyword special-casing from phases/UI. Removed the unused `Crash` keyword.
+- **Implicit effects**: agenda `victoryPoints` derives its scoring effect and text (fixed the vp-vs-effect mismatches: Signal Broadcast 3, Corporate Secrets 2).
+- **Generated rules text** with trigger labels, same-trigger grouping, and condition composition; per-effect/card-level overrides. Fixed "Gain 3 ticks"-class drift permanently.
+- **Definition/instance split**: state stores `{ instanceId, definitionId }` (`deckContextId` removed); `isRezzed` moved to the ice instance; UI resolves definitions at the edge; all execution via `executeTriggers`. State is now fully serializable (save/undo/replay become possible).
+- **Behavior fixes shipped**: Server Lockdown now truly ends the run (was a raw jump to End phase); Fire Wall's strength modifier fires on ON_REZ and reads live state (the old ON_PLAY permanent effect never fired on ice).
+- **Deleted**: entire `src/cardDefinitions/` (enums moved to `src/cards/enums.ts`, ids to `src/cards/ids.ts`), legacy `CardEffect`/`PlayingCard` types, `KEYWORD_EFFECTS`, both card factories, the legacy adapter.
 
 ### Session 2026-01-28: Card System Refactor
 
@@ -652,25 +674,13 @@ src/
 │   ├── Card/           # Card rendering components
 │   ├── PlayerDashboard/
 │   └── ...
-├── cardDefinitions/    # Card system
-│   ├── effects/        # Centralized effect implementations
-│   │   ├── registry.ts # EffectId enum
-│   │   ├── types.ts    # EffectImplementation interface
-│   │   ├── common.ts   # Reusable effects
-│   │   ├── ice.ts      # Ice-specific effects
-│   │   ├── programs.ts # Program-specific effects
-│   │   ├── scripts.ts  # Script-specific effects
-│   │   ├── traps.ts    # Trap-specific effects
-│   │   └── index.ts    # effect() helper, exports
-│   ├── card.ts         # Core card types and enums
-│   ├── registry.ts     # CardId enum
-│   ├── keywords.ts     # Keyword effect definitions
-│   ├── createPlayingCard.ts  # Card factory functions
-│   ├── agendas.ts      # Agenda card definitions
-│   ├── ice.ts          # Ice card definitions
-│   ├── programs.ts     # Program card definitions
-│   ├── scripts.ts      # Script card definitions
-│   └── traps.ts        # Trap card definitions
+├── cards/              # Card system (see CARD_REGISTRY.md)
+│   ├── enums.ts        # Game enums (CardType, TriggerMoment, Keyword, …)
+│   ├── ids.ts          # CardId registry
+│   ├── instance.ts     # CardInstance + factories + resolveCard
+│   ├── definitions/    # Pure-data card definitions
+│   └── engine/         # Effects, conditions, keywords, resolution,
+│                       #   execution, text generation
 ├── decks/              # Deck configurations (uses CardId)
 ├── PhaseManager.tsx    # Phase orchestration
 └── App.tsx             # Root component
@@ -698,34 +708,45 @@ For multi-step operations that need to:
 
 Create a thunk action in `src/state/phases/` or add to an existing phase file.
 
-### Working with Cards
+### How to Add a Card
 
-**Creating Cards**:
-- Use `createPlayerCardById(CardId.X)` or `createServerCardById(CardId.X)` for type-safe card creation
-- Each card instance gets a unique `deckContextId` via `uuid`
-- Card definitions are static; card state (location, status) managed in player/server state modules
+A typical card is **zero code** — pure data:
 
-**Adding New Cards**:
+1. Add the card id to `src/cards/ids.ts` in the right category object (e.g. `ScriptCardId`).
+2. Add an object literal to the matching file in `src/cards/definitions/` listing its properties and effects:
 
-1. Add card ID to `src/cardDefinitions/registry.ts` (e.g., `MY_CARD: "my_card"`)
-2. If needed, add new effects to `src/cardDefinitions/effects/` (or reuse existing)
-3. Add card definition to appropriate file (`programs.ts`, `scripts.ts`, etc.)
-4. Use `effect(EffectId.X)` to reference effects, with optional overrides for trigger/text
-
-**Adding New Effects**:
-
-1. Add effect ID to `src/cardDefinitions/effects/registry.ts`
-2. Add implementation to appropriate effects file (`common.ts`, `ice.ts`, etc.)
-3. Reference in card definition with `effect(EffectId.X)`
-
-**Effect Options**:
 ```typescript
-// Use effect with defaults
-effect(EffectId.LOSE_CLICKS_1)
-
-// Override trigger moment
-effect(EffectId.LOSE_CLICKS_1, { triggerMoment: TriggerMoment.ON_ENCOUNTER })
-
-// Override text
-effect(EffectId.GAIN_TAG_1, { getText: () => "On Fetch, gain 1 tag." })
+{
+  id: CardId.MY_CARD,
+  name: "My Card",
+  type: CardType.SCRIPT,
+  rarity: CardRarity.COMMON,
+  image: "my_card.jpg",
+  keywords: [Keyword.TRASH],                       // optional
+  effects: [{ effect: "draw", params: { amount: 2 } }],
+}
 ```
+
+3. Add it to a deck (`src/decks/`). Done — rules text ("Trash." / "Draw 2 cards.") is generated.
+
+**Effect spec options**:
+
+```typescript
+{ effect: "draw", params: { amount: 2 } }                       // defaults
+{ effect: "modify_clicks", params: { amount: -1 },
+  trigger: TriggerMoment.ON_ENCOUNTER }                          // trigger override
+{ effect: "end_run", trigger: TriggerMoment.ON_ACCESS,
+  condition: { check: "server_security_at_least",
+               params: { level: 3 } } }                          // conditional
+{ effect: "modify_signal", params: { amount: 5 },
+  text: "Custom phrasing." }                                     // text override
+```
+
+**Adding a new effect primitive** (only for genuinely new mechanics):
+
+1. Add its params shape to `EffectParamsMap` in `src/cards/engine/effects/types.ts`.
+2. Add the implementation in `primitives.ts` (or a new `unique.ts` for true one-offs). The mapped-type registry makes a missing/extra implementation a compile error.
+
+**Adding a new keyword**: one entry in `src/cards/engine/keywords.ts` (reminder text + flags/grants). If it needs a static rule the engine doesn't know, add one `hasKeywordFlag` check at the relevant spot — once, not per card.
+
+**Adding a new condition**: add its params to `ConditionParamsMap` and its predicate to `conditions.ts`.

@@ -1,5 +1,5 @@
-import { CardRarity, CardType, Keyword } from "../../cardDefinitions/card";
-import { CardId } from "../../cardDefinitions/registry";
+import { CardRarity, CardType, Keyword } from "../enums";
+import { CardId } from "../ids";
 import type { GenericCardDefinition } from "./types";
 
 export const scriptCardDefinitions: GenericCardDefinition[] = [

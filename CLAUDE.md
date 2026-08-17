@@ -4,76 +4,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Navarro is a React-based interactive card game interface (Netrunner-inspired) built with React 19, TypeScript, Vite 6, Mantine UI, and Tailwind CSS v4.
+Navarro is a browser-based single-player card game (Netrunner × Slay the Spire) built with React 19, TypeScript, Vite, Mantine, Tailwind CSS v4, and Zustand.
 
-**Requirements:** Node.js 22, pnpm 9
+**Requirements:** Node.js 24 (`.nvmrc`), pnpm 11 (pinned via `packageManager` / corepack)
 
 ## Commands
 
 ```bash
-pnpm dev        # Start Vite dev server with HMR
+pnpm dev        # Vite dev server with HMR
 pnpm build      # TypeScript check + production build
 pnpm lint       # ESLint (zero warnings enforced)
-pnpm format     # Prettier formatting
-pnpm tsc        # TypeScript type checking only
+pnpm format     # Prettier
+pnpm tsc        # Type checking only
 ```
 
-Pre-commit hook runs: Prettier → TypeScript → ESLint (all must pass with zero warnings)
+Pre-commit hook runs Prettier → tsc → ESLint; all must pass with zero warnings. Commit messages use gitmoji (`✨ add card size to the settings drawer`).
 
 ## Architecture
 
-### State Management (Zustand with Redux-like reducers)
-
-The state is organized into modular slices with a Redux-like architecture:
-
-**Core Store** (`src/state/`):
-
-- `store.ts` - Zustand store with devtools middleware; exports `useGameStore()` hook
-- `reducer.ts` - Root reducer that combines sub-reducers using type guards
-- `types.ts` - `GameState` and `GameAction` union types
-- `hooks.ts` - `useThunk()` hook for dispatching thunk actions
-
-**State Modules** (`src/state/{player|server|turn|board|settings}/`):
-
-Each module follows a consistent structure:
-
-- `types.ts` - State shape, action types enum, and action type definitions
-- `actions.ts` - Action creators (plain functions that return action objects)
-- `reducer.ts` - Pure reducer function with initial state
-- `selectors.ts` - Selector functions for derived state (use `getXxx` naming)
-- `index.ts` - Re-exports all module components
-
-**Complex Game Logic** (`src/state/phases/`):
-
-Thunk actions for multi-step game phase flows:
-
-- `playPhase.ts` - Play card logic (accepts payload from eventHandler)
-- `runPhase.ts` - Run logic split into `initiateRun()`, `clickIce()`, `selectAccessedCard()`
-- `corpPhase.ts`, `drawPhase.ts`, `upkeepPhase.ts`, `mainPhase.ts`, `endPhase.ts` - Automatic phases
-- Use via `useThunk()` hook for automatic phases, or invoke directly with payload for user-driven phases
-
-**Utilities** (`src/state/utils/`):
-
-- `cardUtils.ts` - Card manipulation helpers
-- `deckUtils.ts` - Deck management utilities
-
-**Usage Patterns**:
-
-- **Access state**: `useGameStore((state) => state.playerState)` or use specific selectors
-- **Dispatch actions**: `const dispatch = useGameStore((state) => state.dispatch); dispatch(actionCreator())`
-- **Emit user events** (UI layer): `const eventBus = useEventBus(); eventBus.emit({ type: GameEventType.CARD_CLICKED, payload: { instanceId } })`
-- **Dispatch thunks** (phase logic only): `const dispatchThunk = useThunk(); dispatchThunk(thunkAction)`
-- **Granular subscriptions**: Use targeted selectors to prevent unnecessary re-renders
-
-### Component Structure
-
-- `src/ui/` - Presentational components (Card, PlayerDashboard, IceRow, etc.)
-- `src/ui/Card/` - Card rendering with type-specific components (CardFrontIce, CardFrontAgenda)
-- `src/ui/PlayerDashboard/` - Player hand and resource management
+Three layers with lint-enforced boundaries (see `eslint.config.ts`): **UI never imports phase thunks** (it emits GameEvents), and **card definitions never import game state** (they are pure data).
 
 ### Card System (`src/cards/`)
 
-Fully data-driven: cards are pure-data definitions, all behavior lives in a small engine, and game state stores lightweight instances. See `CARD_REGISTRY.md` for the full architecture and migration history.
+Cards are pure data; behavior lives in the engine; game state stores lightweight instances. Full design record: `CARD_REGISTRY.md`.
 
 ```
 src/cards/
@@ -82,639 +35,74 @@ src/cards/
 ├── instance.ts         # CardInstance { instanceId, definitionId } (+ IceCardInstance
 │                       #   with isRezzed), createCardInstance(), resolveCard()
 ├── definitions/        # Pure-data card definitions (object literals, no functions)
-│   ├── types.ts        # CardDefinition union (Ice/Program/Agenda/Generic)
-│   ├── agendas.ts, ice.ts, programs.ts, scripts.ts, traps.ts
-│   └── index.ts        # getCardDefinition(id), getIceCardDefinition(id)
 └── engine/
-    ├── effects/
-    │   ├── types.ts      # EffectParamsMap, EffectSpec, EffectImplementation,
-    │   │                 #   ConditionParamsMap, ConditionSpec
-    │   ├── primitives.ts # Parameterized implementations (draw, modify_clicks, …)
-    │   ├── conditions.ts # Named condition predicates (server_security_at_least, …)
-    │   └── registry.ts   # effectRegistry — compile-time-complete via mapped type
+    ├── effects/        # EffectParamsMap/EffectSpec (typed data) + implementations,
+    │                   #   conditions, registry (compile-time-complete)
     ├── keywords.ts     # Keyword registry: rule-flags + effect grants + reminder text
     ├── resolve.ts      # resolveEffectSpecs = keyword grants + printed + implicit effects
     ├── execute.ts      # executeTriggers(instance, trigger, dispatch, getState)
     └── text.ts         # getCardTextLines / renderCardText — generated rules text
 ```
 
-**Key concepts**:
+Key concepts:
 
-- **EffectSpec** (pure data): `{ effect: "draw", params: { amount: 3 } }`. Params are typed per effect id via `EffectParamsMap` — wrong or missing params are compile errors. Optional overrides: `trigger`, `condition`, `costs`, `text`.
-- **Conditions**: `{ check: "server_security_at_least", params: { level: 3 } }` gates an effect — "on trigger: if condition, effect". Named predicates, deliberately not a `{ stat, op, value }` DSL.
-- **Keywords are mechanical**: a registry entry with rule-`flags` (queried via `hasKeywordFlag(keywords, flag)` — e.g. `trashAfterPlay`, `unplayable`, `noNoiseOnPlay`, `trashOnHandDiscard`) and/or effect `grants`. Never special-case a keyword in phase logic.
-- **Implicit effects**: effects implied by stats/type rules (an agenda's `victoryPoints` generates its `gain_victory_points` + "Score N." text). Single source of truth — never duplicate a stat as an effect.
-- **Instances**: state stores `{ instanceId, definitionId }` only (serializable, no functions). Resolve with `resolveCard(instance)` at the point of use.
-- **Generated text**: rules text derives from effect params (with per-effect or card-level `text` overrides), so text can never drift from behavior. UI renders `getCardTextLines(definition)`.
+- **EffectSpec** (pure data): `{ effect: "draw", params: { amount: 3 } }`. Params typed per effect id via `EffectParamsMap` — wrong or missing params are compile errors. Optional overrides: `trigger`, `condition`, `text`.
+- **Conditions**: `{ check: "server_security_at_least", params: { level: 3 } }` gates an effect. Named predicates, deliberately not a `{ stat, op, value }` DSL.
+- **Keywords are mechanical**: registry entries with rule-`flags` (queried via `hasKeywordFlag` — `trashAfterPlay`, `unplayable`, `noNoiseOnPlay`, `trashOnHandDiscard`) and/or effect `grants`. Never special-case a keyword in phase logic.
+- **Implicit effects**: effects implied by stats/type rules (an agenda's `victoryPoints` generates its scoring effect and "Score N." text). One source of truth — never duplicate a stat as an effect.
+- **Instances**: state stores `{ instanceId, definitionId }` only (serializable). Resolve with `resolveCard(instance)` at the point of use.
+- **Generated text**: rules text derives from effect params (per-effect or card-level `text` overrides available), so text can never drift from behavior. UI renders `getCardTextLines(definition)`.
+- All trigger execution goes through `executeTriggers(instance, trigger, dispatch, getState)` — phases never touch effect implementations directly.
 
-**Usage patterns**:
+### State (`src/state/`)
 
-```typescript
-// A card definition — pure data
-{
-  id: CardId.ICE_WALL,
-  name: "Ice Wall",
-  type: CardType.ICE,
-  subtype: IceSubtype.BARRIER,
-  rarity: CardRarity.COMMON,
-  image: "ice_wall.jpeg",
-  strength: 8,
-  damage: 0,
-  effects: [
-    { effect: "modify_clicks", params: { amount: -1 }, trigger: TriggerMoment.ON_ENCOUNTER },
-  ],
-}
+Zustand store with Redux-like slices (`player`, `server`, `turn`, `board`, `settings`), each with `types/actions/reducer/selectors`. `useGameStore((s) => ...)` to read; `dispatch(actionCreator())` to write; `batchDispatch([...])` to coalesce re-renders. Multi-step game logic lives in thunks under `src/state/phases/`.
 
-// Create an instance (deck building, corp install)
-const card = createCardInstance(CardId.RUN);
+`board.permanentEffects` holds ongoing modifiers (e.g. Bad Moon's aura, Fire Wall's dynamic strength) applied by selectors like `getPlayerCardsPerTurn` and `calculateIceStrength` — modifiers read live `gameState` at evaluation time.
 
-// Execute a card's effects for a trigger (phase logic)
-executeTriggers(card, TriggerMoment.ON_PLAY, dispatch, getState);
-
-// Query a keyword rule
-hasKeywordFlag(resolveCard(card).keywords, "trashAfterPlay");
-```
-
-**Decks** (`src/decks/`):
-
-- `playerStarterDeck.ts` - `{ count, id: CardId }` entries → `CardInstance[]`
-- `serverStarterDeck.ts` - Weighted card pools using CardId
-
-### Event System (User Action Decoupling)
-
-The game uses an event-driven architecture to decouple UI from game logic:
-
-**Event Bus** (`src/state/events/`):
-
-- `eventBus.ts` - Core event bus with emit, subscribe, and history tracking
-- `eventHandler.ts` - Validates events and invokes phase thunks directly with payloads
-- `useEventBus.ts` - React context and hook for accessing event bus
-
-**Flow**:
-```
-UI Component → eventBus.emit(event) → Event Handler resolves & validates →
-  Invokes phase thunk directly with payload → Phase executes and transitions state
-```
-
-**Event Types** (deliberately minimal — a click carries no intent; the
-handler derives meaning from where the card lives and the current
-phase/run state):
-- `CARD_CLICKED { instanceId }` - Any card, any zone. Resolved by the handler:
-  in hand during Main → play it; the currently encountered ice → click through
-  it; an accessed card during access → select it; anything else → ignored.
-- `PLAYER_INITIATE_RUN` - Run button (a genuine non-card intent)
-- `PLAYER_END_TURN` - End Turn button (a genuine non-card intent)
-
-Add a more specific event only when one click could mean two different things
-(e.g. a future ability menu → a targeted event like `PLAYER_BREAK_SUBROUTINE`).
-
-**User-Driven Phases** (invoked directly by the event handler with payloads):
-- `playPhase({ cardId })` - resolved from CARD_CLICKED on a hand card
-- `initiateRun()` - PLAYER_INITIATE_RUN, or playPhase (Run card effect)
-- `clickIce({ iceId })` - resolved from CARD_CLICKED on the encountered ice
-- `selectAccessedCard({ cardId })` - resolved from CARD_CLICKED on an accessed card
-
-**Automatic Phases** (handled by PhaseManager):
-- `corpPhase()`, `drawPhase()`, `upkeepPhase()`, `mainPhase()`, `endPhase()`
-
-**Benefits**:
-- UI components never import phase thunks directly; state checks in UI are
-  cosmetic affordances only — the event handler is the single authority on
-  click rules
-- Centralized validation of all user actions (no UI/handler duplication)
-- Event history for debugging (`eventBus.getHistory()`); the handler logs the
-  resolved intent in dev mode
-- Testable game logic without UI rendering
-
-### Game Flow
-
-- `src/PhaseManager.tsx` - Handles automatic phase transitions only (Corp, Draw, Upkeep, Main, End)
-- User-driven phases (Play, Run) are handled directly by the event handler
-- Turn phases defined in `src/state/turn/types.ts` (Corp, Draw, Upkeep, Main, Play, Run, End)
-- Phase logic implemented in `src/state/phases/` (single-handler pattern for each phase)
-- Modal state managed via Mantine's `useDisclosure()` in App.tsx
-- User actions handled via event bus (see Event System above)
-
-## Turn Structure & Phase Flow
-
-### Phase Architecture
-
-Each turn follows a structured phase progression. Phases are managed by `PhaseManager.tsx` which watches `phaseCounter` and dispatches the appropriate phase handler based on the current phase.
-
-**Single-Handler Pattern**: Each phase has a single handler that executes all phase logic atomically:
-
-- Phase handlers are pure functions that return thunks
-- PhaseManager increments `phaseCounter` on every phase transition
-- When `phaseCounter` changes, PhaseManager executes the handler for `turnCurrentPhase`
-- Run phase uses internal `runProgressState` for sub-states (NOT_IN_RUN, ENCOUNTERING_ICE, ACCESSING_CARDS)
-
-### Complete Turn Cycle
+### Events (`src/state/events/`)
 
 ```
-Corp Phase (Turn End) → Draw Phase → Upkeep Phase → Main Phase → Play/Run Phases → End Phase → Corp Phase (loop)
+UI → eventBus.emit(event) → eventHandler resolves & validates → phase thunk → state
 ```
 
-**Detailed Phase Breakdown**:
+Deliberately minimal vocabulary — a click carries no intent; the handler derives meaning from where the card lives and the phase/run state:
 
-#### 1. Corp Phase
+- `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through; an accessed card → select; anything else → ignored.
+- `PLAYER_INITIATE_RUN`, `PLAYER_END_TURN` — button intents.
 
-- **Start**: Set subphase to Process (src/state/phases/corpPhase.ts:16)
-- **Process** (1 second delay):
-  - Increment server security level by 1
-  - Install random Ice card if slots available
-  - Trigger `ON_REZ` effects on newly installed Ice
-- **End**: Transition to Draw phase
+The event handler is the single authority on click rules; any state checks in UI components are cosmetic affordances only. Add a more specific event only when one click could mean two different things (e.g. a future `PLAYER_BREAK_SUBROUTINE`). Debug with `eventBus.getHistory()`; the handler logs resolved intents in dev mode.
 
-#### 2. Draw Phase
-
-- Reset player clicks to `playerClicksPerTurn`
-- Draw `playerCardsPerTurn` cards
-- Execute `ON_DRAW` trigger effects for all cards in hand
-- Transition:
-  - If clicks > 0: transition to **Upkeep** phase
-  - If clicks = 0: transition to End phase
-
-#### 3. Upkeep Phase
-
-- Execute `ON_UPKEEP` trigger effects on all installed programs
-- This phase runs exactly once per turn after Draw and before Main
-- Example: "Intrusive Thoughts" draws 1 card and loses 1 click during Upkeep
-- Automatically transitions to Main phase after upkeep effects complete
-
-#### 4. Main Phase
-
-- Pure waiting state for player input (no effects triggered)
-- Main phase persists until player takes action:
-  - Play cards from hand (transitions to Play phase)
-  - Initiate runs (transitions to Run phase)
-  - End turn manually (transitions to End phase)
-- Can be re-entered multiple times per turn (after Play/Run phases)
-- UI components check for `TurnPhase.Main` to enable/disable player actions
-
-#### 5. Play Phase
-
-- Deducts 1 click
-- Removes card from hand, adds to played cards area
-- Execute `ON_PLAY` trigger effects for all played cards
-- Move cards to appropriate zones (with trigger execution):
-  - Programs → Execute `ON_INSTALL` triggers, then add to `playerPrograms`
-  - Cards with `Trash` keyword → Execute `ON_TRASH` triggers, then add to `playerTrash`
-  - Others → Execute `ON_DISCARD` triggers, then add to `playerDiscard`
-- Clear played cards area
-- Transition:
-  - If `turnNextPhase` is set: go to that phase (e.g., Run)
-  - Else if clicks > 0: return to Main phase
-  - Else: go to End phase
-
-#### 6. Run Phase
-
-- Execute `ON_RUN_START` trigger effects on all installed programs
-- Initialize `serverUnencounteredIce` with all installed Ice (innermost to outermost)
-- Uses `runProgressState` internal state machine:
-  - **NOT_IN_RUN**: Initialize run
-  - **ENCOUNTERING_ICE**: Process ice clicks (user-driven), trigger `ON_ENCOUNTER` effects, loop through ice
-  - **ACCESSING_CARDS**: Process card selection (user-driven), trigger `ON_ACCESS` and `ON_FETCH` effects
-- Execute `ON_RUN_END` trigger effects on all installed programs
-- Transition:
-  - If clicks > 0: return to Main phase
-  - Else: go to End phase
-
-#### 7. End Phase
-
-- Discard entire hand
-- Transition to Corp phase (starts next turn cycle)
-
-### Phase Transition Triggers
-
-**Automatic Transitions** (handled by PhaseManager):
-
-- Corp → Draw (turn cycle begins)
-- Draw → Upkeep or End (based on clicks)
-- Upkeep → Main (always)
-- Play/Run → Main or End (based on remaining clicks)
-- End → Corp (turn cycle)
-
-**Manual Transitions** (UI-driven):
-
-- Main → Play (player plays card)
-- Main → Run (player clicks Run button)
-- Main → End (player ends turn)
-- Run internal: Ice clicks, card selection (via `runProgressState`)
-
-**Card-Driven Transitions**:
-
-- Play phase can set `turnNextPhase` (e.g., Run card sets next phase to Run)
-
-## Trigger Moment Compendium
-
-Card effects trigger at specific moments during gameplay. Each `CardEffect` has a `triggerMoment` property that determines when it executes.
-
-### Active Trigger Moments
-
-These triggers are actively executed in phase implementations:
-
-#### `ON_UPKEEP`
-
-**When**: Upkeep phase (src/state/phases/upkeepPhase.ts)
-**Executed on**: All installed programs in `playerInstalledPrograms`
-**Runs**: Exactly once per turn after Draw and before Main
-**Example**: "Intrusive Thoughts" - draws 1 card and loses 1 click during upkeep
-
-#### `ON_DRAW`
-
-**When**: Draw phase Process subphase (src/state/phases/drawPhase.ts:34)
-**Executed on**: Each card currently in player's hand
-**Example**: "Scintillating Scotoma" trap - loses 1 click when drawn
-
-#### `ON_PLAY`
-
-**When**: Play phase Process subphase (src/state/phases/playPhase.ts:51)
-**Executed on**: All cards in `playerPlayedCards` area
-**Example**: "Run" script - initiates run phase when played
-
-#### `ON_ENCOUNTER`
-
-**When**: Encounter phase via `triggerEncounterEffects()` (src/state/phases/encounterPhase.ts:47)
-**Executed on**: Current encountered Ice card
-**Example**: "Ice Wall" - player loses 1 click on encounter
-
-#### `ON_REZ`
-
-**When**: Corp phase when new Ice is installed (src/state/phases/corpPhase.ts:35)
-**Executed on**: Newly installed Ice card
-**Example**: "Bad Moon" - gives other Ice +1 strength when rezzed
-
-#### `ON_ACCESS`
-
-**When**: Access phase Process subphase (src/state/phases/accessPhase.ts:41)
-**Executed on**: All cards in `playerAccessedCards` array
-**Example**: Trap cards that trigger when accessed from server
-
-#### `ON_FETCH`
-
-**When**: Access phase when player selects a card via `selectAccessedCard()` (src/state/phases/accessPhase.ts:59)
-**Executed on**: The selected accessed card
-**Example**: Agenda cards - award victory points when fetched
-
-#### `ON_RUN_START`
-
-**When**: Run phase Start subphase (src/state/phases/runPhase.ts:19)
-**Executed on**: All installed programs in `playerInstalledPrograms`
-**Example**: Effects that trigger when a run begins
-
-#### `ON_RUN_END`
-
-**When**: Run phase End subphase (src/state/phases/runPhase.ts:66)
-**Executed on**: All installed programs in `playerInstalledPrograms`
-**Example**: "Running Sneakers" - gain 1 click when completing a run
-
-#### `ON_INSTALL`
-
-**When**: Play phase End subphase when programs are installed (src/state/phases/playPhase.ts:71)
-**Executed on**: Program card being installed
-**Example**: Effects that trigger when a program enters play
-
-#### `ON_DISCARD`
-
-**When**: When a card is moved to discard pile (src/state/phases/playPhase.ts:79)
-**Executed on**: Card being discarded
-**Locations**:
-
-- Play phase End (non-program, non-trash cards)
-- Access phase when selecting non-agenda cards
-- Net damage resolution (damageUtils.ts:26)
-  **Example**: "Ethereal" keyword - additional effects when discarded
-
-#### `ON_TRASH`
-
-**When**: When a card is moved to trash pile (src/state/phases/playPhase.ts:75)
-**Executed on**: Card being trashed
-**Note**: Different from `Keyword.TRASH` which determines card destination
-**Example**: Effects that trigger when cards with Trash keyword are trashed
-
-### Trigger Execution Pattern
-
-All trigger executions go through the engine executor (`src/cards/engine/execute.ts`):
-
-```typescript
-executeTriggers(cardInstance, TriggerMoment.ON_PLAY, dispatch, getState);
-```
-
-It resolves the instance's definition, filters `resolveEffectSpecs` (keyword grants + printed + implicit effects) by effective trigger, checks each spec's condition, and runs the implementation. Effect implementations can return either:
-
-- **Actions** (`getActions`): Dispatched immediately
-- **Thunks** (`getThunk`): Complex multi-step operations with state access
-
-## Known Issues & Improvements
-
-#### Active Issues
-
-_None currently known._ (The Fire Wall/"Bad Moon" copy-paste error was eliminated with the card registry refactor — bespoke strings no longer exist.)
-
-### Redundancies
-
-_All redundancies have been cleaned up. Unused TurnPhase enum values and subphase system have been removed._
-
-## Points for Improvement
-
-### High Priority
-
-1. ~~**Eliminate Subphase System**~~ ✅ **COMPLETED (2025-12-06)**
-
-   - ✅ Migrated all phases to single-handler pattern
-   - ✅ Removed TurnSubPhase enum and subphase state
-   - ✅ Run phase uses internal `runProgressState` instead of separate phases
-   - ✅ Main phase is now a pure waiting state (no ON_TURN_START bug)
-   - ✅ New Upkeep phase for once-per-turn effects (ON_UPKEEP trigger)
-
-2. ~~**Decouple UI from Phase Logic**~~ ✅ **COMPLETED (2025-12-06)**
-
-   - ✅ Implemented event bus system for all user actions
-   - ✅ UI components emit events instead of calling thunks
-   - ✅ Event handler validates and coordinates state updates
-   - ✅ Game logic fully testable independent of UI
-
-3. **Add Phase Validation**
-
-   - Runtime checks for undefined phase handlers
-   - TypeScript exhaustiveness checking on phase switches
-   - Development-mode warnings for unused trigger moments
-
-4. **Consolidate Phase Transition Logic**
-   - Many phases have identical "check clicks → Main or End" logic
-   - Extract to shared utility function
-   - Reduces duplication across phase files
-
-### Medium Priority
-
-5. **Fix Remaining Issues**
-
-   - ~~Fix Fire Wall error message~~ ✅ Obsolete after card registry refactor
-   - Add ESLint rule to catch unused enum values
-
-6. **Improve Phase Observability**
-
-   - Add phase transition logging/debugging utilities
-   - Visualize phase flow in dev tools
-   - Track phase timing metrics
-
-7. **Document Phase Responsibilities**
-   - Create state machine diagram for phase transitions
-   - Document which phases are automatic vs user-driven
-
-## Recently Completed
-
-### Session 2026-08-17: Card Registry Refactor (CARD_REGISTRY.md Phases 1–5)
-
-**Major Achievement:** Fully data-driven card system — cards are pure data, behavior lives in the engine, state stores serializable instances.
-
-- **Parameterized effects**: `EffectSpec` data (`{ effect: "draw", params: { amount: 3 } }`) + one implementation per primitive; params typed per effect id via `EffectParamsMap`. Killed all `DRAW_CARDS_1`-style ids.
-- **Conditions**: named predicates gate effects ("on trigger: if condition, effect").
-- **Mechanical keywords**: registry with rule-flags (`hasKeywordFlag`) and effect grants; removed all keyword special-casing from phases/UI. Removed the unused `Crash` keyword.
-- **Implicit effects**: agenda `victoryPoints` derives its scoring effect and text (fixed the vp-vs-effect mismatches: Signal Broadcast 3, Corporate Secrets 2).
-- **Generated rules text** with trigger labels, same-trigger grouping, and condition composition; per-effect/card-level overrides. Fixed "Gain 3 ticks"-class drift permanently.
-- **Definition/instance split**: state stores `{ instanceId, definitionId }` (`deckContextId` removed); `isRezzed` moved to the ice instance; UI resolves definitions at the edge; all execution via `executeTriggers`. State is now fully serializable (save/undo/replay become possible).
-- **Behavior fixes shipped**: Server Lockdown now truly ends the run (was a raw jump to End phase); Fire Wall's strength modifier fires on ON_REZ and reads live state (the old ON_PLAY permanent effect never fired on ice).
-- **Deleted**: entire `src/cardDefinitions/` (enums moved to `src/cards/enums.ts`, ids to `src/cards/ids.ts`), legacy `CardEffect`/`PlayingCard` types, `KEYWORD_EFFECTS`, both card factories, the legacy adapter.
-
-### Session 2026-01-28: Card System Refactor
-
-**Major Achievement:** Type-safe card system with centralized effects
-
-**Problem Solved:** Card definitions contained inline effect implementations with direct state imports, making them hard to maintain and reuse. Decks used fragile string-based card names.
-
-**Solution:** Implemented a 4-phase migration to a data-driven card system:
-
-1. **CardId Registry** - Type-safe enum for all 20 cards
-2. **Effects Module** - Centralized effect implementations in `effects/` folder
-3. **Card Data Migration** - Card files now reference effects by ID
-4. **Deck Migration** - Decks use CardId with `{ count, id }` format
-
-**Files Created:**
-- `src/cardDefinitions/registry.ts` - CardId enum with category-specific types
-- `src/cardDefinitions/effects/` - Complete effects module:
-  - `registry.ts` - EffectId enum (15 unique effects)
-  - `types.ts` - EffectImplementation interface
-  - `common.ts` - Reusable effects (draw, clicks, tags, etc.)
-  - `ice.ts` - Ice-specific effects (Bad Moon buff, Fire Wall, end run)
-  - `programs.ts` - Program effects (Deep Thoughts, Sledgehammer, etc.)
-  - `scripts.ts` - Script effects (initiateRun)
-  - `traps.ts` - Trap effects (Server Lockdown conditional)
-  - `index.ts` - `effect()` helper function, exports
-
-**Files Modified:**
-- `src/cardDefinitions/card.ts` - Added `id: CardId` to BaseCardDefinitions
-- `src/cardDefinitions/createPlayingCard.ts` - Added ID-based factory functions, deprecated name-based
-- `src/cardDefinitions/{agendas,ice,programs,scripts,traps}.ts` - Now use `effect(EffectId.X)`, no state imports
-- `src/decks/playerStarterDeck.ts` - Uses `{ count, id: PlayerCardId }[]` format
-- `src/decks/serverStarterDeck.ts` - Uses CardId in weighted pools
-- `src/state/utils/cardUtils.ts` - Uses ID-based factory functions
-
-**Benefits Achieved:**
-- ✅ Type-safe card references - IDE autocomplete, compile-time error checking
-- ✅ Centralized effects - Game logic in one place, reusable across cards
-- ✅ Card files are pure data - No state imports in card definition files
-- ✅ O(1) card lookup - Map-based registry instead of array.find()
-- ✅ Cleaner deck format - `{ count, id }` instead of repeated strings
-- ✅ Backward compatible - Legacy name-based functions still work (deprecated)
-
-### Session 2025-12-06 (Part 2): Upkeep Phase & Subphase Elimination
-
-**Major Achievement:** Complete elimination of subphase system, introduction of Upkeep phase
-
-**Problem Solved:** After subphase elimination, `mainPhase()` was firing ON_TURN_START effects every time the game returned to Main phase (after Play/Run), causing cards like "Intrusive Thoughts" to trigger multiple times per turn instead of once. This created a perceived performance issue (stutter) that was actually unexpected state changes.
-
-**Solution:** Introduced a new Upkeep phase that runs exactly once per turn after Draw and before Main, replacing ON_TURN_START with ON_UPKEEP trigger moment. Main phase is now a pure waiting state that can be safely re-entered multiple times.
-
-**Changes Made:**
-
-1. **New Upkeep Phase**
-   - Added `TurnPhase.Upkeep` to enum
-   - Created `src/state/phases/upkeepPhase.ts` with ON_UPKEEP trigger execution
-   - Runs once per turn: Draw → Upkeep → Main
-
-2. **Trigger Moment Migration**
-   - Added `TriggerMoment.ON_UPKEEP` to replace `ON_TURN_START`
-   - Updated "Intrusive Thoughts" card to use ON_UPKEEP
-   - Main phase now has no trigger effects (pure waiting state)
-
-3. **Phase Transitions Updated**
-   - `drawPhase()`: Now transitions to Upkeep (or End) instead of Main
-   - `upkeepPhase()`: Executes ON_UPKEEP effects, then transitions to Main
-   - `mainPhase()`: Removed all ON_TURN_START logic (empty handler)
-
-4. **PhaseManager Updated**
-   - Added Upkeep handler to PHASE_HANDLERS
-   - Turn cycle now: Corp → Draw → Upkeep → Main → Play/Run → End → Corp
-
-**Files Created:**
-- `src/state/phases/upkeepPhase.ts` - New upkeep phase handler
-
-**Files Modified:**
-- `src/state/turn/types.ts` - Added Upkeep to TurnPhase enum
-- `src/cardDefinitions/card.ts` - Added ON_UPKEEP to TriggerMoment enum
-- `src/cardDefinitions/playerCards/programs.ts` - Updated Intrusive Thoughts to use ON_UPKEEP
-- `src/state/phases/drawPhase.ts` - Transitions to Upkeep instead of Main
-- `src/state/phases/mainPhase.ts` - Removed ON_TURN_START logic (now pure waiting state)
-- `src/PhaseManager.tsx` - Added Upkeep phase handler
-- `src/state/phases/index.ts` - Exported upkeepPhase
-- `CLAUDE.md` - Updated all documentation to reflect new architecture
-
-**Benefits Achieved:**
-- ✅ Main phase can be re-entered multiple times without side effects
-- ✅ Once-per-turn effects (ON_UPKEEP) guaranteed to run exactly once
-- ✅ No more "stutter" from unexpected state changes
-- ✅ Clean separation: Upkeep = effects, Main = waiting
-- ✅ Maintains single-handler pattern without needing subphases
-
-### Session 2025-12-06 (Part 1): Event System Migration
-
-**Major Achievement:** Full event-driven architecture for user actions
-
-1. **Event Bus Infrastructure**
-   - Created event bus with emit, subscribe, and history tracking
-   - Implemented event handler with centralized validation
-   - Added React context provider for event bus access
-
-2. **Pending Actions System**
-   - New state module to store runtime data for user-triggered phases
-   - Used by phase handlers to read user selections from state
-   - Enables PhaseManager to handle all phases uniformly
-
-3. **Phase Migrations**
-   - **Play Phase**: Reads card/index from pending state, triggered by PLAYER_PLAY_CARD event
-   - **Encounter Phase**: Reads ice ID from pending state, triggered by PLAYER_CLICK_ICE event
-   - **Access Phase**: Reads selected card from pending state, triggered by PLAYER_SELECT_ACCESSED_CARD event
-   - **End Turn**: Triggered by PLAYER_END_TURN event
-
-4. **UI Component Cleanup**
-   - Removed all direct thunk imports from UI components
-   - Removed all `useThunk()` usage from UI layer
-   - All UI now exclusively uses `useEventBus()` for user actions
-
-**Files Created:**
-- `src/state/events/` - Event bus system (eventBus.ts, eventHandler.ts, useEventBus.ts, index.ts)
-- `src/state/pending/` - Pending actions module (types.ts, actions.ts, reducer.ts, selectors.ts, index.ts)
-
-**Files Modified:**
-- `src/state/phases/playPhase.ts` - Now reads from pending state
-- `src/state/phases/encounterPhase.ts` - Now reads from pending state, triggers effects in End
-- `src/state/phases/accessPhase.ts` - Now reads from pending state, processes selection in End
-- `src/ui/PlayerDashboard/PlayerHand.tsx` - Emits PLAYER_PLAY_CARD event
-- `src/ui/IceRow.tsx` - Emits PLAYER_CLICK_ICE event
-- `src/ui/Modals.tsx` - Emits PLAYER_SELECT_ACCESSED_CARD event
-- `src/ui/PlayerDashboard/PlayerDashboard.tsx` - Emits PLAYER_END_TURN event
-- `src/App.tsx` - Initializes event bus and wires event handler
-
-**Benefits Achieved:**
-- ✅ Complete UI/logic separation - UI never imports phase thunks
-- ✅ Centralized validation - All user actions validated before execution
-- ✅ Event logging - Every user action logged in dev mode console
-- ✅ Testability - Game logic can be tested without UI rendering
-- ✅ Debuggability - Event history available via `eventBus.getHistory()`
-
-### Session 2025-12-05: Phase System & Trigger Moments
-
-**Critical Fixes:**
-
-1. **Main Phase Handler** - Added explicit handler with `ON_TURN_START` trigger execution
-2. **Trigger Moment System** - Implemented all 6 missing trigger moments (ON_RUN_START, ON_RUN_END, ON_INSTALL, ON_DISCARD, ON_TRASH; removed ON_REVEAL)
-3. **Server Lockdown Card** - Fixed to use ON_ACCESS and TurnPhase.End
-4. **Unused Enum Cleanup** - Removed unused TurnPhase values (Start, Fetch, Discard)
-
-**Cards Fixed:**
-- **Running Sneakers** - Now properly gains 1 click on run completion
-- **Intrusive Thoughts** - Now draws card and loses click at turn start
-- **Server Lockdown** - Now works with ON_ACCESS trigger
-- **Ethereal/Trash keywords** - Now properly execute trigger effects
-
-**Files Created:**
-- `src/state/phases/mainPhase.ts` - Main phase handler
-
-**Utilities Added:**
-- `executeCardTriggers()` in cardUtils.ts - Standardized trigger execution helper
-
-## Styling
-
-Tailwind CSS is placed in a separate CSS layer to override Mantine defaults (see `src/index.css`). Dark mode is the default theme with custom colors defined in `src/index.tsx`.
-
-## Code Style
-
-- Double quotes, semicolons, trailing commas
-- Arrow parens always required
-- Props sorted: shorthand first, callbacks last, alphabetical
-- Use `eslint-plugin-perfectionist` for automatic sorting (imports, props, etc.)
-- TypeScript strict mode enabled
-
-## Key Dependencies
-
-- **State**: Zustand v5 (with devtools middleware)
-- **UI**: Mantine v7 (components), Tailwind CSS v4 (utility styles)
-- **Animation**: Framer Motion v12
-- **Build**: Vite v6 with React plugin
-- **Utilities**: uuid (card IDs), clsx (conditional classes), array-shuffle (deck shuffling)
-
-## Project Structure
+### Turn Flow
 
 ```
-src/
-├── state/              # State management (Zustand + Redux pattern)
-│   ├── player/         # Player state module
-│   ├── server/         # Server (Corp) state module
-│   ├── turn/           # Turn & phase state module
-│   ├── board/          # Board state module
-│   ├── settings/       # Settings state module
-│   ├── events/         # Event bus system
-│   ├── phases/         # Complex phase logic (thunks)
-│   ├── utils/          # State utilities
-│   ├── store.ts        # Zustand store creation
-│   ├── reducer.ts      # Root reducer
-│   ├── types.ts        # Core types
-│   └── hooks.ts        # useThunk hook
-├── ui/                 # React components
-│   ├── Card/           # Card rendering components
-│   ├── PlayerDashboard/
-│   └── ...
-├── cards/              # Card system (see CARD_REGISTRY.md)
-│   ├── enums.ts        # Game enums (CardType, TriggerMoment, Keyword, …)
-│   ├── ids.ts          # CardId registry
-│   ├── instance.ts     # CardInstance + factories + resolveCard
-│   ├── definitions/    # Pure-data card definitions
-│   └── engine/         # Effects, conditions, keywords, resolution,
-│                       #   execution, text generation
-├── decks/              # Deck configurations (uses CardId)
-├── PhaseManager.tsx    # Phase orchestration
-└── App.tsx             # Root component
+Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 ```
+
+- **Automatic phases** (`PhaseManager.tsx` watches `phaseCounter`): Corp (security +1, install ice, ON_REZ), Draw (reset clicks, draw, ON_DRAW; → End if 0 clicks), Upkeep (ON_UPKEEP on installed programs, exactly once per turn), Main (pure waiting state, safely re-enterable), End (discard hand — Ethereal cards go to trash).
+- **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End.
+- Run uses an internal state machine (`runProgressState`): `NOT_IN_RUN` → `ENCOUNTERING_ICE` (loop) → `ACCESSING_CARDS`.
+
+### Trigger Moments
+
+| Trigger | Fires | On |
+| --- | --- | --- |
+| ON_REZ | Corp installs ice | the new ice |
+| ON_DRAW | Draw phase | each card in hand |
+| ON_UPKEEP | Upkeep phase (once/turn) | installed programs |
+| ON_PLAY | Card played | played cards |
+| ON_INSTALL / ON_TRASH / ON_DISCARD | Zone moves after play, access resolution, net damage | the moved card |
+| ON_RUN_START / ON_RUN_END | Run boundaries | installed programs |
+| ON_ENCOUNTER | Ice clicked (subroutines) | the encountered ice |
+| ON_ACCESS | Access begins | each accessed card |
+| ON_FETCH | Accessed card selected | the selected card |
 
 ## Development Guidelines
 
-### Adding New State
+### Adding a Card (usually zero code)
 
-When adding new state to an existing module:
-
-1. Define types in `types.ts` (state shape, action types enum, action interfaces)
-2. Create action creators in `actions.ts`
-3. Update reducer in `reducer.ts`
-4. Add selectors to `selectors.ts` as needed
-5. Export from `index.ts`
-
-### Creating Complex Actions
-
-For multi-step operations that need to:
-
-- Read current state
-- Dispatch multiple actions
-- Coordinate across state modules
-
-Create a thunk action in `src/state/phases/` or add to an existing phase file.
-
-### How to Add a Card
-
-A typical card is **zero code** — pure data:
-
-1. Add the card id to `src/cards/ids.ts` in the right category object (e.g. `ScriptCardId`).
-2. Add an object literal to the matching file in `src/cards/definitions/` listing its properties and effects:
+1. Add the id to `src/cards/ids.ts` in the right category object.
+2. Add an object literal to the matching file in `src/cards/definitions/`:
 
 ```typescript
 {
@@ -723,31 +111,28 @@ A typical card is **zero code** — pure data:
   type: CardType.SCRIPT,
   rarity: CardRarity.COMMON,
   image: "my_card.jpg",
-  keywords: [Keyword.TRASH],                       // optional
+  keywords: [Keyword.TRASH],                            // optional
   effects: [{ effect: "draw", params: { amount: 2 } }],
 }
 ```
 
-3. Add it to a deck (`src/decks/`). Done — rules text ("Trash." / "Draw 2 cards.") is generated.
+3. Add it to a deck (`src/decks/`). Rules text is generated.
 
-**Effect spec options**:
+- **New effect primitive** (genuinely new mechanics only): add its params shape to `EffectParamsMap`, its implementation to `primitives.ts`. The mapped-type registry makes a missing/extra implementation a compile error.
+- **New keyword**: one entry in `engine/keywords.ts`; if it needs a static rule the engine doesn't know, add one `hasKeywordFlag` check at the relevant spot — once, not per card.
+- **New condition**: add params to `ConditionParamsMap`, predicate to `conditions.ts`.
+- **New state**: extend the slice's `types/actions/reducer/selectors`; multi-step logic becomes a thunk in `src/state/phases/`.
 
-```typescript
-{ effect: "draw", params: { amount: 2 } }                       // defaults
-{ effect: "modify_clicks", params: { amount: -1 },
-  trigger: TriggerMoment.ON_ENCOUNTER }                          // trigger override
-{ effect: "end_run", trigger: TriggerMoment.ON_ACCESS,
-  condition: { check: "server_security_at_least",
-               params: { level: 3 } } }                          // conditional
-{ effect: "modify_signal", params: { amount: 5 },
-  text: "Custom phrasing." }                                     // text override
-```
+### Conventions
 
-**Adding a new effect primitive** (only for genuinely new mechanics):
+- Strict TS + strict type-checked ESLint; double quotes, semicolons, trailing commas; arrow-function components; `eslint-plugin-perfectionist` auto-sorts imports/props/objects.
+- Tailwind sits in a separate CSS layer to override Mantine (`src/index.css`); dark theme by default (`src/index.tsx`).
+- Card ability text conventions live in `engine/text.ts`: trigger labels only for non-default triggers; ON_ENCOUNTER renders as a subroutine marker; consecutive same-trigger effects group under one label.
 
-1. Add its params shape to `EffectParamsMap` in `src/cards/engine/effects/types.ts`.
-2. Add the implementation in `primitives.ts` (or a new `unique.ts` for true one-offs). The mapped-type registry makes a missing/extra implementation a compile error.
+## Open Items
 
-**Adding a new keyword**: one entry in `src/cards/engine/keywords.ts` (reminder text + flags/grants). If it needs a static rule the engine doesn't know, add one `hasKeywordFlag` check at the relevant spot — once, not per card.
-
-**Adding a new condition**: add its params to `ConditionParamsMap` and its predicate to `conditions.ts`.
+- First test suite (vitest) — engine and event handler are pure/headless-drivable.
+- Icebreaker interaction (Sledgehammer is text-only) — see `EVENT_SYSTEM_REFACTOR.md` follow-ups.
+- `destroy_all_programs` (Flush) is a no-op placeholder.
+- Pre-existing React duplicate-key warning during play (likely `PlayerHand` AnimatePresence).
+- Performance: profile before optimizing — see `PERFORMANCE.md`.

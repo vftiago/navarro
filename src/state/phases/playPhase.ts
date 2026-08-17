@@ -1,4 +1,5 @@
-import { CardType, Keyword, TriggerMoment } from "../../cardDefinitions/card";
+import { CardType, TriggerMoment } from "../../cardDefinitions/card";
+import { hasKeywordFlag } from "../../cards/engine";
 import {
   addCardToPlayed,
   addToDiscard,
@@ -21,7 +22,6 @@ import {
   executeCardEffects,
   executeCardTriggers,
   getCardEffectsByTrigger,
-  hasKeyword,
 } from "../utils";
 
 export type PlayPhasePayload = {
@@ -54,8 +54,7 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
       addCardToPlayed(card),
     ];
 
-    // Cards with Stealthy keyword do not add noise when played
-    if (!hasKeyword(card, Keyword.STEALTHY)) {
+    if (!hasKeywordFlag(card.keywords, "noNoiseOnPlay")) {
       playActions.push(modifyPlayerNoise(1));
     }
 
@@ -86,7 +85,7 @@ export const playPhase = (payload: PlayPhasePayload): ThunkAction => {
           getState,
         );
         zoneActions.push(addToPrograms(playedCard));
-      } else if (hasKeyword(playedCard, Keyword.TRASH)) {
+      } else if (hasKeywordFlag(playedCard.keywords, "trashAfterPlay")) {
         executeCardTriggers(
           playedCard,
           TriggerMoment.ON_TRASH,

@@ -1,11 +1,11 @@
-import { Text } from "@mantine/core";
-import clsx from "clsx";
+import { Text, Tooltip } from "@mantine/core";
 import { IoMdReturnRight } from "react-icons/io";
 import {
   type CardEffect,
   type EffectCost,
   TriggerMoment,
 } from "../../../../cardDefinitions/card";
+import { getKeywordDefinition } from "../../../../cards/engine";
 
 const renderEffectCosts = (costs: EffectCost[]) => {
   return costs.map((cost, index) => {
@@ -21,8 +21,6 @@ export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
   const effects = cardEffects.map((effect, index) => {
     const { costs, getText, keyword, triggerMoment } = effect;
 
-    const isKeyword = Boolean(keyword);
-
     const isSubroutine = triggerMoment === TriggerMoment.ON_ENCOUNTER;
 
     return (
@@ -37,13 +35,13 @@ export const CardEffects = ({ cardEffects }: { cardEffects: CardEffect[] }) => {
           <span className="inline">{renderEffectCosts(costs)}</span>
         ) : null}
 
-        <span
-          className={clsx("inline", {
-            "text-purple-300": isKeyword,
-          })}
-        >
-          {getText()}
-        </span>
+        {keyword ? (
+          <Tooltip label={getKeywordDefinition(keyword).reminderText}>
+            <span className="inline text-purple-300">{getText()}</span>
+          </Tooltip>
+        ) : (
+          <span className="inline">{getText()}</span>
+        )}
       </Text>
     );
   });

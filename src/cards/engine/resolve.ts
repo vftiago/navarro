@@ -9,6 +9,7 @@
 import { CardType } from "../../cardDefinitions/card";
 import type { CardDefinition } from "../definitions/types";
 import type { EffectSpec } from "./effects/types";
+import { getKeywordGrants } from "./keywords";
 
 /**
  * Effects implied by the card's stats/type rather than listed in its data
@@ -28,10 +29,15 @@ export const getImplicitEffects = (
 };
 
 /**
- * A card's complete effect list: printed effects plus implicit ones
+ * A card's complete effect list: keyword-granted effects, printed effects,
+ * and implicit ones — in that order
  */
 export const resolveEffectSpecs = (
   definition: CardDefinition,
 ): EffectSpec[] => {
-  return [...definition.effects, ...getImplicitEffects(definition)];
+  return [
+    ...getKeywordGrants(definition.keywords),
+    ...definition.effects,
+    ...getImplicitEffects(definition),
+  ];
 };

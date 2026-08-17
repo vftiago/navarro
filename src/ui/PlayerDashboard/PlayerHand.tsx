@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { PlayingCard } from "../../cardDefinitions/card";
-import { Keyword } from "../../cardDefinitions/card";
+import { hasKeywordFlag } from "../../cards/engine";
 import { GameEventType, useEventBus } from "../../state/events";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
@@ -101,11 +101,7 @@ export const PlayerHand = () => {
         return;
       }
 
-      if (
-        card.cardEffects?.some(
-          (effect) => effect.keyword === Keyword.UNPLAYABLE,
-        )
-      ) {
+      if (hasKeywordFlag(card.keywords, "unplayable")) {
         return;
       }
 

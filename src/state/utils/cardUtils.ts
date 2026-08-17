@@ -1,7 +1,6 @@
 import {
   type CardEffect,
   type IcePlayingCard,
-  type Keyword,
   type PlayingCard,
   type TriggerMoment,
 } from "../../cardDefinitions/card";
@@ -30,10 +29,6 @@ export const getCardEffectsByTrigger = (
   return card.cardEffects.filter(
     (effect) => effect.triggerMoment === triggerMoment,
   );
-};
-
-export const hasKeyword = (card: PlayingCard, keyword: Keyword): boolean => {
-  return card.cardEffects?.some((effect) => effect.keyword === keyword);
 };
 
 /**

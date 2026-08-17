@@ -270,12 +270,14 @@ Implementation notes / deviations:
 - **Implicit effects** (`engine/resolve.ts`, pulled forward from Phase 3): effects implied by a stat or type rule are derived, not printed — an agenda's `victoryPoints` stat generates its `gain_victory_points` ON_FETCH effect and "Score N." text, so the stat and the scoring can never disagree (they did: Signal Broadcast said 2 but scored 3, Corporate Secrets said 1 but scored 2 — resolved to 3 and 2). `resolveEffectSpecs(definition)` = printed effects + implicit effects; Phase 3 extends it with keyword grants.
 - Gameplay-visible changes shipped in this phase: Server Lockdown now truly ends the run (decided earlier); Fire Wall's strength digit now renders in the UI's "buffed" green (base 0 + modifier instead of dynamic base); keyword lines render before printed effects everywhere; text fixes ("Gain 3 clicks.", "On Draw: Lose 1 click."); Intrusive Thoughts shows two labeled lines until the grouped `renderCardText` reaches the UI in Phase 4.
 
-### Phase 3 — Mechanical keywords
+### Phase 3 — Mechanical keywords ✅ DONE
 
-1. Build the keyword registry with `grants` + `flags`; give `Trash`, `Ethereal`, `Unplayable` real semantics (port from `playPhase.ts` / `keywords.ts`).
-2. Implement `resolveEffects(definition, trigger)` = printed effects + keyword grants; route `cardUtils.getCardEffectsByTrigger` through it.
-3. Replace keyword special-cases in `playPhase.ts` (and `deckUtils.ts`, `PlayerHand.tsx`) with `hasKeywordFlag` queries.
-4. Decide `Stealthy`/`Crash` semantics or explicitly mark them as flavor-only (registry entry with reminder text and no behavior — still visible on cards).
+1. ✅ Keyword registry built (`engine/keywords.ts`): each keyword defines `reminderText`, optional `grants` (effect specs), and optional `flags`. Flags implemented: `unplayable`, `trashAfterPlay` (Trash), `trashOnHandDiscard` (Ethereal), `noNoiseOnPlay` (Stealthy).
+2. ✅ `resolveEffectSpecs` now merges keyword grants first, then printed effects, then implicit effects. (No keyword currently grants effects — all four real keywords are pure rule-flags — but the seam exists.)
+3. ✅ All keyword special-cases replaced with `hasKeywordFlag(card.keywords, flag)` queries: `playPhase.ts` (noise + trash-after-play), `deckUtils.discardHand` (ethereal), `PlayerHand.tsx` (unplayable). The legacy `PlayingCard` shape gained a `keywords` field carried through the converter; `KEYWORD_EFFECTS` and `cardUtils.hasKeyword` are deleted.
+4. ✅ Semantics settled: `Stealthy` = playing cards usually generates noise, Stealthy cards generate none — the `noNoiseOnPlay` flag (it was already implemented in playPhase; the plan's earlier claim it was unimplemented was wrong). `Crash` had no semantics and no cards using it — removed from the `Keyword` enum entirely (decided 2026-08-17).
+
+Bonus: card UI now shows each keyword's reminder text as a tooltip (`CardEffects.tsx` reads the registry) — e.g. hovering "Trash." shows "(Goes to the trash after being played.)".
 
 ### Phase 4 — Definition/instance split (the big one)
 

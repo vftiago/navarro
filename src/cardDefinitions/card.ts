@@ -70,7 +70,6 @@ export enum EffectCost {
 export enum Keyword {
   UNPLAYABLE = "Unplayable",
   ETHEREAL = "Ethereal",
-  CRASH = "Crash",
   TRASH = "Trash",
   STEALTHY = "Stealthy",
 }
@@ -106,6 +105,7 @@ export type BaseCardDefinitions = {
   rarity: CardRarity;
   image: string;
   cardEffects: CardEffect[];
+  keywords?: Keyword[];
   flavorText?: string;
 };
 

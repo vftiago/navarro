@@ -16,15 +16,26 @@ import {
   trapCardDefinitions,
 } from "../cards/definitions";
 import { resolveEffectSpecs, specToCardEffect } from "../cards/engine";
-import type { CardDefinitions, CardEffect, IceCardDefinitions } from "./card";
-import { CardType } from "./card";
-import { KEYWORD_EFFECTS } from "./keywords";
+import type {
+  CardDefinitions,
+  CardEffect,
+  IceCardDefinitions,
+  Keyword,
+} from "./card";
+import { CardType, TriggerMoment } from "./card";
 import type { CardId, IceCardId, PlayerCardId, ServerCardId } from "./registry";
 
-// Keywords render (and are queried via hasKeyword) as CardEffect entries
-// in the legacy shape; real keyword mechanics land in Phase 3
+// Display-only entry so keywords render in the legacy card UI; keyword
+// behavior lives in the keyword registry (flags/grants), not here
+const keywordToCardEffect = (keyword: Keyword): CardEffect => ({
+  getActions: () => [],
+  getText: () => `${keyword}.`,
+  keyword,
+  triggerMoment: TriggerMoment.ON_PLAY,
+});
+
 const toCardEffects = (definition: CardDefinition): CardEffect[] => [
-  ...(definition.keywords ?? []).map((keyword) => KEYWORD_EFFECTS[keyword]),
+  ...(definition.keywords ?? []).map(keywordToCardEffect),
   ...resolveEffectSpecs(definition).map(specToCardEffect),
 ];
 
@@ -35,6 +46,7 @@ const toLegacyBase = (definition: CardDefinition) => ({
   name: definition.name,
   rarity: definition.rarity,
   ...(definition.flavorText && { flavorText: definition.flavorText }),
+  ...(definition.keywords && { keywords: definition.keywords }),
 });
 
 const toLegacyIceCard = (

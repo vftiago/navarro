@@ -1,6 +1,5 @@
 import type { PlayingCard } from "../../cardDefinitions/card";
-import { Keyword } from "../../cardDefinitions/card";
-import { hasKeyword } from "./cardUtils";
+import { hasKeywordFlag } from "../../cards/engine";
 
 export const shuffleCards = <T>(cards: T[]): T[] => {
   const result = [...cards];
@@ -71,7 +70,7 @@ export const discardHand = ({
   const newTrash = [...trash];
 
   for (const card of hand) {
-    const shouldTrash = hasKeyword(card, Keyword.ETHEREAL);
+    const shouldTrash = hasKeywordFlag(card.keywords, "trashOnHandDiscard");
 
     if (shouldTrash) {
       newTrash.unshift(card);

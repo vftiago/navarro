@@ -24,6 +24,7 @@ export const IceCardId = {
 export const ProgramCardId = {
   DEEP_THOUGHTS: "deep_thoughts",
   INTRUSIVE_THOUGHTS: "intrusive_thoughts",
+  PIECE_OF_CAKE: "piece_of_cake",
   RUNNING_SNEAKERS: "running_sneakers",
   SLEDGEHAMMER: "sledgehammer",
 } as const;
@@ -34,7 +35,6 @@ export const ScriptCardId = {
   CRACK: "crack",
   FLUSH: "flush",
   FOCUS: "focus",
-  PIECE_OF_CAKE: "piece_of_cake",
   RUN: "run",
 } as const;
 

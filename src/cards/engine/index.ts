@@ -22,6 +22,7 @@ export {
   type CardTextLine,
   getCardTextLines,
   getEffectiveTrigger,
+  renderAbilityText,
   renderCardText,
   renderEffectBody,
   renderEffectText,

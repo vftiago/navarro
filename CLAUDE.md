@@ -50,6 +50,7 @@ Key concepts:
 - **Conditions**: `{ check: "server_security_at_least", params: { level: 3 } }` gates an effect. Named predicates, deliberately not a `{ stat, op, value }` DSL.
 - **Keywords are mechanical**: registry entries with rule-`flags` (queried via `hasKeywordFlag` — `trashAfterPlay`, `unplayable`, `noNoiseOnPlay`, `trashOnHandDiscard`) and/or effect `grants`. Never special-case a keyword in phase logic.
 - **Implicit effects**: effects implied by stats/type rules (an agenda's `victoryPoints` generates its scoring effect and "Score N." text). One source of truth — never duplicate a stat as an effect.
+- **Activated abilities** (programs only): `abilities: [{ cost, effects }]` — rendered "Click, Trash: Draw 3 cards." Costs (`clicks`, `trashSelf`) are paid in full up front before effects resolve (an unpayable cost blocks activation; effects resolve as much as possible). Trash-as-cost fires ON_TRASH. Activation is structural — an ability is activated because it lives in `abilities`, not because it has a cost. Design rule: every ability needs a cost or a consuming context.
 - **Instances**: state stores `{ instanceId, definitionId }` only (serializable). Resolve with `resolveCard(instance)` at the point of use.
 - **Generated text**: rules text derives from effect params (per-effect or card-level `text` overrides available), so text can never drift from behavior. UI renders `getCardTextLines(definition)`.
 - All trigger execution goes through `executeTriggers(instance, trigger, dispatch, getState)` — phases never touch effect implementations directly.
@@ -68,7 +69,7 @@ UI → eventBus.emit(event) → eventHandler resolves & validates → phase thun
 
 Deliberately minimal vocabulary — a click carries no intent; the handler derives meaning from where the card lives and the phase/run state:
 
-- `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through; an accessed card → select; anything else → ignored.
+- `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through; an accessed card → select; an installed program with an ability during Main → activate; anything else → ignored.
 - `PLAYER_INITIATE_RUN`, `PLAYER_END_TURN` — button intents.
 
 The event handler is the single authority on click rules; any state checks in UI components are cosmetic affordances only. Add a more specific event only when one click could mean two different things (e.g. a future `PLAYER_BREAK_SUBROUTINE`). Debug with `eventBus.getHistory()`; the handler logs resolved intents in dev mode.
@@ -80,7 +81,7 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 ```
 
 - **Automatic phases** (`PhaseManager.tsx` watches `phaseCounter`): Corp (security +1, install ice, ON_REZ), Draw (reset clicks, draw, ON_DRAW; → End if 0 clicks), Upkeep (ON_UPKEEP on installed programs, exactly once per turn), Main (pure waiting state, safely re-enterable), End (discard hand — Ethereal cards go to trash).
-- **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End.
+- **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End. `activateAbility({ programId })` runs within Main (no phase transition; → End if clicks hit 0).
 - Run uses an internal state machine (`runProgressState`): `NOT_IN_RUN` → `ENCOUNTERING_ICE` (loop) → `ACCESSING_CARDS`.
 
 ### Trigger Moments

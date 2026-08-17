@@ -22,6 +22,28 @@ import type {
   TrapCardId,
 } from "../ids";
 
+/**
+ * What the player pays to activate an ability. Costs are paid in full,
+ * up front, before the effects resolve — an unpayable cost blocks
+ * activation entirely (unlike effects, which resolve as much as possible).
+ */
+export type AbilityCost = {
+  /** Turn clicks consumed (omitted = 0) */
+  clicks?: number;
+  /** The card trashes itself as part of the cost (fires ON_TRASH) */
+  trashSelf?: boolean;
+};
+
+/**
+ * A player-activated ability: "cost: effects", e.g.
+ * "Click, Trash: Draw 3 cards." Activation is structural — an ability is
+ * activated because it lives in `abilities`, not because it has a cost.
+ */
+export type ActivatedAbility = {
+  cost: AbilityCost;
+  effects: EffectSpec[];
+};
+
 export type BaseCardDefinition = {
   effects: EffectSpec[];
   flavorText?: string;
@@ -44,6 +66,8 @@ export type IceCardDefinition = BaseCardDefinition & {
 };
 
 export type ProgramCardDefinition = BaseCardDefinition & {
+  /** Player-activated abilities, usable while the program is installed */
+  abilities?: ActivatedAbility[];
   id: ProgramCardId;
   subtype: ProgramSubtype;
   type: CardType.PROGRAM;

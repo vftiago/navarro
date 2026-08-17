@@ -29,15 +29,6 @@ export const scriptCardDefinitions: GenericCardDefinition[] = [
     type: CardType.SCRIPT,
   },
   {
-    effects: [{ effect: "draw", params: { amount: 3 } }],
-    id: CardId.PIECE_OF_CAKE,
-    image: "_c8475f82-83d8-4a3d-8c5a-6fb3ff714234.jpeg",
-    keywords: [Keyword.TRASH],
-    name: "Piece of Cake",
-    rarity: CardRarity.RARE,
-    type: CardType.SCRIPT,
-  },
-  {
     effects: [{ effect: "modify_clicks", params: { amount: 3 } }],
     id: CardId.BOOST_ENERGY_ULTRA,
     image: "_f8b5a836-17e4-42f0-9036-6696f5515c6c.jpeg",

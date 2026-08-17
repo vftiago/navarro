@@ -21,6 +21,21 @@ export const programCardDefinitions: ProgramCardDefinition[] = [
     type: CardType.PROGRAM,
   },
   {
+    abilities: [
+      {
+        cost: { clicks: 1, trashSelf: true },
+        effects: [{ effect: "draw", params: { amount: 3 } }],
+      },
+    ],
+    effects: [],
+    id: CardId.PIECE_OF_CAKE,
+    image: "_c8475f82-83d8-4a3d-8c5a-6fb3ff714234.jpeg",
+    name: "Piece of Cake",
+    rarity: CardRarity.RARE,
+    subtype: ProgramSubtype.RESOURCE,
+    type: CardType.PROGRAM,
+  },
+  {
     effects: [{ effect: "modify_cards_per_turn", params: { amount: 1 } }],
     id: CardId.DEEP_THOUGHTS,
     image: "_b47f337e-e71d-4ced-8e50-bfaae92f4a4e.jpeg",

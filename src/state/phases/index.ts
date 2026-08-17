@@ -1,3 +1,4 @@
+export * from "./activateAbility";
 export * from "./corpPhase";
 export * from "./drawPhase";
 export * from "./endPhase";

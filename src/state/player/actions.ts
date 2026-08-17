@@ -59,6 +59,11 @@ export const addCardToPlayed = (card: CardInstance): PlayerAction => ({
   type: PlayerActionTypes.ADD_TO_PLAYED,
 });
 
+export const removeFromPrograms = (instanceId: string): PlayerAction => ({
+  payload: { instanceId },
+  type: PlayerActionTypes.REMOVE_FROM_PROGRAMS,
+});
+
 export const removeRandomCardFromHand = (): PlayerAction => ({
   type: PlayerActionTypes.REMOVE_RANDOM_CARD_FROM_HAND,
 });

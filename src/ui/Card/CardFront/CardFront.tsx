@@ -36,5 +36,5 @@ export const CardFront = ({
     );
   }
 
-  return <CardFrontGeneric definition={definition} />;
+  return <CardFrontGeneric definition={definition} onClick={onClick} />;
 };

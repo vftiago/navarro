@@ -1,4 +1,8 @@
-import type { CardDefinition } from "../definitions/types";
+import type {
+  AbilityCost,
+  ActivatedAbility,
+  CardDefinition,
+} from "../definitions/types";
 /**
  * Text Generation - Rules text derived from effect data
  *
@@ -107,6 +111,32 @@ export const renderEffectText = (spec: EffectSpec): string => {
 };
 
 /**
+ * The cost half of an activated-ability line, e.g. "Click, Trash".
+ * An empty cost renders as "Free" — the prefix (and its colon) is what
+ * marks a line as an activated ability, so it never disappears entirely.
+ */
+const renderAbilityCost = (cost: AbilityCost): string => {
+  const parts: string[] = [];
+  if (cost.clicks) {
+    parts.push(cost.clicks === 1 ? "Click" : `${cost.clicks} Clicks`);
+  }
+  if (cost.trashSelf) {
+    parts.push("Trash");
+  }
+
+  return parts.length > 0 ? parts.join(", ") : "Free";
+};
+
+/**
+ * The full text for an activated ability, e.g. "Click, Trash: Draw 3 cards."
+ */
+export const renderAbilityText = (ability: ActivatedAbility): string => {
+  const bodies = ability.effects.map((spec) => renderEffectBody(spec));
+
+  return `${renderAbilityCost(ability.cost)}: ${bodies.join(" ")}`;
+};
+
+/**
  * One rendered line of a card's rules text, with the metadata the UI
  * needs to style it (subroutine marker, keyword tooltip)
  */
@@ -125,7 +155,8 @@ export type CardTextLine = {
  *
  * Consecutive effects sharing the same labeled trigger are grouped under a
  * single label: "On Upkeep: Draw 1 card. Lose 1 click." A card-level `text`
- * override replaces the effect lines (keyword lines always render).
+ * override replaces the effect lines (keyword and ability lines always
+ * render). Activated abilities render last, one line each.
  */
 export const getCardTextLines = (
   definition: CardDefinition,
@@ -136,10 +167,14 @@ export const getCardTextLines = (
     text: `${keyword}.`,
   }));
 
+  const abilityLines: CardTextLine[] = (
+    ("abilities" in definition ? definition.abilities : undefined) ?? []
+  ).map((ability) => ({ text: renderAbilityText(ability) }));
+
   if (definition.text) {
     lines.push({ text: definition.text });
 
-    return lines;
+    return [...lines, ...abilityLines];
   }
 
   const specs = resolveEffectSpecs(definition);
@@ -174,7 +209,7 @@ export const getCardTextLines = (
     lines.push({ text: `${label}: ${bodies.join(" ")}` });
   }
 
-  return lines;
+  return [...lines, ...abilityLines];
 };
 
 /**

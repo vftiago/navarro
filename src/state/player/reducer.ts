@@ -122,6 +122,15 @@ export const playerReducer = (
       };
     }
 
+    case PlayerActionTypes.REMOVE_FROM_PROGRAMS: {
+      return {
+        ...state,
+        playerInstalledPrograms: state.playerInstalledPrograms.filter(
+          (program) => program.instanceId !== action.payload.instanceId,
+        ),
+      };
+    }
+
     case PlayerActionTypes.ADD_TO_SCORE_AREA: {
       const { card } = action.payload;
 

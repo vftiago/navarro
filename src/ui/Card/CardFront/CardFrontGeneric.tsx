@@ -5,9 +5,13 @@ import { CardFrontLayout } from "./CardFrontLayout";
 
 type CardFrontGenericProps = {
   definition: Exclude<CardDefinition, { type: CardType.ICE }>;
+  onClick?: () => void;
 };
 
-export const CardFrontGeneric = ({ definition }: CardFrontGenericProps) => {
+export const CardFrontGeneric = ({
+  definition,
+  onClick,
+}: CardFrontGenericProps) => {
   const { flavorText, image, name, rarity, type } = definition;
 
   const isAgenda = type === CardType.AGENDA;
@@ -23,6 +27,7 @@ export const CardFrontGeneric = ({ definition }: CardFrontGenericProps) => {
       textLines={getCardTextLines(definition)}
       titleClassName={isAgenda ? "text-yellow-300" : undefined}
       type={type}
+      onClick={onClick}
     />
   );
 };

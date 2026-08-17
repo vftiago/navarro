@@ -1,6 +1,8 @@
 import { hasKeywordFlag } from "../../cards/engine";
+import { CardType } from "../../cards/enums";
 import { resolveCard } from "../../cards/instance";
 import {
+  activateAbility,
   clickIce,
   initiateRun,
   playPhase,
@@ -121,6 +123,44 @@ export const createEventHandler = (
             );
           }
           dispatchThunk(selectAccessedCard, { cardId: instanceId });
+
+          return;
+        }
+
+        // Installed program → activate its ability (Main phase only)
+        const installedProgram = state.playerState.playerInstalledPrograms.find(
+          (card) => card.instanceId === instanceId,
+        );
+        if (installedProgram) {
+          if (turnCurrentPhase !== TurnPhase.Main) {
+            console.warn("Cannot activate an ability outside Main phase");
+
+            return;
+          }
+          const definition = resolveCard(installedProgram);
+          const ability =
+            definition.type === CardType.PROGRAM
+              ? definition.abilities?.[0]
+              : undefined;
+          if (!ability) {
+            console.warn("Program has no activated ability");
+
+            return;
+          }
+          if (
+            (ability.cost.clicks ?? 0) > state.turnState.turnRemainingClicks
+          ) {
+            console.warn("Not enough clicks to activate ability");
+
+            return;
+          }
+          if (import.meta.env.DEV) {
+            console.log(
+              "[CARD_CLICKED] resolved: activate ability",
+              instanceId,
+            );
+          }
+          dispatchThunk(activateAbility, { programId: instanceId });
 
           return;
         }

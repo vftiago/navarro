@@ -32,6 +32,7 @@ export enum PlayerActionTypes {
   CLEAR_ACCESSED_CARDS = "CLEAR_ACCESSED_CARDS",
   CLEAR_PLAYED_CARDS = "CLEAR_PLAYED_CARDS",
   REMOVE_CARD_FROM_HAND = "REMOVE_CARD_FROM_HAND",
+  REMOVE_FROM_PROGRAMS = "REMOVE_FROM_PROGRAMS",
   REMOVE_RANDOM_CARD_FROM_HAND = "REMOVE_RANDOM_CARD_FROM_HAND",
   MODIFY_TAGS = "MODIFY_TAGS",
   MODIFY_NOISE = "MODIFY_NOISE",
@@ -61,6 +62,10 @@ export type PlayerAction =
   | { type: PlayerActionTypes.CLEAR_ACCESSED_CARDS }
   | { type: PlayerActionTypes.CLEAR_PLAYED_CARDS }
   | { type: PlayerActionTypes.REMOVE_CARD_FROM_HAND; payload: number }
+  | {
+      type: PlayerActionTypes.REMOVE_FROM_PROGRAMS;
+      payload: { instanceId: string };
+    }
   | { type: PlayerActionTypes.REMOVE_RANDOM_CARD_FROM_HAND }
   | { type: PlayerActionTypes.MODIFY_TAGS; payload: number }
   | { type: PlayerActionTypes.MODIFY_NOISE; payload: number }

@@ -1,0 +1,304 @@
+# Card Registry Refactor Plan
+
+Goal: cards become **pure data**. Adding a new card means listing its properties (title, image, rarity, effects, keywords) in a TypeScript object literal — no new logic unless the card introduces a genuinely new mechanic. Game state stores lightweight card *instances* that reference their *definition* by id.
+
+Decisions already made:
+
+- **Authoring format**: TypeScript object literals checked with `satisfies CardDefinition` (not JSON).
+- **Scope**: full definition/instance split — Zustand state holds `{ instanceId, definitionId, ...mutableState }`, never definitions.
+- **Card text**: auto-generated from effect params by default, with optional per-card override.
+- **Keywords**: fully mechanical — a keyword is a named, reusable bundle of behavior defined once, queried by the engine.
+
+---
+
+## 1. Problems with the current system
+
+| Problem | Where | Consequence |
+| --- | --- | --- |
+| Effects are not parameterized | `effects/registry.ts` has `DRAW_CARDS_1`, `DRAW_CARDS_3`, `GAIN_CLICKS_1`, `GAIN_CLICKS_3`… | Every new number requires a new hand-written effect + registry entry. "Draw 2" is a code change. |
+| Card definitions contain functions | `CardEffect.getActions/getThunk/getText`, `IceCardDefinitions.getStrength` | Cards aren't serializable data; can't be diffed, saved, or validated. |
+| Definitions are spread into game state | `createPlayingCard.ts` does `{ ...card, deckContextId: uuid() }` | Zustand state contains closures. No save games, no replay, devtools noise, and per-instance copies of static data. |
+| Keywords are empty stubs | `keywords.ts` — every `KEYWORD_EFFECTS` entry returns `[]` | Actual keyword behavior (`Trash`) is special-cased inside `playPhase.ts`. `Stealthy`, `Ethereal`, `Crash` do nothing. |
+| Card text is hand-maintained | `getText: () => "Gain 3 ticks."` (typo, already drifted) | Text and behavior can silently disagree. |
+| Legacy name-based factories | bottom of `createPlayingCard.ts` | Dead weight, string-fragile. |
+
+---
+
+## 2. Target architecture
+
+New top-level module `src/cards/` (replaces `src/cardDefinitions/`):
+
+```
+src/cards/
+├── engine/
+│   ├── effects/
+│   │   ├── primitives.ts    # Parameterized effect implementations (draw, gainClicks, …)
+│   │   ├── unique.ts        # Card-specific effects that are genuinely one-off
+│   │   ├── registry.ts      # EffectId const + effectRegistry map
+│   │   └── types.ts         # EffectSpec, EffectImplementation, EffectContext
+│   ├── keywords/
+│   │   ├── registry.ts      # KeywordId const + keyword definitions
+│   │   └── types.ts         # KeywordDefinition
+│   ├── text.ts              # renderCardText(definition) — generated rules text
+│   ├── resolve.ts           # getDefinition(id), resolveEffects(card, trigger)
+│   └── stats.ts             # getIceStrength(instance, gameState) — static modifiers
+├── definitions/
+│   ├── types.ts             # CardDefinition union (pure data, no functions)
+│   ├── ids.ts               # CardId const objects (moves from registry.ts)
+│   ├── agendas.ts, ice.ts, programs.ts, scripts.ts, traps.ts
+│   └── index.ts             # CARD_DEFINITIONS map, getCardDefinition(id)
+└── instance.ts              # CardInstance type + createCardInstance(id)
+```
+
+### 2.1 Effect primitives (the core fix)
+
+An effect is split into two halves:
+
+- **`EffectSpec`** — pure data, what card definitions contain:
+
+  ```typescript
+  type EffectSpec = {
+    effect: EffectId;                 // which primitive
+    params?: Record<string, unknown>; // typed per-primitive via a params map (see below)
+    trigger?: TriggerMoment;          // override the primitive's default trigger
+    costs?: EffectCost[];             // e.g. [EffectCost.CLICK] for activated abilities
+    text?: string;                    // optional override of generated text
+  };
+  ```
+
+- **`EffectImplementation`** — code, registered once per primitive:
+
+  ```typescript
+  type EffectImplementation<P = void> = {
+    defaultTrigger: TriggerMoment;
+    getText: (params: P) => string;                       // "Draw 3 cards."
+    getActions?: (params: P, ctx: EffectContext) => GameAction[];
+    getThunk?: (params: P, ctx: EffectContext) => ThunkAction;
+  };
+  // EffectContext = { gameState, sourceId, targetId } (same as today's EffectParams)
+  ```
+
+Type safety between spec and implementation comes from a **params interface map**, so `effect: "draw"` forces `params: { amount: number }` at compile time:
+
+```typescript
+interface EffectParamsMap {
+  draw: { amount: number };
+  modify_clicks: { amount: number };          // negative = lose
+  modify_signal: { amount: number };
+  modify_tags: { amount: number };
+  gain_victory_points: { amount: number };
+  modify_server_security: { amount: number };
+  deal_net_damage: { amount: number };
+  end_run: void;
+  initiate_run: void;
+  break_subroutine: { iceSubtype: IceSubtype };
+  // genuinely unique, card-specific effects would register here too
+  // (currently there are none — everything decomposed into primitives)
+}
+
+type EffectSpec = {
+  [K in keyof EffectParamsMap]: {
+    effect: K;
+    trigger?: TriggerMoment;
+    costs?: EffectCost[];
+    text?: string;
+  } & (EffectParamsMap[K] extends void ? {} : { params: EffectParamsMap[K] });
+}[keyof EffectParamsMap];
+```
+
+This replaces today's ten `CommonEffectId` entries with ~6 primitives, and kills the `_1`/`_3` suffix pattern permanently. Genuinely unique effects stay as code — that's normal in every card engine — but they live in the engine (`unique.ts`, recreated when the first one appears) and are still referenced from card data by id.
+
+**Conditions** ("on trigger: if condition, effect"): an `EffectSpec` can carry an optional `condition` gating its execution:
+
+```typescript
+// Server Lockdown, as pure data:
+{
+  effect: "end_run",
+  trigger: TriggerMoment.ON_ACCESS,
+  condition: { check: "server_security_at_least", params: { level: 3 } },
+}
+```
+
+Conditions mirror the effects design exactly: a `ConditionParamsMap` binds each condition id to typed params, and a `ConditionImplementation` provides `isMet(params, context)` plus a generated text fragment ("if the server security level is 3 or more"). Conditions are deliberately **named predicates**, not a generic `{ stat, op, value }` expression language — a registry of typed predicates stays honest; a mini-DSL is how card engines accidentally grow a bad programming language.
+
+### 2.2 Keywords as mechanics
+
+```typescript
+type KeywordDefinition = {
+  id: Keyword;
+  name: string;                 // "Stealthy"
+  reminderText: string;         // "(Does not raise server security when running.)"
+  grants?: EffectSpec[];        // triggered effects the keyword contributes
+  // Static rule-flags the engine queries instead of hardcoding card checks:
+  flags?: Partial<{
+    trashOnUse: boolean;        // Trash: goes to trash pile instead of discard
+    unplayable: boolean;        // Unplayable: cannot be played from hand
+  }>;
+};
+```
+
+- A card lists `keywords: [Keyword.TRASH]` in its definition.
+- `resolveEffects(card, trigger)` merges the card's own `effects` with every `grants` from its keywords — keyword effects are indistinguishable from printed effects at execution time.
+- Phase logic replaces special-casing with queries: `hasKeywordFlag(card, "trashOnUse")` in `playPhase.ts` instead of `card.cardEffects.some((e) => e.keyword === Keyword.TRASH)`.
+- Card UI renders `Stealthy` in bold with `reminderText` as tooltip — for free, from the registry.
+
+Adding a future keyword = one entry in the keyword registry (+ one flag check in the engine if it's a static rule, added once, not per card).
+
+### 2.3 Card definitions — pure data
+
+```typescript
+type BaseCardDefinition = {
+  id: CardId;
+  name: string;
+  type: CardType;
+  rarity: CardRarity;
+  image: string;
+  effects: EffectSpec[];
+  keywords?: Keyword[];
+  text?: string;          // full-card text override (rare)
+  flavorText?: string;
+};
+
+type IceCardDefinition = BaseCardDefinition & {
+  type: CardType.ICE;
+  subtype: IceSubtype;
+  strength: number;       // BASE strength — a plain number, see 2.4
+  damage: number;
+};
+// Program/Agenda/Script/Trap variants as today, minus all functions.
+```
+
+Example — what adding a card looks like after the refactor:
+
+```typescript
+// definitions/scripts.ts
+{
+  id: CardId.FOCUS,
+  name: "Focus",
+  type: CardType.SCRIPT,
+  rarity: CardRarity.COMMON,
+  image: "focus.jpg",
+  effects: [{ effect: "draw", params: { amount: 3 } }],
+} satisfies ScriptCardDefinition,
+```
+
+No `getText` (generated: "Draw 3 cards."), no imports from `state/`, no closures.
+
+### 2.4 Dynamic stats without functions
+
+`IceCardDefinitions.getStrength` (Fire Wall scales with security, Bad Moon buffs others) is replaced by:
+
+- `strength: number` on the definition = base value.
+- A `static_modifier` effect primitive for auras, e.g. Bad Moon:
+  `{ effect: "modify_other_ice_strength", params: { amount: 1 } }`
+- Self-scaling as a primitive, e.g. Fire Wall:
+  `{ effect: "strength_per_server_security", params: { perLevel: 1 } }`
+- `engine/stats.ts` exposes `getIceStrength(instance, gameState)`: base + sum of applicable modifier effects from all cards in play. UI and run logic call this selector instead of `card.getStrength(state)`.
+
+This is the standard "continuous effects" approach (MtG layers, simplified to one additive pass — sufficient at this scale).
+
+### 2.5 Definition/instance split
+
+```typescript
+// cards/instance.ts
+type CardInstance = {
+  instanceId: string;      // uuid — replaces deckContextId
+  definitionId: CardId;
+  // room for future mutable per-card state: counters, damage, isRezzed…
+};
+
+const createCardInstance = (id: CardId): CardInstance => ({
+  instanceId: uuid(),
+  definitionId: id,
+});
+```
+
+- All Zustand slices (`playerHand`, `playerInstalledPrograms`, `serverIce`, discard/trash piles, decks…) store `CardInstance[]` instead of `PlayingCard[]`.
+- `isRezzed` moves from the Ice *definition* (where it's currently a lie — it's mutable state) onto the instance.
+- Components receive a **resolved view**: a small hook/selector `useCardView(instance)` → `{ instance, definition, text, strength? }`. UI reads `view.definition.name`, `view.text`, etc.
+- State becomes fully serializable → save games, undo, and replay become possible; Redux devtools output becomes readable.
+
+### 2.6 Generated card text
+
+`engine/text.ts`:
+
+```
+renderCardText(def) =
+  def.text ??
+  [ ...keyword names (+ reminder text),
+    ...def.effects.map(spec =>
+        spec.text ?? `${triggerLabel(spec)}${impl.getText(spec.params)}`) ]
+```
+
+- `triggerLabel` prefixes non-default triggers: "On Encounter: lose 1 click."
+- **Trigger grouping**: consecutive effects sharing the same effective trigger render under a single label — e.g. Intrusive Thoughts (`draw` + `modify_clicks`, both `ON_UPKEEP`) generates "On Upkeep: Draw 1 card. Lose 1 click." instead of two separately-labeled lines. This makes card-level overrides unnecessary for most multi-effect cards.
+- **Condition composition**: a conditioned effect renders as `if <condition fragment>, <effect text lowercased>` — e.g. Server Lockdown generates "On Access: if the server security level is 3 or more, end the run."
+- Precedence: card-level `text` override > per-effect `text` override > generated.
+- Fixes the "Gain 3 ticks" class of bug permanently; also fixes the Fire Wall/"Bad Moon" copy-paste error listed in Known Issues, since bespoke strings mostly disappear.
+
+---
+
+## 3. Migration plan
+
+Each phase leaves the game compiling and playable (`pnpm build` green). Order chosen so risky/wide changes come after the data model is proven.
+
+### Phase 1 — Engine skeleton + parameterized effects ✅ DONE
+
+1. ✅ Created `src/cards/engine/effects/` with `EffectParamsMap`, `EffectSpec`, `EffectImplementation` (`types.ts`), primitive implementations (`primitives.ts`), one-offs (`unique.ts`), and the registry (`registry.ts`).
+2. ✅ Adapter written: `specToCardEffect(spec): CardEffect` in `legacyAdapter.ts`.
+3. ✅ Nothing deleted; old `cardDefinitions/effects/` untouched and still in use.
+
+Implementation notes:
+
+- More effects were generalizable than first cataloged — **no unique effects remain** (`unique.ts` was deleted; recreate it when the first genuinely novel mechanic appears). Deep Thoughts → `modify_cards_per_turn`, Bad Moon → `modify_other_ice_strength`, Fire Wall → `strength_per_server_security` + `net_damage_per_security`, Sledgehammer → `break_subroutine`, all ten `CommonEffectId`s → 6 primitives. Intrusive Thoughts is not an effect at all — it's two primitive specs (`draw` + `modify_clicks`, both `trigger: ON_UPKEEP`). Server Lockdown decomposed into the condition system: `end_run` gated by `server_security_at_least: { level: 3 }`.
+- **Deliberate behavior change (decided 2026-08-17)**: Server Lockdown's old implementation dispatched a raw `setTurnCurrentPhase(TurnPhase.End)` — force-ending the *turn*, skipping run-state cleanup, ignoring remaining clicks — while its printed text said "end the run". The decomposed version uses the real `endRun()` thunk (proper cleanup, back to Main if clicks remain), matching the printed text. Takes effect when the card definition migrates in Phase 2.
+- `strength_per_server_security` faithfully ports an existing quirk: the old Fire Wall permanent effect closes over `gameState` at creation time, so its strength freezes at the security level when it was played. `PermanentEffectT.getModifier` can't read live state; fixing this belongs to Phase 2 (`engine/stats.ts`), not the port.
+- Type guarantees verified with `@ts-expect-error` probes: missing params, wrong-shaped params, params on void effects, and unknown ids are all compile errors.
+
+### Phase 2 — Pure-data card definitions
+
+1. Create `definitions/types.ts` (function-free `CardDefinition` union) and migrate `agendas/ice/programs/scripts/traps.ts` to the new shape with `satisfies`.
+2. Implement `engine/text.ts` and `engine/stats.ts` (Fire Wall, Bad Moon).
+3. `createPlayingCard.ts` temporarily builds the legacy `PlayingCard` shape *from* the new definitions via the adapter — state and UI still untouched.
+4. Update the two deck files' imports.
+
+### Phase 3 — Mechanical keywords
+
+1. Build the keyword registry with `grants` + `flags`; give `Trash`, `Ethereal`, `Unplayable` real semantics (port from `playPhase.ts` / `keywords.ts`).
+2. Implement `resolveEffects(definition, trigger)` = printed effects + keyword grants; route `cardUtils.getCardEffectsByTrigger` through it.
+3. Replace keyword special-cases in `playPhase.ts` (and `deckUtils.ts`, `PlayerHand.tsx`) with `hasKeywordFlag` queries.
+4. Decide `Stealthy`/`Crash` semantics or explicitly mark them as flavor-only (registry entry with reminder text and no behavior — still visible on cards).
+
+### Phase 4 — Definition/instance split (the big one)
+
+1. Introduce `CardInstance` + `createCardInstance`; change deck utils to produce instances.
+2. Slice by slice (player → server → board): change state types from `PlayingCard` to `CardInstance`, updating reducers/selectors. `deckContextId` → `instanceId`; move `isRezzed` to the ice instance.
+3. Add `useCardView` / `resolveCard` and update UI components (`Card/*`, `PlayerHand`, `IceRow`, modals) to consume resolved views; rules text comes from `renderCardText`.
+4. Update phase thunks (`playPhase`, `runPhase`, `accessPhase`, `corpPhase`, damage utils) to resolve definitions at the point of use.
+
+### Phase 5 — Cleanup
+
+1. Delete `src/cardDefinitions/` entirely: legacy `CardEffect`, `KEYWORD_EFFECTS`, the adapter, name-based factories, `DRAW_CARDS_1`-style ids.
+2. Update `CLAUDE.md` architecture docs; add a "How to add a card" section pointing at the new flow.
+3. `pnpm lint && pnpm build` zero-warning check.
+
+---
+
+## 4. What "adding a card" looks like when done
+
+**Typical card (zero code):** add a `CardId` entry, add one object literal to a definitions file, add it to a deck. Compile-time checked, text auto-generated.
+
+**Card with a new number on an existing effect:** same — `{ effect: "draw", params: { amount: 2 } }` just works.
+
+**Card with a new keyword:** one entry in the keyword registry (data + maybe one engine flag check), then list it on cards.
+
+**Card with a truly novel mechanic:** one `EffectParamsMap` entry + one implementation in `unique.ts` (or promote to a primitive if reusable), then reference it from data. The code lives in the engine, never in the card file.
+
+---
+
+## 5. Risks & notes
+
+- **Phase 4 is the widest diff** — it touches most UI components and all phase thunks. Mitigation: land phases 1–3 first (small, verifiable), and split phase 4 by state slice.
+- **No test suite exists.** The compiler is the main safety net (a good one here — the definition types make illegal states unrepresentable). Worth adding a few vitest specs for `resolveEffects`, `renderCardText`, and `getIceStrength` in Phase 1–2 since the engine is now UI-free and trivially testable.
+- **Effect ordering:** merged keyword + printed effects execute in array order (keywords first). Fine today; revisit if ordering ever matters.
+- **`Record<string, unknown>` never appears in card files** — the `EffectSpec` distributive union keeps params fully typed per effect id.

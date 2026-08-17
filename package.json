@@ -35,7 +35,6 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.39.5",
-    "eslint-plugin-boundaries": "^7.2.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-perfectionist": "^4.15.1",
     "eslint-plugin-react": "^7.37.4",

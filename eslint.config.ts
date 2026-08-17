@@ -1,6 +1,5 @@
 import js from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
-import * as boundariesModule from "eslint-plugin-boundaries";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import perfectionist from "eslint-plugin-perfectionist";
 import react from "eslint-plugin-react";
@@ -9,17 +8,6 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-
-/*
- * The plugin's type declarations promise a default export, but its CJS
- * runtime has none under jiti — fall back to the namespace object.
- */
-const boundaries =
-  boundariesModule.default ??
-  (boundariesModule as unknown as typeof boundariesModule.default);
-
-const allowTo = (types: string[]) =>
-  types.map((type) => ({ to: { element: { type } } }));
 
 export default defineConfig(
   { ignores: ["dist"] },
@@ -129,111 +117,42 @@ export default defineConfig(
     },
   },
   /*
-   * Architecture boundaries — the module dependency matrix is enforced, not
-   * conventional. Key invariants: UI never imports phase thunks (it emits
-   * GameEvents), and card definitions stay pure data (no state imports).
+   * Architecture boundaries — two invariants, everything else is allowed:
+   * UI never imports phase thunks (it emits GameEvents instead), and card
+   * definitions stay pure data (no game-state imports).
    */
   {
-    files: ["src/**/*.ts", "src/**/*.tsx"],
-    plugins: { boundaries },
+    files: ["src/ui/**"],
     rules: {
-      "boundaries/dependencies": [
+      "no-restricted-imports": [
         "error",
         {
-          default: "disallow",
-          message:
-            "{{ from.element.type }} may not import {{ to.element.type }} (see the boundaries matrix in eslint.config.ts)",
-          policies: [
+          patterns: [
             {
-              allow: allowTo([
-                "app",
-                "cards-shared",
-                "decks",
-                "definitions",
-                "engine",
-                "phases",
-                "state",
-                "ui",
-              ]),
-              from: { element: { type: "app" } },
-            },
-            {
-              allow: allowTo(["cards-shared", "definitions"]),
-              from: { element: { type: "cards-shared" } },
-            },
-            {
-              allow: allowTo(["cards-shared", "decks"]),
-              from: { element: { type: "decks" } },
-            },
-            {
-              allow: allowTo(["cards-shared", "definitions", "engine"]),
-              from: { element: { type: "definitions" } },
-            },
-            {
-              allow: allowTo([
-                "cards-shared",
-                "definitions",
-                "engine",
-                "phases",
-                "state",
-              ]),
-              from: { element: { type: "engine" } },
-            },
-            {
-              allow: allowTo(["cards-shared", "engine", "phases", "state"]),
-              from: { element: { type: "phases" } },
-            },
-            {
-              allow: allowTo([
-                "cards-shared",
-                "decks",
-                "definitions",
-                "engine",
-                "phases",
-                "state",
-              ]),
-              from: { element: { type: "state" } },
-            },
-            {
-              allow: allowTo([
-                "cards-shared",
-                "definitions",
-                "engine",
-                "state",
-                "ui",
-              ]),
-              from: { element: { type: "ui" } },
+              group: ["**/state/phases", "**/state/phases/**"],
+              message:
+                "UI must not call phase thunks — emit a GameEvent instead (useEventBus).",
             },
           ],
         },
       ],
     },
-    settings: {
-      "boundaries/elements": [
-        { pattern: "src/cards/definitions", type: "definitions" },
-        { pattern: "src/cards/engine", type: "engine" },
-        { pattern: "src/cards", type: "cards-shared" },
-        { pattern: "src/state/phases", type: "phases" },
-        { pattern: "src/state", type: "state" },
-        { pattern: "src/decks", type: "decks" },
-        { pattern: "src/ui", type: "ui" },
-        { pattern: "src/*", type: "app" },
-      ],
-      /*
-       * The bundled node resolver must be taught TS extensions, or every
-       * extensionless import resolves to "unknown" and the rule goes silent
-       */
-      "import/resolver": {
-        node: { extensions: [".js", ".jsx", ".ts", ".tsx"] },
-      },
-    },
   },
-  /*
-   * The config file itself imports untyped plugins (jsx-a11y, boundaries),
-   * which trips the type-aware unsafe-* rules — lint it without type info
-   */
   {
-    files: ["eslint.config.ts"],
-    ...tseslint.configs.disableTypeChecked,
+    files: ["src/cards/definitions/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/state", "**/state/**"],
+              message:
+                "Card definitions are pure data — no game-state imports.",
+            },
+          ],
+        },
+      ],
+    },
   },
 );

@@ -34,7 +34,6 @@ export const programCardDefinitions: ProgramCardDefinition[] = [
       {
         effect: "modify_clicks",
         params: { amount: 1 },
-        text: "When you complete a run, gain 1 click.",
         trigger: TriggerMoment.ON_RUN_END,
       },
     ],

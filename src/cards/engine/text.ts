@@ -150,8 +150,10 @@ export type CardTextLine = {
 };
 
 /**
- * All rules-text lines for a card: keyword lines first, then effect lines
- * (printed and implicit — e.g. an agenda's derived "Score N.").
+ * All rules-text lines for a card: keyword lines around the effect lines
+ * (printed and implicit — e.g. an agenda's derived "Score N.") per each
+ * keyword's `textPlacement` — before by default, after for keywords that
+ * read as consequences of playing the card (e.g. Trash).
  *
  * Consecutive effects sharing the same labeled trigger are grouped under a
  * single label: "On Upkeep: Draw 1 card. Lose 1 click." A card-level `text`
@@ -161,20 +163,33 @@ export type CardTextLine = {
 export const getCardTextLines = (
   definition: CardDefinition,
 ): CardTextLine[] => {
-  const lines: CardTextLine[] = (definition.keywords ?? []).map((keyword) => ({
+  const toKeywordLine = (keyword: Keyword): CardTextLine => ({
     keyword,
     reminderText: getKeywordDefinition(keyword).reminderText,
     text: `${keyword}.`,
-  }));
+  });
+  const keywords = definition.keywords ?? [];
+  const leadingKeywordLines = keywords
+    .filter((k) => getKeywordDefinition(k).textPlacement !== "after")
+    .map(toKeywordLine);
+  const trailingKeywordLines = keywords
+    .filter((k) => getKeywordDefinition(k).textPlacement === "after")
+    .map(toKeywordLine);
 
   const abilityLines: CardTextLine[] = (
     ("abilities" in definition ? definition.abilities : undefined) ?? []
   ).map((ability) => ({ text: renderAbilityText(ability) }));
 
+  const lines: CardTextLine[] = [];
   if (definition.text) {
     lines.push({ text: definition.text });
 
-    return [...lines, ...abilityLines];
+    return [
+      ...leadingKeywordLines,
+      ...lines,
+      ...trailingKeywordLines,
+      ...abilityLines,
+    ];
   }
 
   const specs = resolveEffectSpecs(definition);
@@ -209,7 +224,12 @@ export const getCardTextLines = (
     lines.push({ text: `${label}: ${bodies.join(" ")}` });
   }
 
-  return [...lines, ...abilityLines];
+  return [
+    ...leadingKeywordLines,
+    ...lines,
+    ...trailingKeywordLines,
+    ...abilityLines,
+  ];
 };
 
 /**

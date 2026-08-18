@@ -27,6 +27,8 @@ export type KeywordFlags = {
   unplayable?: boolean;
 };
 
+export type KeywordTextPlacement = "after" | "before";
+
 export type KeywordDefinition = {
   flags?: KeywordFlags;
   /** Triggered effects this keyword contributes to the card */
@@ -34,6 +36,12 @@ export type KeywordDefinition = {
   id: Keyword;
   /** Parenthetical rules reminder shown in tooltips */
   reminderText: string;
+  /**
+   * Where the keyword line renders relative to the effect lines (purely
+   * presentational). Keywords that are consequences of playing the card
+   * (e.g. Trash) read after the effects; defaults to "before".
+   */
+  textPlacement?: KeywordTextPlacement;
 };
 
 export const keywordRegistry: Record<Keyword, KeywordDefinition> = {
@@ -51,6 +59,7 @@ export const keywordRegistry: Record<Keyword, KeywordDefinition> = {
     flags: { trashAfterPlay: true },
     id: Keyword.TRASH,
     reminderText: "(Goes to the trash after being played.)",
+    textPlacement: "after",
   },
   [Keyword.UNPLAYABLE]: {
     flags: { unplayable: true },

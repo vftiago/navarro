@@ -2,8 +2,16 @@ import type { IceCardDefinition } from "../../cards/definitions";
 import type { CardInstance } from "../../cards/instance";
 import type { GameState } from "../types";
 
+export type IceStrengthContribution = {
+  amount: number;
+  /** Instance id of the card whose permanent effect contributes */
+  sourceId: string;
+};
+
 export type IceStrength = {
   base: number;
+  /** Non-zero modifier contributions, in registration order */
+  contributions: IceStrengthContribution[];
   current: number;
   modifier: number;
 };
@@ -19,20 +27,20 @@ export const calculateIceStrength = (
     (effect) => effect.targetSelector === "getIceStrength",
   );
 
-  const modifier = relevantEffects.reduce((acc, { getModifier, sourceId }) => {
-    const mod = getModifier({
-      gameState,
+  const contributions = relevantEffects
+    .map(({ getModifier, sourceId }) => ({
+      amount: getModifier({ gameState, sourceId, targetId: ice.instanceId }),
       sourceId,
-      targetId: ice.instanceId,
-    });
+    }))
+    .filter(({ amount }) => amount !== 0);
 
-    return acc + mod;
-  }, 0);
+  const modifier = contributions.reduce((acc, { amount }) => acc + amount, 0);
 
   const currentStrength = baseStrength + modifier;
 
   return {
     base: baseStrength,
+    contributions,
     current: currentStrength,
     modifier,
   };

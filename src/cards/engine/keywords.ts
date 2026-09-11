@@ -45,6 +45,11 @@ export type KeywordDefinition = {
 };
 
 export const keywordRegistry: Record<Keyword, KeywordDefinition> = {
+  [Keyword.ADAPTIVE_STRENGTH]: {
+    grants: [{ effect: "strength_per_server_security" }],
+    id: Keyword.ADAPTIVE_STRENGTH,
+    reminderText: "(Strength is equal to the server security level.)",
+  },
   [Keyword.ETHEREAL]: {
     flags: { trashOnHandDiscard: true },
     id: Keyword.ETHEREAL,

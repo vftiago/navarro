@@ -43,6 +43,7 @@ export enum TriggerMoment {
 }
 
 export enum Keyword {
+  ADAPTIVE_STRENGTH = "Adaptive Strength",
   UNPLAYABLE = "Unplayable",
   ETHEREAL = "Ethereal",
   TRASH = "Trash",

@@ -1,4 +1,10 @@
-import { CardRarity, CardType, IceSubtype, TriggerMoment } from "../enums";
+import {
+  CardRarity,
+  CardType,
+  IceSubtype,
+  Keyword,
+  TriggerMoment,
+} from "../enums";
 import { CardId } from "../ids";
 import type { IceCardDefinition } from "./types";
 
@@ -23,12 +29,10 @@ export const iceCardDefinitions: IceCardDefinition[] = [
   },
   {
     damage: 0,
-    effects: [
-      { effect: "strength_per_server_security" },
-      { effect: "net_damage_per_security" },
-    ],
+    effects: [{ effect: "net_damage_per_security" }],
     id: CardId.FIRE_WALL,
     image: "_4515fe90-c014-4035-9d3d-b9ea681a7b0e.jpeg",
+    keywords: [Keyword.ADAPTIVE_STRENGTH],
     name: "Fire Wall",
     rarity: CardRarity.COMMON,
     strength: 0,

@@ -16,7 +16,6 @@ import { IceRow } from "./ui/IceRow";
 import { type ModalType, Modals } from "./ui/Modals";
 import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { ProgramRow } from "./ui/ProgramRow";
-import { StatusRow } from "./ui/StatusRow";
 import { TopNavbar } from "./ui/TopNavbar";
 
 export const Game = () => {
@@ -61,7 +60,6 @@ export const Game = () => {
       <Container fluid maw={1480} p="xs">
         <Stack className="h-full" gap="xs">
           <IceRow />
-          <StatusRow />
           <ProgramRow />
           <PlayerDashboard setOpenModal={setOpenModal} />
         </Stack>

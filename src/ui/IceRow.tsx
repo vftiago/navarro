@@ -1,16 +1,13 @@
-import { Flex, Stack, Tabs } from "@mantine/core";
+import { Flex, Stack } from "@mantine/core";
 import { useShallow } from "zustand/react/shallow";
 import { GameEventType, useEventBus } from "../state/events";
-import type { ServerName } from "../state/server";
-import { ALL_SERVERS, setSelectedServer } from "../state/server";
-import { getCardSize } from "../state/settings";
+import { getIceCardSize } from "../state/settings";
 import { useGameStore } from "../state/store";
 import { RunProgressState, TurnPhase } from "../state/turn";
 import { CardFront } from "./Card/CardFront";
 
 export const IceRow = () => {
   const {
-    dispatch,
     runProgressState,
     selectedServer,
     serverCurrentEncounteredIce,
@@ -19,7 +16,6 @@ export const IceRow = () => {
     turnCurrentPhase,
   } = useGameStore(
     useShallow((state) => ({
-      dispatch: state.dispatch,
       runProgressState: state.turnState.runProgressState,
       selectedServer: state.serverState.selectedServer,
       serverCurrentEncounteredIce:
@@ -31,13 +27,11 @@ export const IceRow = () => {
   );
 
   const eventBus = useEventBus();
-  const cardSize = useGameStore(getCardSize);
+  const iceSize = useGameStore(getIceCardSize);
 
   const isEncounterActive =
     turnCurrentPhase === TurnPhase.Run &&
     runProgressState === RunProgressState.ENCOUNTERING_ICE;
-
-  const isRunning = turnCurrentPhase === TurnPhase.Run;
 
   const handleIceClick = (iceId: string) => {
     // UX gating only — the event handler is the authority on click rules
@@ -52,71 +46,45 @@ export const IceRow = () => {
     }
   };
 
-  const handleTabChange = (value: string | null) => {
-    if (isRunning || !value) {return;}
-    dispatch(setSelectedServer(value as ServerName));
-  };
+  const serverIce = servers[selectedServer].installedIce;
 
+  /*
+   * The wall is a column: the server on top, then ice from innermost
+   * (index 0) down to outermost. The run encounters the outermost
+   * ice first, so the ice nearest the player is the one they hit next.
+   */
   return (
-    <Tabs className="w-full" value={selectedServer} onChange={handleTabChange}>
-      <Tabs.List>
-        {ALL_SERVERS.map((server) => (
-          <Tabs.Tab
-            className="font-orbitron font-bold disabled:opacity-50"
-            disabled={isRunning}
-            key={server}
-            value={server}
-          >
-            {server}
-          </Tabs.Tab>
-        ))}
-      </Tabs.List>
+    <Stack gap="xs" style={{ width: iceSize.w }}>
+      <Flex
+        align="center"
+        className="font-orbitron rounded-md bg-neutral-900 px-3 py-2 font-bold"
+        justify="space-between"
+      >
+        <span className="text-sm">{selectedServer}</span>
+        <span className="text-[0.5rem] tracking-[0.25em] text-neutral-500 uppercase">
+          server
+        </span>
+      </Flex>
+      {Array.from({ length: serverMaxIceSlots }).map((_, index) => {
+        // May be out of bounds — fewer ice than slots
+        const ice = serverIce.at(index);
+        const isBeingEncountered =
+          ice && serverCurrentEncounteredIce?.instanceId === ice.instanceId;
 
-      {ALL_SERVERS.map((server) => {
-        const serverIce = servers[server].installedIce;
-
-        return (
-          <Tabs.Panel key={server} pt="md" value={server}>
-            <Flex className="flex-row-reverse" gap="xs">
-              <Stack
-                className="flex-col-reverse rounded-md bg-neutral-900"
-                gap="xs"
-              >
-                <Stack
-                  className="font-orbitron h-full items-center justify-center font-bold"
-                  {...cardSize}
-                >
-                  {server}
-                </Stack>
-              </Stack>
-              {Array.from({ length: serverMaxIceSlots }).map((_, index) => {
-                // May be out of bounds — fewer ice than slots
-                const ice = serverIce.at(index);
-                const isBeingEncountered =
-                  ice &&
-                  serverCurrentEncounteredIce?.instanceId ===
-                    ice.instanceId;
-
-                return (
-                  <Stack
-                    className="flex-col-reverse rounded-md bg-neutral-900"
-                    gap="xs"
-                    key={index}
-                  >
-                    {ice ? (
-                      <CardFront
-                        card={ice}
-                        isBeingEncountered={isBeingEncountered}
-                        onClick={() => handleIceClick(ice.instanceId)}
-                      />
-                    ) : null}
-                  </Stack>
-                );
-              })}
-            </Flex>
-          </Tabs.Panel>
+        return ice ? (
+          <CardFront
+            card={ice}
+            isBeingEncountered={isBeingEncountered}
+            key={ice.instanceId}
+            onClick={() => handleIceClick(ice.instanceId)}
+          />
+        ) : (
+          <div
+            className="h-2 rounded-md border border-dashed border-white/10"
+            key={index}
+          />
         );
       })}
-    </Tabs>
+    </Stack>
   );
 };

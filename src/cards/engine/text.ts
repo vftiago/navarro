@@ -21,7 +21,7 @@ import type {
   EffectSpec,
 } from "./effects/types";
 import { getKeywordDefinition } from "./keywords";
-import { resolveEffectSpecs } from "./resolve";
+import { getImplicitEffects } from "./resolve";
 
 /**
  * Human-readable labels for triggers that merit a textual prefix.
@@ -192,7 +192,11 @@ export const getCardTextLines = (
     ];
   }
 
-  const specs = resolveEffectSpecs(definition);
+  /*
+   * Keyword-granted effects are described by the keyword line and its
+   * reminder text, so only printed and implicit effects get their own lines.
+   */
+  const specs = [...definition.effects, ...getImplicitEffects(definition)];
   let index = 0;
   while (index < specs.length) {
     const spec = specs[index];

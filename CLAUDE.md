@@ -71,6 +71,7 @@ Deliberately minimal vocabulary — a click carries no intent; the handler deriv
 
 - `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through; an accessed card → select; an installed program with an ability during Main → activate; anything else → ignored.
 - `PLAYER_INITIATE_RUN`, `PLAYER_END_TURN` — button intents.
+- `PLAYER_SELECT_SERVER { server }` — pick the run target (Main phase only); the server header is the control.
 
 The event handler is the single authority on click rules; any state checks in UI components are cosmetic affordances only. Add a more specific event only when one click could mean two different things (e.g. a future `PLAYER_BREAK_SUBROUTINE`). Debug with `eventBus.getHistory()`; the handler logs resolved intents in dev mode.
 

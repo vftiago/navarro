@@ -1,19 +1,14 @@
-import { Flex } from "@mantine/core";
+import { ALL_SERVERS } from "../state/server";
+import { IceRow } from "./IceRow";
 
-export const ServerRow = () => {
-  return (
-    <Flex gap="xs">
-      {["HQ", "R&D", "Archives", "Remote"].map((element: string) => {
-        return (
-          <Flex
-            className="w-[192px] rounded-md bg-neutral-900 p-2.5"
-            gap="xs"
-            key={element}
-          >
-            {element}
-          </Flex>
-        );
-      })}
-    </Flex>
-  );
-};
+/**
+ * The corp's board: one wall per server, side by side, HQ in the middle.
+ * Order comes from ALL_SERVERS (Archives, HQ, R&D).
+ */
+export const ServerRow = () => (
+  <div className="flex justify-center gap-6">
+    {ALL_SERVERS.map((server) => (
+      <IceRow key={server} server={server} />
+    ))}
+  </div>
+);

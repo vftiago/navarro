@@ -12,10 +12,10 @@ import { getGameState, useGameStore } from "./state/store";
 import { TurnPhase } from "./state/turn";
 import { AccessedCardsOverlay } from "./ui/AccessedCardsOverlay";
 import { CorpTurn } from "./ui/CorpTurn";
-import { IceRow } from "./ui/IceRow";
 import { type ModalType, Modals } from "./ui/Modals";
 import { PlayerDashboard } from "./ui/PlayerDashboard";
 import { ProgramRow } from "./ui/ProgramRow";
+import { ServerRow } from "./ui/ServerRow";
 import { TopNavbar } from "./ui/TopNavbar";
 
 export const Game = () => {
@@ -59,7 +59,7 @@ export const Game = () => {
       <TopNavbar />
       <Container fluid maw={1480} p="xs">
         <Stack className="h-full" gap="xs">
-          <IceRow />
+          <ServerRow />
           <ProgramRow />
           <PlayerDashboard setOpenModal={setOpenModal} />
         </Stack>

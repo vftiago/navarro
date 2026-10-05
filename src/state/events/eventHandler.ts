@@ -8,6 +8,7 @@ import {
   playPhase,
   selectAccessedCard,
 } from "../phases";
+import { setSelectedServer } from "../server";
 import { RunProgressState, setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { GameAction, GameState } from "../types";
 import type { GameEvent } from "./eventBus";
@@ -187,6 +188,18 @@ export const createEventHandler = (
 
         // initiateRun sets the phase to Run internally
         dispatchThunkNoPayload(initiateRun);
+        break;
+      }
+
+      case GameEventType.PLAYER_SELECT_SERVER: {
+        // Validate: the run target can only change outside a run
+        if (state.turnState.turnCurrentPhase !== TurnPhase.Main) {
+          console.warn("Cannot select a server outside Main phase");
+
+          return;
+        }
+
+        dispatch(setSelectedServer(event.payload.server));
         break;
       }
 

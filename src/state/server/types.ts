@@ -6,7 +6,8 @@ export enum ServerName {
   ARCHIVES = "Archives",
 }
 
-export const ALL_SERVERS = [ServerName.HQ];
+/** Every server the corp defends, in board order (left to right) */
+export const ALL_SERVERS = [ServerName.ARCHIVES, ServerName.HQ, ServerName.RD];
 
 export type ServerData = {
   installedIce: IceCardInstance[];

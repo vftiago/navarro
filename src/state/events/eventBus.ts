@@ -7,17 +7,24 @@
  * are not card clicks (buttons). Add a more specific event only when one
  * click could mean two different things (e.g. future ability menus).
  */
+import type { ServerName } from "../server";
+
 export enum GameEventType {
   CARD_CLICKED = "CARD_CLICKED",
   PLAYER_END_TURN = "PLAYER_END_TURN",
   PLAYER_INITIATE_RUN = "PLAYER_INITIATE_RUN",
+  PLAYER_SELECT_SERVER = "PLAYER_SELECT_SERVER",
 }
 
 // Event payloads (discriminated union type)
 export type GameEvent =
   | { payload: Record<string, never>; type: GameEventType.PLAYER_END_TURN }
   | { payload: Record<string, never>; type: GameEventType.PLAYER_INITIATE_RUN }
-  | { payload: { instanceId: string }; type: GameEventType.CARD_CLICKED };
+  | { payload: { instanceId: string }; type: GameEventType.CARD_CLICKED }
+  | {
+      payload: { server: ServerName };
+      type: GameEventType.PLAYER_SELECT_SERVER;
+    };
 
 // Event bus type
 export type EventBus = {

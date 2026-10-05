@@ -1,18 +1,6 @@
-import { CardId } from "../../cards/ids";
-import { createIceCardInstance } from "../../cards/instance";
+import type { IceCardInstance } from "../../cards/instance";
 import type { ServerAction, ServerState } from "./types";
 import { ServerActionTypes, ServerName } from "./types";
-
-/**
- * TEMPORARY (layout testing): pre-installed ice so the wall is populated
- * from turn one. Remove before shipping. Note these skip ON_REZ, so
- * Bad Moon's aura and Fire Wall's scaling are not registered.
- */
-const TEST_ICE = [
-  CardId.FIRE_WALL,
-  CardId.BAD_MOON,
-  CardId.BIOMETRIC_AUTHENTICATOR,
-].map(createIceCardInstance);
 
 export const initialServerState: ServerState = {
   selectedServer: ServerName.HQ,
@@ -20,7 +8,7 @@ export const initialServerState: ServerState = {
   serverMaxIceSlots: 3,
   servers: {
     [ServerName.ARCHIVES]: { installedIce: [] },
-    [ServerName.HQ]: { installedIce: TEST_ICE },
+    [ServerName.HQ]: { installedIce: [] },
     [ServerName.RD]: { installedIce: [] },
   },
   serverSecurityLevel: 0,
@@ -70,6 +58,24 @@ export const serverReducer = (
             ),
           },
         },
+      };
+    }
+
+    case ServerActionTypes.REZ_ICE: {
+      const { ice, server } = action.payload;
+      const rez = (i: IceCardInstance): IceCardInstance =>
+        i.instanceId === ice.instanceId ? { ...i, isRezzed: true } : i;
+
+      return {
+        ...state,
+        servers: {
+          ...state.servers,
+          [server]: {
+            ...state.servers[server],
+            installedIce: state.servers[server].installedIce.map(rez),
+          },
+        },
+        serverUnencounteredIce: state.serverUnencounteredIce.map(rez),
       };
     }
 

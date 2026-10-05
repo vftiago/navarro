@@ -1,5 +1,6 @@
 import { Tooltip } from "@mantine/core";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import { Fragment } from "react";
 import { IoMdReturnRight } from "react-icons/io";
 import type { IceCardDefinition } from "../../../cards/definitions";
@@ -23,6 +24,20 @@ const RARITY_ACCENT: Record<CardRarity, string> = {
 /** Diagonal hatching, the visual signature of the wall */
 const HATCH =
   "repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 9px)";
+
+/** Shared face-down art, the same back every hidden card in the game shows */
+const CARD_BACK_IMAGE = "_95bdd40b-cd24-4f75-9b35-75fb07f19cf3.jpg";
+
+/**
+ * Rez flip: the bar turns over around its long axis, face-down side first,
+ * rezzed side landing. Both faces stay mounted so the flip is a pure
+ * transform; the hidden face is culled by backface-visibility.
+ */
+const FLIP_DURATION = 0.7;
+const FLIP_TRANSITION = {
+  duration: FLIP_DURATION,
+  ease: [0.32, 0.72, 0.28, 1] as const,
+};
 
 const Label = ({ children }: { children: string }) => (
   <span className="font-orbitron text-[0.5rem] leading-none tracking-[0.25em] text-neutral-500 uppercase">
@@ -118,21 +133,128 @@ export const CardFrontIce = ({
     : baseStrength;
   const isModified = currentStrength !== expectedStrength;
 
-  if (isFaceDown) {
-    // The player knows the wall got thicker, not with what.
-    return (
-      <CardHoverEffect type={type} onClick={onClick}>
-        <div
-          className="relative flex items-center justify-center overflow-hidden rounded-md border border-dashed border-white/15 bg-neutral-950 select-none hover:cursor-pointer"
-          style={{ backgroundImage: HATCH, height: h, width: w }}
-        >
-          <span className="font-orbitron text-lg tracking-[0.5em] text-neutral-700">
-            ICE
+  /*
+   * Face-down: the player knows the wall got thicker, not with what. Same
+   * silhouette as a rezzed bar so the wall keeps its shape, but every field
+   * that would leak information (art, name, rarity, text, strength) is
+   * redacted: the card back where the art strip goes, black bars where the
+   * text goes, a question mark where the toll goes.
+   */
+  const faceDownBar = (
+    <div
+      className="relative flex overflow-hidden rounded-md border border-white/10 bg-neutral-950 select-none hover:cursor-pointer"
+      style={{ backgroundImage: HATCH, height: h, width: w }}
+    >
+      <div className="relative h-full w-[30%] shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)] opacity-50 grayscale">
+        <img
+          alt=""
+          className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
+          loading="eager"
+          src={`./assets/${CARD_BACK_IMAGE}`}
+        />
+      </div>
+
+      <div className="min-w-0 flex-1" />
+
+      <Tooltip label="Unrezzed ice. Its strength and subroutines are unknown until you encounter it.">
+        <div className="flex w-14 shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/10">
+          <span className="font-orbitron text-2xl leading-none text-neutral-600">
+            ?
           </span>
+          <Label>str</Label>
         </div>
-      </CardHoverEffect>
-    );
-  }
+      </Tooltip>
+    </div>
+  );
+
+  const faceUpBar = (
+    <div
+      className="relative flex overflow-hidden rounded-md border border-x-white/10 border-t-white/20 border-b-white/5 bg-neutral-900 select-none hover:cursor-pointer"
+      style={{ height: h, width: w }}
+    >
+      <div
+        className={clsx(
+          "absolute inset-x-0 top-0 z-10 h-0.5",
+          RARITY_ACCENT[rarity],
+        )}
+      />
+
+      {/*
+          The fade hides the strip's right side, so the visible mass sits
+          around 36% of the strip, not 50%. The image is drawn wider than the
+          strip and anchored right, which shifts its center left to match.
+          The mask stays on the wrapper so it does not move with the image.
+        */}
+      <div className="relative h-full w-[30%] shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)]">
+        <img
+          alt={name}
+          className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
+          loading="eager"
+          src={`./assets/${image}`}
+        />
+      </div>
+
+      <div className="-ml-2 flex min-w-0 flex-1 flex-col gap-1 p-2">
+        <div className="flex min-w-0 items-baseline gap-1.5">
+          <Tooltip
+            multiline
+            disabled={!flavorText}
+            label={<span className="italic">{flavorText}</span>}
+            w={220}
+          >
+            <span className="font-orbitron truncate text-xs leading-tight font-bold tracking-wide text-neutral-100">
+              {name}
+            </span>
+          </Tooltip>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          {textLines.map((line, index) => {
+            const { isSubroutine, keyword, reminderText, text } = line;
+
+            const body = keyword ? (
+              <Tooltip label={reminderText}>
+                <span className="text-purple-300">{text}</span>
+              </Tooltip>
+            ) : (
+              <span>{text}</span>
+            );
+
+            return (
+              <div
+                className="flex items-start gap-1 text-xs leading-snug text-neutral-300"
+                key={index}
+              >
+                {isSubroutine ? (
+                  <IoMdReturnRight className="mt-0.5 shrink-0 text-rose-400" />
+                ) : null}
+                {body}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <Tooltip label={strengthBreakdown}>
+        <div
+          className="flex w-14 shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/10"
+          style={{ backgroundImage: HATCH }}
+        >
+          <span
+            className={clsx("font-orbitron text-2xl leading-none", {
+              "text-cyan-300": isAdaptive && !isModified,
+              "text-green-300": currentStrength > expectedStrength,
+              "text-neutral-100": !isAdaptive && !isModified,
+              "text-red-300": currentStrength < expectedStrength,
+            })}
+          >
+            {currentStrength}
+          </span>
+          <Label>str</Label>
+        </div>
+      </Tooltip>
+    </div>
+  );
 
   return (
     <CardHoverEffect
@@ -140,91 +262,51 @@ export const CardFrontIce = ({
       type={type}
       onClick={onClick}
     >
-      <div
-        className="relative flex overflow-hidden rounded-md border border-x-white/10 border-t-white/20 border-b-white/5 bg-neutral-900 select-none hover:cursor-pointer"
-        style={{ height: h, width: w }}
-      >
-        <div
-          className={clsx(
-            "absolute inset-x-0 top-0 z-10 h-0.5",
-            RARITY_ACCENT[rarity],
-          )}
-        />
-
-        {/*
-          The fade hides the strip's right side, so the visible mass sits
-          around 36% of the strip, not 50%. The image is drawn wider than the
-          strip and anchored right, which shifts its center left to match.
-          The mask stays on the wrapper so it does not move with the image.
-        */}
-        <div className="relative h-full w-[30%] shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)]">
-          <img
-            alt={name}
-            className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
-            loading="eager"
-            src={`./assets/${image}`}
-          />
-        </div>
-
-        <div className="-ml-2 flex min-w-0 flex-1 flex-col gap-1 p-2">
-          <div className="flex min-w-0 items-baseline gap-1.5">
-            <Tooltip
-              multiline
-              disabled={!flavorText}
-              label={<span className="italic">{flavorText}</span>}
-              w={220}
-            >
-              <span className="font-orbitron truncate text-xs leading-tight font-bold tracking-wide text-neutral-100">
-                {name}
-              </span>
-            </Tooltip>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            {textLines.map((line, index) => {
-              const { isSubroutine, keyword, reminderText, text } = line;
-
-              const body = keyword ? (
-                <Tooltip label={reminderText}>
-                  <span className="text-purple-300">{text}</span>
-                </Tooltip>
-              ) : (
-                <span>{text}</span>
-              );
-
-              return (
-                <div
-                  className="flex items-start gap-1 text-xs leading-snug text-neutral-300"
-                  key={index}
-                >
-                  {isSubroutine ? (
-                    <IoMdReturnRight className="mt-0.5 shrink-0 text-rose-400" />
-                  ) : null}
-                  {body}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <Tooltip label={strengthBreakdown}>
+      <div style={{ height: h, perspective: 900, width: w }}>
+        <motion.div
+          animate={{ rotateX: isFaceDown ? 0 : 180 }}
+          className="relative h-full w-full"
+          initial={false}
+          style={{ transformStyle: "preserve-3d" }}
+          transition={FLIP_TRANSITION}
+        >
           <div
-            className="flex w-14 shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/10"
-            style={{ backgroundImage: HATCH }}
+            aria-hidden={!isFaceDown}
+            className={clsx("absolute inset-0 [backface-visibility:hidden]", {
+              "pointer-events-none": !isFaceDown,
+            })}
           >
-            <span
-              className={clsx("font-orbitron text-2xl leading-none", {
-                "text-cyan-300": isAdaptive && !isModified,
-                "text-green-300": currentStrength > expectedStrength,
-                "text-neutral-100": !isAdaptive && !isModified,
-                "text-red-300": currentStrength < expectedStrength,
-              })}
-            >
-              {currentStrength}
-            </span>
-            <Label>str</Label>
+            {faceDownBar}
           </div>
-        </Tooltip>
+          <div
+            aria-hidden={isFaceDown}
+            className={clsx("absolute inset-0 [backface-visibility:hidden]", {
+              "pointer-events-none": isFaceDown,
+            })}
+            style={{ transform: "rotateX(180deg)" }}
+          >
+            {faceUpBar}
+            {/*
+              Power-on flash as the rezzed face lands. initial={false} means
+              ice that mounts already rezzed sits at the final keyframe and
+              never flashes; only a live flip runs the sweep.
+            */}
+            <motion.div
+              animate={{ opacity: isFaceDown ? 0 : [0, 0.85, 0] }}
+              className="pointer-events-none absolute inset-0 rounded-md"
+              initial={false}
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(103,232,249,0.55), rgba(255,255,255,0.35) 40%, rgba(103,232,249,0.15))",
+              }}
+              transition={{
+                delay: FLIP_DURATION * 0.45,
+                duration: 0.55,
+                ease: "easeOut",
+              }}
+            />
+          </div>
+        </motion.div>
       </div>
     </CardHoverEffect>
   );

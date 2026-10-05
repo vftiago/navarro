@@ -80,7 +80,7 @@ The event handler is the single authority on click rules; any state checks in UI
 Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 ```
 
-- **Automatic phases** (`PhaseManager.tsx` watches `phaseCounter`): Corp (security +1, install ice, ON_REZ), Draw (reset clicks, draw, ON_DRAW; → End if 0 clicks), Upkeep (ON_UPKEEP on installed programs, exactly once per turn), Main (pure waiting state, safely re-enterable), End (discard hand — Ethereal cards go to trash).
+- **Automatic phases** (`PhaseManager.tsx` watches `phaseCounter`): Corp (turn +1, security +1, corp AI installs face-down ice; see `corpPhase.ts`), Draw (reset clicks, draw, ON_DRAW; → End if 0 clicks), Upkeep (ON_UPKEEP on installed programs, exactly once per turn), Main (pure waiting state, safely re-enterable), End (discard hand — Ethereal cards go to trash).
 - **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End. `activateAbility({ programId })` runs within Main (no phase transition; → End if clicks hit 0).
 - Run uses an internal state machine (`runProgressState`): `NOT_IN_RUN` → `ENCOUNTERING_ICE` (loop) → `ACCESSING_CARDS`.
 
@@ -88,7 +88,7 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 
 | Trigger | Fires | On |
 | --- | --- | --- |
-| ON_REZ | Corp installs ice | the new ice |
+| ON_REZ | Face-down ice is approached for the first time during a run | the approached ice |
 | ON_DRAW | Draw phase | each card in hand |
 | ON_UPKEEP | Upkeep phase (once/turn) | installed programs |
 | ON_PLAY | Card played | played cards |

@@ -39,6 +39,14 @@ export const removeFromUnencounteredIce = (
   type: ServerActionTypes.REMOVE_FROM_UNENCOUNTERED_ICE,
 });
 
+export const rezIce = (
+  ice: IceCardInstance,
+  server: ServerName,
+): ServerAction => ({
+  payload: { ice, server },
+  type: ServerActionTypes.REZ_ICE,
+});
+
 export const setCurrentEncounteredIce = (
   ice: IceCardInstance | null,
 ): ServerAction => ({

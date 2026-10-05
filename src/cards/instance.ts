@@ -28,8 +28,8 @@ export const createCardInstance = (id: CardId): CardInstance => ({
 export const createIceCardInstance = (id: IceCardId): IceCardInstance => ({
   definitionId: id,
   instanceId: uuid(),
-  // The corp currently rezzes all ice on install
-  isRezzed: true,
+  // Ice is installed face-down; the corp rezzes it on first approach in a run
+  isRezzed: false,
 });
 
 /**

@@ -1,5 +1,6 @@
 import { executeTriggers } from "../../cards/engine";
 import { CardType, TriggerMoment } from "../../cards/enums";
+import type { IceCardInstance } from "../../cards/instance";
 import { resolveCard } from "../../cards/instance";
 import {
   addToAccessedCards,
@@ -13,6 +14,7 @@ import {
   clearUnencounteredIce,
   getServerUnencounteredIce,
   removeFromUnencounteredIce,
+  rezIce,
   setCurrentEncounteredIce,
 } from "../server";
 import {
@@ -51,8 +53,7 @@ export const initiateRun = (): ThunkAction => {
     // Determine first step
     const unencounteredIce = getServerUnencounteredIce(getState());
     if (unencounteredIce.length > 0) {
-      // Set first ice as current
-      dispatch(setCurrentEncounteredIce(unencounteredIce[0]));
+      approachIce(unencounteredIce[0], dispatch, getState);
       dispatch(setRunProgressState(RunProgressState.ENCOUNTERING_ICE));
     } else {
       // No ice, go straight to access
@@ -100,8 +101,7 @@ export const clickIce = (payload: ClickIcePayload): ThunkAction => {
     // Check for more ice
     const remainingIce = getServerUnencounteredIce(getState());
     if (remainingIce.length > 0) {
-      // Set next ice as current
-      dispatch(setCurrentEncounteredIce(remainingIce[0]));
+      approachIce(remainingIce[0], dispatch, getState);
     } else {
       // No more ice, transition to access
       dispatch(setCurrentEncounteredIce(null));
@@ -167,6 +167,27 @@ export const selectAccessedCard = (
       dispatch(setTurnCurrentPhase(TurnPhase.End));
     }
   };
+};
+
+/**
+ * Approach an ice: on first contact the corp rezzes it (ON_REZ registers its
+ * strength modifiers and auras), then it becomes the encountered ice. The
+ * player sees what they are facing before deciding how to deal with it.
+ */
+const approachIce = (
+  ice: IceCardInstance,
+  dispatch: (action: GameAction) => void,
+  getState: () => GameState,
+) => {
+  let approached = ice;
+
+  if (!ice.isRezzed) {
+    approached = { ...ice, isRezzed: true };
+    dispatch(rezIce(approached, getState().serverState.selectedServer));
+    executeTriggers(approached, TriggerMoment.ON_REZ, dispatch, getState);
+  }
+
+  dispatch(setCurrentEncounteredIce(approached));
 };
 
 /**

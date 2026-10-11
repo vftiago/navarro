@@ -3,14 +3,17 @@ import { CardType } from "../../cards/enums";
 import { resolveCard } from "../../cards/instance";
 import {
   activateAbility,
+  breakIce,
   clickIce,
   initiateRun,
   playPhase,
   selectAccessedCard,
 } from "../phases";
+import { canInstallProgram } from "../player";
 import { setSelectedServer } from "../server";
 import { RunProgressState, setTurnCurrentPhase, TurnPhase } from "../turn";
 import type { GameAction, GameState } from "../types";
+import { canProgramBreakIce } from "../utils";
 import type { GameEvent } from "./eventBus";
 import { GameEventType } from "./eventBus";
 
@@ -69,8 +72,18 @@ export const createEventHandler = (
 
             return;
           }
-          if (hasKeywordFlag(resolveCard(handCard).keywords, "unplayable")) {
+          const definition = resolveCard(handCard);
+          if (hasKeywordFlag(definition.keywords, "unplayable")) {
             console.warn("Card is unplayable");
+
+            return;
+          }
+          // Programs install into memory; a full rig refuses the install
+          if (
+            definition.type === CardType.PROGRAM &&
+            !canInstallProgram(state)
+          ) {
+            console.warn("Cannot install program: not enough memory");
 
             return;
           }
@@ -128,11 +141,36 @@ export const createEventHandler = (
           return;
         }
 
-        // Installed program → activate its ability (Main phase only)
+        /*
+         * Installed program → during an encounter, break the encountered ice
+         * with it; during Main, activate its ability. The phase decides, so
+         * one click never means two things.
+         */
         const installedProgram = state.playerState.playerInstalledPrograms.find(
           (card) => card.instanceId === instanceId,
         );
         if (installedProgram) {
+          if (
+            turnCurrentPhase === TurnPhase.Run &&
+            runProgressState === RunProgressState.ENCOUNTERING_ICE
+          ) {
+            const encounteredIce =
+              state.serverState.serverCurrentEncounteredIce;
+            if (
+              !encounteredIce ||
+              !canProgramBreakIce(installedProgram, encounteredIce, state)
+            ) {
+              console.warn("Program cannot break the encountered ice");
+
+              return;
+            }
+            if (import.meta.env.DEV) {
+              console.log("[CARD_CLICKED] resolved: break ice", instanceId);
+            }
+            dispatchThunk(breakIce, { programId: instanceId });
+
+            return;
+          }
           if (turnCurrentPhase !== TurnPhase.Main) {
             console.warn("Cannot activate an ability outside Main phase");
 

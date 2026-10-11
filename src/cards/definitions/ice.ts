@@ -74,7 +74,7 @@ export const iceCardDefinitions: IceCardDefinition[] = [
     image: "_dc9200b9-8646-4665-9558-cb356a865c7e.jpg",
     name: "Wall of Static",
     rarity: CardRarity.COMMON,
-    strength: 5,
+    strength: 2,
     subtype: IceSubtype.BARRIER,
     type: CardType.ICE,
   },

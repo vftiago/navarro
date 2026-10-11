@@ -1,15 +1,31 @@
 import type { IceCardInstance } from "../../cards/instance";
+import { getRandomIceCard } from "../utils/cardUtils";
 import type { ServerAction, ServerState } from "./types";
 import { ServerActionTypes, ServerName } from "./types";
+
+/**
+ * The opening wall: each server starts with this many random ice, installed
+ * face-down so the first run into it is a read of unknowns. Archives is open.
+ */
+const STARTING_ICE_COUNT: Record<ServerName, number> = {
+  [ServerName.ARCHIVES]: 0,
+  [ServerName.HQ]: 2,
+  [ServerName.RD]: 1,
+};
+
+const createStartingIce = (server: ServerName): IceCardInstance[] =>
+  Array.from({ length: STARTING_ICE_COUNT[server] }, () => getRandomIceCard());
 
 export const initialServerState: ServerState = {
   selectedServer: ServerName.HQ,
   serverCurrentEncounteredIce: null,
   serverMaxIceSlots: 3,
   servers: {
-    [ServerName.ARCHIVES]: { installedIce: [] },
-    [ServerName.HQ]: { installedIce: [] },
-    [ServerName.RD]: { installedIce: [] },
+    [ServerName.ARCHIVES]: {
+      installedIce: createStartingIce(ServerName.ARCHIVES),
+    },
+    [ServerName.HQ]: { installedIce: createStartingIce(ServerName.HQ) },
+    [ServerName.RD]: { installedIce: createStartingIce(ServerName.RD) },
   },
   serverSecurityLevel: 0,
   serverUnencounteredIce: [],

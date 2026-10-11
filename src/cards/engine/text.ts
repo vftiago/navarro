@@ -158,7 +158,9 @@ export type CardTextLine = {
  * Consecutive effects sharing the same labeled trigger are grouped under a
  * single label: "On Upkeep: Draw 1 card. Lose 1 click." A card-level `text`
  * override replaces the effect lines (keyword and ability lines always
- * render). Activated abilities render last, one line each.
+ * render). Activated abilities render last, one line each. What a breaker
+ * breaks is implicit in its subtype and never a text line (see
+ * `getSubtypeReminderText`).
  */
 export const getCardTextLines = (
   definition: CardDefinition,

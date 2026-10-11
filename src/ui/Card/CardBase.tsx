@@ -22,7 +22,7 @@ export const CardBase = ({
 
   return (
     <CardHoverEffect
-      isBeingEncountered={isBeingEncountered}
+      isHighlighted={isBeingEncountered}
       type={type}
       onClick={onClick}
     >

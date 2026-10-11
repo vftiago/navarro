@@ -101,7 +101,13 @@ export const primitiveEffects: {
       `${gainOrLose(amount)} ${Math.abs(amount)} ${pluralize(amount, "click")}.`,
   },
   modify_other_ice_strength: {
-    defaultTrigger: TriggerMoment.ON_REZ,
+    /*
+     * A subroutine, not an aura: nothing happens on rez, and every time the
+     * player eats it another permanent modifier stacks under the same
+     * source id. `calculateIceStrength` sums same-source contributions, and
+     * pulling the ice removes every stack at once.
+     */
+    defaultTrigger: TriggerMoment.ON_ENCOUNTER,
     getActions: ({ amount }, { sourceId }) => {
       if (!sourceId) {
         throw new Error("Source ID required for modify_other_ice_strength.");
@@ -117,7 +123,7 @@ export const primitiveEffects: {
 
       return [addPermanentEffect(permanentEffect)];
     },
-    getText: ({ amount }) => `Other Ice gain ${amount} strength.`,
+    getText: ({ amount }) => `Other ice gain ${amount} strength.`,
   },
   modify_server_security: {
     defaultTrigger: TriggerMoment.ON_PLAY,

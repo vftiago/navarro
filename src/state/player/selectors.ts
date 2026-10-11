@@ -19,6 +19,25 @@ export const getPlayerScoreArea = (state: GameState): CardInstance[] =>
 export const getPlayerInstalledPrograms = (state: GameState): CardInstance[] =>
   state.playerState.playerInstalledPrograms;
 
+/**
+ * Memory: every installed program occupies MU, and a program can only be
+ * installed while there is room for it. For now every program costs one MU;
+ * when it becomes a printed stat this constant becomes a definition lookup.
+ */
+export const PROGRAM_MEMORY_COST = 1;
+
+/** Memory capacity in MU */
+export const getPlayerMemory = (state: GameState): number =>
+  state.playerState.playerMemory;
+
+/** MU occupied by installed programs */
+export const getPlayerMemoryUsed = (state: GameState): number =>
+  state.playerState.playerInstalledPrograms.length * PROGRAM_MEMORY_COST;
+
+/** Whether one more program fits in the rig */
+export const canInstallProgram = (state: GameState): boolean =>
+  getPlayerMemoryUsed(state) + PROGRAM_MEMORY_COST <= getPlayerMemory(state);
+
 export const getPlayerMaxHandSize = (state: GameState): number =>
   state.playerState.playerMaxHandSize;
 

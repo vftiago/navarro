@@ -4,9 +4,11 @@ import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { hasKeywordFlag } from "../../cards/engine";
+import { CardType } from "../../cards/enums";
 import type { CardInstance } from "../../cards/instance";
 import { resolveCard } from "../../cards/instance";
 import { GameEventType, useEventBus } from "../../state/events";
+import { canInstallProgram } from "../../state/player";
 import { useGameStore } from "../../state/store";
 import { TurnPhase } from "../../state/turn";
 import { CardFront } from "../Card/CardFront";
@@ -52,6 +54,7 @@ export const PlayerHand = () => {
   );
 
   const eventBus = useEventBus();
+  const hasMemoryForProgram = useGameStore(canInstallProgram);
   const [, animate] = useAnimate();
 
   const [exitingCards, setExitingCards] = useState<Set<string>>(new Set());
@@ -81,9 +84,7 @@ export const PlayerHand = () => {
   }, [playerHand, turnCurrentPhase]);
 
   useEffect(() => {
-    const currentCardIds = new Set(
-      playerHand.map((card) => card.instanceId),
-    );
+    const currentCardIds = new Set(playerHand.map((card) => card.instanceId));
 
     for (const [id] of cardRefs.current) {
       if (!currentCardIds.has(id)) {
@@ -105,7 +106,11 @@ export const PlayerHand = () => {
         return;
       }
 
-      if (hasKeywordFlag(resolveCard(card).keywords, "unplayable")) {
+      const definition = resolveCard(card);
+      if (hasKeywordFlag(definition.keywords, "unplayable")) {
+        return;
+      }
+      if (definition.type === CardType.PROGRAM && !hasMemoryForProgram) {
         return;
       }
 
@@ -140,7 +145,7 @@ export const PlayerHand = () => {
         });
       }, EXIT_ANIMATION_DURATION);
     },
-    [animate, eventBus, isMainPhase],
+    [animate, eventBus, hasMemoryForProgram, isMainPhase],
   );
 
   const setCardRef = useCallback(

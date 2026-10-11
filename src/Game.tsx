@@ -59,8 +59,11 @@ export const Game = () => {
       <TopNavbar />
       <Container fluid maw={1480} p="xs">
         <Stack className="h-full" gap="xs">
-          <ServerRow />
-          <ProgramRow />
+          {/* Shrink-wrapped so the rig stretches to exactly the servers' width */}
+          <div className="mx-auto flex w-fit flex-col gap-2.5">
+            <ServerRow />
+            <ProgramRow />
+          </div>
           <PlayerDashboard setOpenModal={setOpenModal} />
         </Stack>
         <Modals closeModal={closeModal} openModal={openModal} />

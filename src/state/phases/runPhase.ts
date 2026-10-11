@@ -24,7 +24,7 @@ import {
   TurnPhase,
 } from "../turn";
 import type { GameAction, GameState, ThunkAction } from "../types";
-import { getRandomServerCard } from "../utils";
+import { canProgramBreakIce, getRandomServerCard } from "../utils";
 
 /**
  * Initiates a run - called by event handler when user clicks Run button.
@@ -68,7 +68,7 @@ export type ClickIcePayload = {
 
 /**
  * Handles ice click during encounter - called by event handler.
- * Triggers ON_ENCOUNTER, removes ice, and advances to next ice or access.
+ * Eating the subroutine: fires the ice's ON_ENCOUNTER effects, then passes it.
  */
 export const clickIce = (payload: ClickIcePayload): ThunkAction => {
   return (dispatch, getState) => {
@@ -90,23 +90,51 @@ export const clickIce = (payload: ClickIcePayload): ThunkAction => {
     // Trigger ON_ENCOUNTER effects
     executeTriggers(currentIce, TriggerMoment.ON_ENCOUNTER, dispatch, getState);
 
-    // Check if the run was ended by an encounter effect (e.g., "End the run")
-    if (getState().turnState.runProgressState === RunProgressState.NOT_IN_RUN) {
+    passEncounteredIce(currentIce, dispatch, getState);
+  };
+};
+
+export type BreakIcePayload = {
+  programId: string;
+};
+
+/**
+ * Handles a breaker click during encounter - called by event handler.
+ * Breaking is free and structural (matching subtype, enough strength, see
+ * `canProgramBreakIce`): the ice's subroutines never fire. The breaker's
+ * own ON_ENCOUNTER effects — its subroutines, if it has any — fire in their
+ * place, then the ice is passed like any other.
+ */
+export const breakIce = (payload: BreakIcePayload): ThunkAction => {
+  return (dispatch, getState) => {
+    const state = getState();
+    const currentIce = state.serverState.serverCurrentEncounteredIce;
+
+    if (!currentIce) {
+      console.error("breakIce: no ice is currently encountered");
+
       return;
     }
 
-    // Remove from unencountered list
-    dispatch(removeFromUnencounteredIce(currentIce));
+    const program = state.playerState.playerInstalledPrograms.find(
+      (installed) => installed.instanceId === payload.programId,
+    );
 
-    // Check for more ice
-    const remainingIce = getServerUnencounteredIce(getState());
-    if (remainingIce.length > 0) {
-      approachIce(remainingIce[0], dispatch, getState);
-    } else {
-      // No more ice, transition to access
-      dispatch(setCurrentEncounteredIce(null));
-      transitionToAccess(dispatch, getState);
+    if (!program) {
+      console.error("breakIce: Program not installed");
+
+      return;
     }
+
+    if (!canProgramBreakIce(program, currentIce, state)) {
+      console.error("breakIce: Program cannot break the encountered ice");
+
+      return;
+    }
+
+    executeTriggers(program, TriggerMoment.ON_ENCOUNTER, dispatch, getState);
+
+    passEncounteredIce(currentIce, dispatch, getState);
   };
 };
 
@@ -171,7 +199,7 @@ export const selectAccessedCard = (
 
 /**
  * Approach an ice: on first contact the corp rezzes it (ON_REZ registers its
- * strength modifiers and auras), then it becomes the encountered ice. The
+ * strength modifiers), then it becomes the encountered ice. The
  * player sees what they are facing before deciding how to deal with it.
  */
 const approachIce = (
@@ -188,6 +216,31 @@ const approachIce = (
   }
 
   dispatch(setCurrentEncounteredIce(approached));
+};
+
+/**
+ * Move past the encountered ice once its encounter has resolved (eaten or
+ * broken): approach the next ice, or access when the wall is cleared. A no-op
+ * if the encounter already ended the run (e.g. "End the run").
+ */
+const passEncounteredIce = (
+  ice: IceCardInstance,
+  dispatch: (action: GameAction) => void,
+  getState: () => GameState,
+) => {
+  if (getState().turnState.runProgressState === RunProgressState.NOT_IN_RUN) {
+    return;
+  }
+
+  dispatch(removeFromUnencounteredIce(ice));
+
+  const remainingIce = getServerUnencounteredIce(getState());
+  if (remainingIce.length > 0) {
+    approachIce(remainingIce[0], dispatch, getState);
+  } else {
+    dispatch(setCurrentEncounteredIce(null));
+    transitionToAccess(dispatch, getState);
+  }
 };
 
 /**

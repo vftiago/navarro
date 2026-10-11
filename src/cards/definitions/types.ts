@@ -69,6 +69,11 @@ export type ProgramCardDefinition = BaseCardDefinition & {
   /** Player-activated abilities, usable while the program is installed */
   abilities?: ActivatedAbility[];
   id: ProgramCardId;
+  /**
+   * Breaker strength: a program can only break ice whose strength is not
+   * higher than its own (Mark II, "Ice and breakers"). Utilities have none.
+   */
+  strength?: number;
   subtype: ProgramSubtype;
   type: CardType.PROGRAM;
 };

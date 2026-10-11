@@ -50,6 +50,7 @@ Key concepts:
 - **Conditions**: `{ check: "server_security_at_least", params: { level: 3 } }` gates an effect. Named predicates, deliberately not a `{ stat, op, value }` DSL.
 - **Keywords are mechanical**: registry entries with rule-`flags` (queried via `hasKeywordFlag` — `trashAfterPlay`, `unplayable`, `noNoiseOnPlay`, `trashOnHandDiscard`) and/or effect `grants`. Never special-case a keyword in phase logic.
 - **Implicit effects**: effects implied by stats/type rules (an agenda's `victoryPoints` generates its scoring effect and "Score N." text). One source of truth — never duplicate a stat as an effect.
+- **Breakers are structural** (`engine/breakers.ts`): a program's subtype is the breaker key (fracter → barrier, decoder → code gate, killer → sentry, AI → any) and its `strength` the threshold; `canBreakIce` takes the ice's current strength from the caller since modifiers live in state. Breaking is free and skips the ice's subroutines; the breaker's own ON_ENCOUNTER effects fire instead. The key is never card text: `getSubtypeReminderText` feeds the subtype glyph's tooltip ("Fracter. Breaks barriers." / "Barrier. Broken by fracters and AI.").
 - **Activated abilities** (programs only): `abilities: [{ cost, effects }]` — rendered "Click, Trash: Draw 3 cards." Costs (`clicks`, `trashSelf`) are paid in full up front before effects resolve (an unpayable cost blocks activation; effects resolve as much as possible). Trash-as-cost fires ON_TRASH. Activation is structural — an ability is activated because it lives in `abilities`, not because it has a cost. Design rule: every ability needs a cost or a consuming context.
 - **Instances**: state stores `{ instanceId, definitionId }` only (serializable). Resolve with `resolveCard(instance)` at the point of use.
 - **Generated text**: rules text derives from effect params (per-effect or card-level `text` overrides available), so text can never drift from behavior. UI renders `getCardTextLines(definition)`.
@@ -59,7 +60,7 @@ Key concepts:
 
 Zustand store with Redux-like slices (`player`, `server`, `turn`, `board`, `settings`), each with `types/actions/reducer/selectors`. `useGameStore((s) => ...)` to read; `dispatch(actionCreator())` to write; `batchDispatch([...])` to coalesce re-renders. Multi-step game logic lives in thunks under `src/state/phases/`.
 
-`board.permanentEffects` holds ongoing modifiers (e.g. Bad Moon's aura, Fire Wall's dynamic strength) applied by selectors like `getPlayerCardsPerTurn` and `calculateIceStrength` — modifiers read live `gameState` at evaluation time.
+`board.permanentEffects` holds ongoing modifiers (e.g. Bad Moon's stacking buff, one per clicked subroutine; Fire Wall's dynamic strength) applied by selectors like `getPlayerCardsPerTurn` and `calculateIceStrength` — modifiers read live `gameState` at evaluation time. Several modifiers may share a `sourceId`; `calculateIceStrength` sums them per source.
 
 ### Events (`src/state/events/`)
 
@@ -69,7 +70,7 @@ UI → eventBus.emit(event) → eventHandler resolves & validates → phase thun
 
 Deliberately minimal vocabulary — a click carries no intent; the handler derives meaning from where the card lives and the phase/run state:
 
-- `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through; an accessed card → select; an installed program with an ability during Main → activate; anything else → ignored.
+- `CARD_CLICKED { instanceId }` — in hand during Main → play; the encountered ice → click through (eat its subroutines); an installed program during an encounter → break the encountered ice with it (matching subtype, strength ≥ the ice's current strength; see `canProgramBreakIce`); an accessed card → select; an installed program with an ability during Main → activate; anything else → ignored.
 - `PLAYER_INITIATE_RUN`, `PLAYER_END_TURN` — button intents.
 - `PLAYER_SELECT_SERVER { server }` — pick the run target (Main phase only); the server header is the control.
 
@@ -82,7 +83,7 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 ```
 
 - **Automatic phases** (`PhaseManager.tsx` watches `phaseCounter`): Corp (turn +1, security +1, corp AI installs face-down ice; see `corpPhase.ts`), Draw (reset clicks, draw, ON_DRAW; → End if 0 clicks), Upkeep (ON_UPKEEP on installed programs, exactly once per turn), Main (pure waiting state, safely re-enterable), End (discard hand — Ethereal cards go to trash).
-- **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End. `activateAbility({ programId })` runs within Main (no phase transition; → End if clicks hit 0).
+- **User-driven phases** (invoked by the event handler with payloads): `playPhase({ cardId })`, `initiateRun()` (also via the Run card's effect), `clickIce({ iceId })`, `breakIce({ programId })`, `selectAccessedCard({ cardId })`. Play/Run return to Main if clicks remain, else End. `activateAbility({ programId })` runs within Main (no phase transition; → End if clicks hit 0).
 - Run uses an internal state machine (`runProgressState`): `NOT_IN_RUN` → `ENCOUNTERING_ICE` (loop) → `ACCESSING_CARDS`.
 
 ### Trigger Moments
@@ -97,7 +98,7 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 | ON_TRASH | Trash-keyword card trashed after play | the card |
 | ON_DISCARD | Card lost from hand to a game effect (e.g. net damage) | the card |
 | ON_RUN_START / ON_RUN_END | Run boundaries | installed programs |
-| ON_ENCOUNTER | Ice clicked (subroutines) | the encountered ice |
+| ON_ENCOUNTER | Ice clicked (subroutines), or a breaker used on it (its own subroutines fire instead) | the encountered ice, or the breaker |
 | ON_ACCESS | Access begins | each accessed card |
 | ON_FETCH | Accessed card selected | the selected card |
 
@@ -138,7 +139,6 @@ Corp → Draw → Upkeep → Main ⇄ (Play | Run) → End → Corp …
 ## Open Items
 
 - First test suite (vitest) — engine and event handler are pure/headless-drivable.
-- Icebreaker interaction (Sledgehammer is text-only) — see `EVENT_SYSTEM_REFACTOR.md` follow-ups.
 - `destroy_all_programs` (Flush) is a no-op placeholder.
 - Pre-existing React duplicate-key warning during play (likely `PlayerHand` AnimatePresence).
 - Performance: profile before optimizing — see `PERFORMANCE.md`.

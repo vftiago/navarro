@@ -5,10 +5,9 @@ import type { ProgramCardDefinition } from "./types";
 export const programCardDefinitions: ProgramCardDefinition[] = [
   {
     /*
-     * TODO: no mechanics yet — the icebreaker interaction (breaking
-     * subroutines during an encounter) is not designed; when it lands it
-     * will be a targeted event (e.g. PLAYER_BREAK_SUBROUTINE), and this
-     * becomes program data like `breaks: IceSubtype.BARRIER`
+     * A breaker is structural: subtype is the key (fracter → barrier) and
+     * strength the threshold. Any ON_ENCOUNTER effects listed here would be
+     * its own subroutines, fired in place of the ice's when it breaks.
      */
     effects: [],
     flavorText: "Crude, but effective.",
@@ -16,8 +15,8 @@ export const programCardDefinitions: ProgramCardDefinition[] = [
     image: "_09df83ab-9d58-4100-996f-dc93127dce30.jpg",
     name: "Sledgehammer",
     rarity: CardRarity.COMMON,
+    strength: 2,
     subtype: ProgramSubtype.FRACTER,
-    text: "Break barrier subroutine.",
     type: CardType.PROGRAM,
   },
   {

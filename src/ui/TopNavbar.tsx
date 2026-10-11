@@ -2,7 +2,7 @@ import { Container, Flex, Text, Tooltip } from "@mantine/core";
 import type { ReactNode } from "react";
 import { AiOutlineSound } from "react-icons/ai";
 import { BiSignal5 } from "react-icons/bi";
-import { TbCloudLock, TbWaveSine } from "react-icons/tb";
+import { TbCloudLock, TbTag, TbWaveSine } from "react-icons/tb";
 import { useShallow } from "zustand/react/shallow";
 import { useGameStore } from "../state/store";
 import { RunProgressState } from "../state/turn";
@@ -29,6 +29,7 @@ export const TopNavbar = () => {
   const {
     playerNoise,
     playerSignal,
+    playerTags,
     runProgressState,
     serverSecurityLevel,
     turnCurrentPhase,
@@ -36,6 +37,7 @@ export const TopNavbar = () => {
     useShallow((state) => ({
       playerNoise: state.playerState.playerNoise,
       playerSignal: state.playerState.playerSignal,
+      playerTags: state.playerState.playerTags,
       runProgressState: state.turnState.runProgressState,
       serverSecurityLevel: state.serverState.serverSecurityLevel,
       turnCurrentPhase: state.turnState.turnCurrentPhase,
@@ -66,6 +68,11 @@ export const TopNavbar = () => {
               icon={<BiSignal5 size="24px" />}
               label="Signal to Noise Ratio"
               value={playerSignal - playerNoise}
+            />
+            <Indicator
+              icon={<TbTag size="24px" />}
+              label="Tags"
+              value={playerTags}
             />
             <Indicator
               icon={<TbCloudLock size="24px" />}

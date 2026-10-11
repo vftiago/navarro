@@ -10,7 +10,11 @@ export type IceStrengthContribution = {
 
 export type IceStrength = {
   base: number;
-  /** Non-zero modifier contributions, in registration order */
+  /**
+   * Non-zero modifier contributions in first-registration order, one per
+   * source: a source that stacks several modifiers (Bad Moon, once per
+   * click) shows as a single summed line
+   */
   contributions: IceStrengthContribution[];
   current: number;
   modifier: number;
@@ -27,11 +31,18 @@ export const calculateIceStrength = (
     (effect) => effect.targetSelector === "getIceStrength",
   );
 
-  const contributions = relevantEffects
-    .map(({ getModifier, sourceId }) => ({
-      amount: getModifier({ gameState, sourceId, targetId: ice.instanceId }),
+  const bySource = new Map<string, number>();
+  relevantEffects.forEach(({ getModifier, sourceId }) => {
+    const amount = getModifier({
+      gameState,
       sourceId,
-    }))
+      targetId: ice.instanceId,
+    });
+    bySource.set(sourceId, (bySource.get(sourceId) ?? 0) + amount);
+  });
+
+  const contributions = [...bySource.entries()]
+    .map(([sourceId, amount]) => ({ amount, sourceId }))
     .filter(({ amount }) => amount !== 0);
 
   const modifier = contributions.reduce((acc, { amount }) => acc + amount, 0);

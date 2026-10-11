@@ -18,7 +18,7 @@ export const initialPlayerState: PlayerState = {
   playerHand: [],
   playerInstalledPrograms: [],
   playerMaxHandSize: 10,
-  playerMemory: 4,
+  playerMemory: 3,
   playerNoise: 0,
   playerPlayedCards: [],
   playerScoreArea: [],
@@ -183,6 +183,18 @@ export const playerReducer = (
       return {
         ...state,
         playerNoise: Math.max(0, state.playerNoise + action.payload),
+      };
+    }
+
+    /*
+     * Capacity can fall below what is installed; that is a legal, visible
+     * over-capacity state (the rig shows it in red) that blocks further
+     * installs. Nothing is trashed automatically.
+     */
+    case PlayerActionTypes.MODIFY_MEMORY: {
+      return {
+        ...state,
+        playerMemory: Math.max(0, state.playerMemory + action.payload),
       };
     }
 

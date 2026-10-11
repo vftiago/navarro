@@ -6,7 +6,7 @@ import { IceRow } from "./IceRow";
  * Order comes from ALL_SERVERS (Archives, HQ, R&D).
  */
 export const ServerRow = () => (
-  <div className="flex justify-center gap-6">
+  <div className="flex justify-center gap-2.5">
     {ALL_SERVERS.map((server) => (
       <IceRow key={server} server={server} />
     ))}

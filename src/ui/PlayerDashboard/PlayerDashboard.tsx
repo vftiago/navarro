@@ -7,7 +7,6 @@ import { TurnPhase } from "../../state/turn";
 import type { ModalType } from "../Modals";
 import { ClickWidget } from "./ClickWidget";
 import { PlayerHand } from "./PlayerHand";
-import { TagWidget } from "./TagWidget";
 
 export const PlayerDashboard = ({
   setOpenModal,
@@ -17,7 +16,6 @@ export const PlayerDashboard = ({
   const {
     playerDeckLength,
     playerDiscardPileLength,
-    playerTags,
     playerTrashPileLength,
     playerVictoryPoints,
     turnCurrentPhase,
@@ -27,7 +25,6 @@ export const PlayerDashboard = ({
     useShallow((state) => ({
       playerDeckLength: state.playerState.playerDeck.length,
       playerDiscardPileLength: state.playerState.playerDiscardPile.length,
-      playerTags: state.playerState.playerTags,
       playerTrashPileLength: state.playerState.playerTrashPile.length,
       playerVictoryPoints: state.playerState.playerVictoryPoints,
       turnCurrentPhase: state.turnState.turnCurrentPhase,
@@ -70,7 +67,6 @@ export const PlayerDashboard = ({
             Deck ({playerDeckLength})
           </Button>
           <ClickWidget remainingClicks={turnRemainingClicks} />
-          <TagWidget tagCount={playerTags} />
         </Stack>
 
         <div className="flex flex-1 justify-center">

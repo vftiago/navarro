@@ -3,6 +3,13 @@
  *
  * See the Card System section in CLAUDE.md for the architecture.
  */
+export {
+  canBreakIce,
+  getBreakersFor,
+  getBreakerTargets,
+  getSubtypeReminderText,
+  isBreaker,
+} from "./breakers";
 export * from "./effects";
 export {
   executeEffectSpec,

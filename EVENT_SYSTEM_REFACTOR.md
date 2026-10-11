@@ -37,13 +37,13 @@ user-driven phases (direct invocation) is the intended design, not a gap.
 
 ## Open follow-ups
 
-1. **Design the icebreaker interaction** — Sledgehammer ("Break barrier
-   subroutine.") has no mechanics: the speculative `CARD_ACTIVATE_ABILITY` /
-   `ON_CLICK` / `EffectCost` machinery was deleted (2026-08-17) rather than
-   implemented. When the encounter interaction is designed, it should arrive
-   as a targeted event (e.g. `PLAYER_BREAK_SUBROUTINE { programId, iceId }`)
-   validated against `runProgressState`, with breaker capability as program
-   data (e.g. `breaks: IceSubtype.BARRIER`).
+1. ~~**Design the icebreaker interaction**~~ — done (2026-10-11): no new
+   event was needed. During an encounter a click on an installed program can
+   only mean "break with it", so `CARD_CLICKED` routes to `breakIce` when
+   `runProgressState` is `ENCOUNTERING_ICE`, validated by
+   `canProgramBreakIce` (subtype key + strength threshold from
+   `engine/breakers.ts`). Breaker capability is structural (subtype +
+   `strength`), not a `breaks` field.
 2. **Add the import-boundary lint rule** — UI components must not import
    phase thunks; today this survives by convention only.
 3. **Seed the RNG if event replay ever matters** — deck shuffle, corp ice

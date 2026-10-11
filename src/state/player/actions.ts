@@ -78,6 +78,12 @@ export const modifyPlayerNoise = (noise: number): PlayerAction => ({
   type: PlayerActionTypes.MODIFY_NOISE,
 });
 
+/** Grow or shrink memory capacity (MU). Never drops below zero. */
+export const modifyPlayerMemory = (memory: number): PlayerAction => ({
+  payload: memory,
+  type: PlayerActionTypes.MODIFY_MEMORY,
+});
+
 export const modifyPlayerSignal = (signal: number): PlayerAction => ({
   payload: signal,
   type: PlayerActionTypes.MODIFY_SIGNAL,

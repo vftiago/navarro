@@ -1,29 +1,24 @@
-import { Tooltip } from "@mantine/core";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Fragment } from "react";
-import { IoMdReturnRight } from "react-icons/io";
 import type { IceCardDefinition } from "../../../cards/definitions";
 import { getCardTextLines, resolveEffectSpecs } from "../../../cards/engine";
-import { CardRarity } from "../../../cards/enums";
 import type { CardInstance } from "../../../cards/instance";
 import { resolveCard } from "../../../cards/instance";
 import { ALL_SERVERS } from "../../../state/server";
 import { getIceCardSize } from "../../../state/settings";
 import { getGameState, useGameStore } from "../../../state/store";
 import { calculateIceStrength } from "../../../state/utils/iceStrengthUtils";
+import {
+  BoardTile,
+  getTextureStyle,
+  RARITY_ACCENT,
+  SubtypeGlyph,
+  TileName,
+  TileNumberColumn,
+  TileTextLines,
+} from "../BoardTile";
 import { CardHoverEffect } from "../CardHoverEffect";
-
-const RARITY_ACCENT: Record<CardRarity, string> = {
-  [CardRarity.BASIC]: "bg-neutral-600",
-  [CardRarity.COMMON]: "bg-neutral-400",
-  [CardRarity.RARE]: "bg-indigo-400",
-  [CardRarity.UNCOMMON]: "bg-cyan-400",
-};
-
-/** Diagonal hatching, the visual signature of the wall */
-const HATCH =
-  "repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 9px)";
 
 /** Shared face-down art, the same back every hidden card in the game shows */
 const CARD_BACK_IMAGE = "_95bdd40b-cd24-4f75-9b35-75fb07f19cf3.jpg";
@@ -39,20 +34,12 @@ const FLIP_TRANSITION = {
   ease: [0.32, 0.72, 0.28, 1] as const,
 };
 
-const Label = ({ children }: { children: string }) => (
-  <span className="font-orbitron text-[0.5rem] leading-none tracking-[0.25em] text-neutral-500 uppercase">
-    {children}
-  </span>
-);
-
 /**
  * Ice is a server card, not a player card: it is never in hand and never
  * played, it sits in the wall and taxes every dive. It renders as a
- * landscape bar so the wall reads top to bottom as a stack of barriers,
- * and its total cost can be read at a glance from the strength column.
- *
- * Layout, left to right: art strip (fades into the body), name over the
- * subroutine lines, strength column with the toll number.
+ * landscape board tile so the wall reads top to bottom as a stack of
+ * barriers, and its total cost can be read at a glance from the strength
+ * column. Diagonal hatching is the wall's signature texture.
  */
 export const CardFrontIce = ({
   definition,
@@ -70,9 +57,9 @@ export const CardFrontIce = ({
   const securityLevel = useGameStore(
     (state) => state.serverState.serverSecurityLevel,
   );
-  const { h, w } = useGameStore(getIceCardSize);
+  const { art, h, w } = useGameStore(getIceCardSize);
 
-  const { flavorText, image, name, rarity, type } = definition;
+  const { flavorText, image, name, rarity, subtype, type } = definition;
   const isFaceDown = "isRezzed" in instance && instance.isRezzed === false;
 
   /*
@@ -137,108 +124,45 @@ export const CardFrontIce = ({
    * Face-down: the player knows the wall got thicker, not with what. Same
    * silhouette as a rezzed bar so the wall keeps its shape, but every field
    * that would leak information (art, name, rarity, text, strength) is
-   * redacted: the card back where the art strip goes, black bars where the
+   * redacted: the card back where the art strip goes, nothing where the
    * text goes, a question mark where the toll goes.
    */
   const faceDownBar = (
-    <div
-      className="relative flex overflow-hidden rounded-md border border-white/10 bg-neutral-950 select-none hover:cursor-pointer"
-      style={{ backgroundImage: HATCH, height: h, width: w }}
-    >
-      <div className="relative h-full w-[30%] shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)] opacity-50 grayscale">
-        <img
-          alt=""
-          className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
-          loading="eager"
-          src={`./assets/${CARD_BACK_IMAGE}`}
-        />
-      </div>
-
-      <div className="min-w-0 flex-1" />
-
-      <Tooltip label="Unrezzed ice. Its strength and subroutines are unknown until you encounter it.">
-        <div className="flex w-14 shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/10">
+    <BoardTile
+      art={{
+        alt: "",
+        className: "opacity-50 grayscale",
+        image: CARD_BACK_IMAGE,
+      }}
+      artWidth={art}
+      className="border-white/10 bg-neutral-950"
+      column={
+        <TileNumberColumn
+          label="str"
+          tooltip="Unrezzed ice. Its strength and subroutines are unknown until you encounter it."
+        >
           <span className="font-orbitron text-2xl leading-none text-neutral-600">
             ?
           </span>
-          <Label>str</Label>
-        </div>
-      </Tooltip>
-    </div>
+        </TileNumberColumn>
+      }
+      h={h}
+      style={getTextureStyle("hatch")}
+      w={w}
+    />
   );
 
   const faceUpBar = (
-    <div
-      className="relative flex overflow-hidden rounded-md border border-x-white/10 border-t-white/20 border-b-white/5 bg-neutral-900 select-none hover:cursor-pointer"
-      style={{ height: h, width: w }}
-    >
-      <div
-        className={clsx(
-          "absolute inset-x-0 top-0 z-10 h-0.5",
-          RARITY_ACCENT[rarity],
-        )}
-      />
-
-      {/*
-          The fade hides the strip's right side, so the visible mass sits
-          around 36% of the strip, not 50%. The image is drawn wider than the
-          strip and anchored right, which shifts its center left to match.
-          The mask stays on the wrapper so it does not move with the image.
-        */}
-      <div className="relative h-full w-[30%] shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)]">
-        <img
-          alt={name}
-          className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
-          loading="eager"
-          src={`./assets/${image}`}
-        />
-      </div>
-
-      <div className="-ml-2 flex min-w-0 flex-1 flex-col gap-1 p-2">
-        <div className="flex min-w-0 items-baseline gap-1.5">
-          <Tooltip
-            multiline
-            disabled={!flavorText}
-            label={<span className="italic">{flavorText}</span>}
-            w={220}
-          >
-            <span className="font-orbitron truncate text-xs leading-tight font-bold tracking-wide text-neutral-100">
-              {name}
-            </span>
-          </Tooltip>
-        </div>
-
-        <div className="flex flex-col gap-1">
-          {textLines.map((line, index) => {
-            const { isSubroutine, keyword, reminderText, text } = line;
-
-            const body = keyword ? (
-              <Tooltip label={reminderText}>
-                <span className="text-purple-300">{text}</span>
-              </Tooltip>
-            ) : (
-              <span>{text}</span>
-            );
-
-            return (
-              <div
-                className="flex items-start gap-1 text-xs leading-snug text-neutral-300"
-                key={index}
-              >
-                {isSubroutine ? (
-                  <IoMdReturnRight className="mt-0.5 shrink-0 text-rose-400" />
-                ) : null}
-                {body}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <Tooltip label={strengthBreakdown}>
-        <div
-          className="flex w-14 shrink-0 flex-col items-center justify-center gap-0.5 border-l border-white/10"
-          style={{ backgroundImage: HATCH }}
+    <BoardTile
+      accentClassName={RARITY_ACCENT[rarity]}
+      art={{ alt: name, image }}
+      artWidth={art}
+      className="border-x-white/10 border-t-white/20 border-b-white/5 bg-neutral-900"
+      column={
+        <TileNumberColumn
+          label="str"
+          texture="hatch"
+          tooltip={strengthBreakdown}
         >
           <span
             className={clsx("font-orbitron text-2xl leading-none", {
@@ -250,15 +174,23 @@ export const CardFrontIce = ({
           >
             {currentStrength}
           </span>
-          <Label>str</Label>
-        </div>
-      </Tooltip>
-    </div>
+        </TileNumberColumn>
+      }
+      h={h}
+      w={w}
+    >
+      <TileName
+        flavorText={flavorText}
+        glyph={<SubtypeGlyph className="text-neutral-400" subtype={subtype} />}
+        name={name}
+      />
+      <TileTextLines lines={textLines} />
+    </BoardTile>
   );
 
   return (
     <CardHoverEffect
-      isBeingEncountered={isBeingEncountered}
+      isHighlighted={isBeingEncountered}
       type={type}
       onClick={onClick}
     >

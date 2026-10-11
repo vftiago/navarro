@@ -87,7 +87,7 @@ export const corpPhase = (): ThunkAction => {
 
     if (decision.kind === "patch") {
       dispatch(removeFromIce(decision.replace, server));
-      // Drop any aura or scaling the removed ice registered when it rezzed
+      // Drop every modifier the removed ice registered (security scaling, stacked buffs)
       dispatch(removePermanentEffect(decision.replace.instanceId));
     }
 

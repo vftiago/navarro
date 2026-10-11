@@ -3,22 +3,26 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { CardType } from "../../cards/enums";
 
+/**
+ * `isHighlighted` holds the green glow without hover: the card the game is
+ * waiting on (the encountered ice, a breaker that can answer it).
+ */
 export const CardHoverEffect = ({
   children,
-  isBeingEncountered,
+  isHighlighted,
   onClick,
   type,
 }: {
   children: ReactNode;
-  isBeingEncountered?: boolean;
+  isHighlighted?: boolean;
   onClick?: () => void;
   type?: CardType;
 }) => {
   const [flashKey, setFlashKey] = useState(0);
 
   const getBoxShadow = () => {
-    if (isBeingEncountered) {
-      // Green highlight for encountered ice
+    if (isHighlighted) {
+      // Green: the card the game is waiting on
       return "0 0 4px 2px rgba(255, 255, 255, 0.8), 0 0 8px 4px rgba(134, 239, 172, 0.6), 0 0 24px 8px rgba(74, 222, 128, 0.4)";
     }
     if (type === CardType.AGENDA) {
@@ -31,7 +35,7 @@ export const CardHoverEffect = ({
   return (
     <motion.div
       animate={
-        isBeingEncountered
+        isHighlighted
           ? {
               boxShadow: getBoxShadow(),
             }

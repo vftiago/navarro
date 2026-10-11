@@ -15,6 +15,7 @@ export type PlayerState = {
   playerTags: number;
   playerNoise: number;
   playerSignal: number;
+  /** Memory capacity in MU. Installed programs each occupy MU; see `canInstallProgram`. */
   playerMemory: number;
   playerVictoryPoints: number;
 };
@@ -37,6 +38,7 @@ export enum PlayerActionTypes {
   MODIFY_TAGS = "MODIFY_TAGS",
   MODIFY_NOISE = "MODIFY_NOISE",
   MODIFY_SIGNAL = "MODIFY_SIGNAL",
+  MODIFY_MEMORY = "MODIFY_MEMORY",
   MODIFY_VICTORY_POINTS = "INCREMENT_VICTORY_POINTS",
 }
 
@@ -70,4 +72,5 @@ export type PlayerAction =
   | { type: PlayerActionTypes.MODIFY_TAGS; payload: number }
   | { type: PlayerActionTypes.MODIFY_NOISE; payload: number }
   | { type: PlayerActionTypes.MODIFY_SIGNAL; payload: number }
+  | { type: PlayerActionTypes.MODIFY_MEMORY; payload: number }
   | { type: PlayerActionTypes.MODIFY_VICTORY_POINTS; payload: number };

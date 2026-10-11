@@ -1,6 +1,6 @@
 import type { ProgramCardDefinition } from "../../../cards/definitions";
 import { getCardTextLines } from "../../../cards/engine";
-import { getProgramChipSize } from "../../../state/settings";
+import { getFullArt, getProgramChipSize } from "../../../state/settings";
 import { useGameStore } from "../../../state/store";
 import {
   BoardTile,
@@ -37,6 +37,7 @@ export const CardFrontProgram = ({
   onClick?: () => void;
 }) => {
   const { art, h, w } = useGameStore(getProgramChipSize);
+  const fullArt = useGameStore(getFullArt);
   const { flavorText, image, name, rarity, strength, subtype, type } =
     definition;
 
@@ -64,6 +65,7 @@ export const CardFrontProgram = ({
             </TileNumberColumn>
           )
         }
+        fullArt={fullArt}
         h={h}
         w={w}
       >
@@ -72,7 +74,9 @@ export const CardFrontProgram = ({
           glyph={<SubtypeGlyph className="text-cyan-300" subtype={subtype} />}
           name={name}
         />
-        <TileTextLines lines={getCardTextLines(definition)} />
+        {fullArt ? null : (
+          <TileTextLines lines={getCardTextLines(definition)} />
+        )}
       </BoardTile>
     </CardHoverEffect>
   );

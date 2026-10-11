@@ -21,10 +21,7 @@ export const CardFront = ({
   const fullArt = useGameStore(getFullArt);
   const definition = resolveCard(card);
 
-  if (fullArt) {
-    return <CardFrontFullArt definition={definition} />;
-  }
-
+  // Ice is a board tile, never a portrait card; it has its own full-art mode
   if (definition.type === CardType.ICE) {
     return (
       <CardFrontIce
@@ -34,6 +31,10 @@ export const CardFront = ({
         onClick={onClick}
       />
     );
+  }
+
+  if (fullArt) {
+    return <CardFrontFullArt definition={definition} />;
   }
 
   return <CardFrontGeneric definition={definition} onClick={onClick} />;

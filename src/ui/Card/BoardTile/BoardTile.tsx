@@ -101,6 +101,12 @@ export const TileTextLines = ({ lines }: { lines: CardTextLine[] }) => (
 type BoardTileProps = {
   /** Rarity accent line along the top edge; omit for redacted tiles */
   accentClassName?: string;
+  /**
+   * Full art: the strip becomes the whole face, the body sinks to the
+   * bottom edge over a scrim and the column keeps its backdrop. The caller
+   * passes only the name as children — text lines have no room here.
+   */
+  fullArt?: boolean;
   art: {
     alt: string;
     /** Extra classes on the strip wrapper (e.g. dim a face-down tile) */
@@ -129,6 +135,7 @@ export const BoardTile = ({
   children,
   className,
   column,
+  fullArt = false,
   h,
   style,
   w,
@@ -154,23 +161,46 @@ export const BoardTile = ({
     */}
     <div
       className={clsx(
-        "relative h-full shrink-0 overflow-hidden [mask-image:linear-gradient(to_right,black_35%,transparent)]",
+        "overflow-hidden",
+        fullArt
+          ? "absolute inset-0"
+          : "relative h-full shrink-0 [mask-image:linear-gradient(to_right,black_35%,transparent)]",
         art.className,
       )}
-      style={{ width: artWidth }}
+      style={fullArt ? undefined : { width: artWidth }}
     >
       <img
         alt={art.alt}
-        className="absolute inset-y-0 right-0 h-full w-[115%] max-w-none object-cover"
+        className={clsx(
+          "h-full max-w-none object-cover",
+          fullArt ? "w-full" : "absolute inset-y-0 right-0 w-[115%]",
+        )}
         loading="eager"
         src={`./assets/${art.image}`}
       />
+      {fullArt ? (
+        // Scrim so the name reads over any art
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-neutral-950/85 to-transparent" />
+      ) : null}
     </div>
 
-    <div className="-ml-2 flex min-w-0 flex-1 flex-col gap-1 p-2">
+    <div
+      className={clsx(
+        "flex min-w-0 flex-1 flex-col gap-1 p-2",
+        fullArt
+          ? "relative z-10 justify-end text-shadow-md text-shadow-neutral-950"
+          : "-ml-2",
+      )}
+    >
       {children}
     </div>
 
-    {column}
+    {column && fullArt ? (
+      <div className="relative z-10 flex bg-neutral-950/70 backdrop-blur-sm">
+        {column}
+      </div>
+    ) : (
+      column
+    )}
   </div>
 );

@@ -6,7 +6,7 @@ import { getCardTextLines, resolveEffectSpecs } from "../../../cards/engine";
 import type { CardInstance } from "../../../cards/instance";
 import { resolveCard } from "../../../cards/instance";
 import { ALL_SERVERS } from "../../../state/server";
-import { getIceCardSize } from "../../../state/settings";
+import { getFullArt, getIceCardSize } from "../../../state/settings";
 import { getGameState, useGameStore } from "../../../state/store";
 import { calculateIceStrength } from "../../../state/utils/iceStrengthUtils";
 import {
@@ -58,6 +58,7 @@ export const CardFrontIce = ({
     (state) => state.serverState.serverSecurityLevel,
   );
   const { art, h, w } = useGameStore(getIceCardSize);
+  const fullArt = useGameStore(getFullArt);
 
   const { flavorText, image, name, rarity, subtype, type } = definition;
   const isFaceDown = "isRezzed" in instance && instance.isRezzed === false;
@@ -176,6 +177,7 @@ export const CardFrontIce = ({
           </span>
         </TileNumberColumn>
       }
+      fullArt={fullArt}
       h={h}
       w={w}
     >
@@ -184,7 +186,7 @@ export const CardFrontIce = ({
         glyph={<SubtypeGlyph className="text-neutral-400" subtype={subtype} />}
         name={name}
       />
-      <TileTextLines lines={textLines} />
+      {fullArt ? null : <TileTextLines lines={textLines} />}
     </BoardTile>
   );
 

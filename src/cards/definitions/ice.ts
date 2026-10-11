@@ -52,7 +52,7 @@ export const iceCardDefinitions: IceCardDefinition[] = [
     image: "_61f45f4f-382f-4edd-a7ea-eaef9a2e1e6c.jpg",
     name: "Biometric Authenticator",
     rarity: CardRarity.COMMON,
-    strength: 5,
+    strength: 2,
     subtype: IceSubtype.CODE_GATE,
     type: CardType.ICE,
   },

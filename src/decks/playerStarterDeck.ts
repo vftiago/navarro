@@ -9,12 +9,13 @@ import { createCardInstance } from "../cards/instance";
  * Each entry is { id, count } for clarity and to avoid repetition
  */
 const deckList: { count: number; id: PlayerCardId }[] = [
-  { count: 6, id: CardId.RUN },
+  { count: 5, id: CardId.RUN },
   { count: 3, id: CardId.FOCUS },
   { count: 1, id: CardId.RUNNING_SNEAKERS },
   { count: 1, id: CardId.BOOST_ENERGY_ULTRA },
   { count: 1, id: CardId.PIECE_OF_CAKE },
   { count: 1, id: CardId.SLEDGEHAMMER },
+  { count: 1, id: CardId.LOCKPICK },
   { count: 1, id: CardId.INTRUSIVE_THOUGHTS },
 ];
 

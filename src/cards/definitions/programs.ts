@@ -20,6 +20,17 @@ export const programCardDefinitions: ProgramCardDefinition[] = [
     type: CardType.PROGRAM,
   },
   {
+    effects: [],
+    flavorText: "Fits every lock badly, and that is good enough.",
+    id: CardId.LOCKPICK,
+    image: "lockpick.jpg",
+    name: "Lockpick",
+    rarity: CardRarity.COMMON,
+    strength: 2,
+    subtype: ProgramSubtype.DECODER,
+    type: CardType.PROGRAM,
+  },
+  {
     abilities: [
       {
         cost: { clicks: 1, trashSelf: true },
